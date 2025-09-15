@@ -1,0 +1,17 @@
+# Ejemplo 3: Factorial Iterativo
+# Complejidad: O(n)
+
+INICIO
+    ENTERO n = 10;
+    ENTERO factorial = 1;
+    ENTERO i;
+    
+    SI n >= 0 ENTONCES
+        PARA i = 1 HASTA n HACER
+            factorial = factorial * i;
+        FIN_PARA
+        print("El factorial de " + n + " es: " + factorial);
+    SINO
+        print("Error: No se puede calcular el factorial de un número negativo");
+    FIN_SI
+FIN
