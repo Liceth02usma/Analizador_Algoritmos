@@ -1,0 +1,122 @@
+# Gramática para Pseudocódigo - Estructuras Básicas
+# Grammar for Pseudocode - Basic Structures
+# Supports: FOR loops, WHILE loops, IF-ELSE statements
+
+# Root rule - A program consists of statements
+<program> ::= <statement_list>
+
+<statement_list> ::= <statement> | <statement> <statement_list>
+
+<statement> ::= <assignment_statement>
+              | <if_statement>
+              | <while_statement>
+              | <for_statement>
+              | <declaration_statement>
+              | <expression_statement>
+              | <block_statement>
+
+# Block statement (for grouping statements)
+<block_statement> ::= "INICIO" <statement_list> "FIN"
+                    | "{" <statement_list> "}"
+
+# Variable declaration
+<declaration_statement> ::= <type> <identifier> ";"
+                           | <type> <identifier> "=" <expression> ";"
+
+<type> ::= "ENTERO" | "REAL" | "CADENA" | "BOOLEANO" | "CARACTER"
+         | "int" | "float" | "string" | "boolean" | "char"
+
+# Assignment statement
+<assignment_statement> ::= <identifier> "=" <expression> ";"
+                         | <identifier> "<-" <expression> ";"
+
+# IF-ELSE statement
+<if_statement> ::= "SI" <expression> "ENTONCES" <statement_list> "FIN_SI"
+                 | "SI" <expression> "ENTONCES" <statement_list> "SINO" <statement_list> "FIN_SI"
+                 | "IF" <expression> "THEN" <statement_list> "END_IF"
+                 | "IF" <expression> "THEN" <statement_list> "ELSE" <statement_list> "END_IF"
+
+# WHILE loop
+<while_statement> ::= "MIENTRAS" <expression> "HACER" <statement_list> "FIN_MIENTRAS"
+                    | "WHILE" <expression> "DO" <statement_list> "END_WHILE"
+
+# FOR loop
+<for_statement> ::= "PARA" <identifier> "=" <expression> "HASTA" <expression> "HACER" <statement_list> "FIN_PARA"
+                  | "PARA" <identifier> "=" <expression> "HASTA" <expression> "PASO" <expression> "HACER" <statement_list> "FIN_PARA"
+                  | "FOR" <identifier> "=" <expression> "TO" <expression> "DO" <statement_list> "END_FOR"
+                  | "FOR" <identifier> "=" <expression> "TO" <expression> "STEP" <expression> "DO" <statement_list> "END_FOR"
+
+# Expression statement (for function calls, etc.)
+<expression_statement> ::= <expression> ";"
+
+# Expressions
+<expression> ::= <logical_expression>
+
+<logical_expression> ::= <relational_expression>
+                       | <logical_expression> "Y" <relational_expression>
+                       | <logical_expression> "O" <relational_expression>
+                       | <logical_expression> "AND" <relational_expression>
+                       | <logical_expression> "OR" <relational_expression>
+                       | "NO" <relational_expression>
+                       | "NOT" <relational_expression>
+
+<relational_expression> ::= <arithmetic_expression>
+                          | <relational_expression> "=" <arithmetic_expression>
+                          | <relational_expression> "<>" <arithmetic_expression>
+                          | <relational_expression> "!=" <arithmetic_expression>
+                          | <relational_expression> "<" <arithmetic_expression>
+                          | <relational_expression> ">" <arithmetic_expression>
+                          | <relational_expression> "<=" <arithmetic_expression>
+                          | <relational_expression> ">=" <arithmetic_expression>
+
+<arithmetic_expression> ::= <term>
+                          | <arithmetic_expression> "+" <term>
+                          | <arithmetic_expression> "-" <term>
+
+<term> ::= <factor>
+         | <term> "*" <factor>
+         | <term> "/" <factor>
+         | <term> "%" <factor>
+         | <term> "MOD" <factor>
+
+<factor> ::= <identifier>
+           | <number>
+           | <string>
+           | <boolean>
+           | <function_call>
+           | "(" <expression> ")"
+           | "-" <factor>
+           | "+" <factor>
+
+# Function call
+<function_call> ::= <identifier> "(" <argument_list> ")"
+                  | <identifier> "()"
+
+<argument_list> ::= <expression>
+                  | <expression> "," <argument_list>
+
+# Terminals
+<identifier> ::= <letter> | <identifier> <letter> | <identifier> <digit> | <identifier> "_"
+
+<number> ::= <integer> | <real>
+<integer> ::= <digit> | <integer> <digit>
+<real> ::= <integer> "." <integer>
+
+<string> ::= "\"" <string_content> "\""
+           | "'" <string_content> "'"
+
+<string_content> ::= "" | <string_content> <string_char>
+<string_char> ::= <letter> | <digit> | " " | <special_char>
+
+<boolean> ::= "VERDADERO" | "FALSO" | "TRUE" | "FALSE"
+
+<letter> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
+           | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+           | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
+           | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+
+<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+<special_char> ::= "!" | "@" | "#" | "$" | "%" | "^" | "&" | "*" | "(" | ")" | "-" | "+"
+                 | "=" | "[" | "]" | "{" | "}" | "|" | "\" | ":" | ";" | "<" | ">" | "?"
+                 | "," | "." | "/" | "~" | "`"

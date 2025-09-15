@@ -1,0 +1,25 @@
+# Ejemplo 1: Búsqueda Lineal
+# Complejidad: O(n)
+
+INICIO
+    ENTERO n = 100;
+    ENTERO arr[n];
+    ENTERO objetivo = 50;
+    ENTERO i = 0;
+    BOOLEANO encontrado = FALSO;
+    
+    # Búsqueda lineal
+    MIENTRAS i < n Y NO encontrado HACER
+        SI arr[i] = objetivo ENTONCES
+            encontrado = VERDADERO;
+        SINO
+            i = i + 1;
+        FIN_SI
+    FIN_MIENTRAS
+    
+    SI encontrado ENTONCES
+        print("Elemento encontrado en posición: " + i);
+    SINO
+        print("Elemento no encontrado");
+    FIN_SI
+FIN

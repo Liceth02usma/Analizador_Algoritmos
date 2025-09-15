@@ -1,0 +1,20 @@
+# Ejemplo 2: Ordenamiento Burbuja
+# Complejidad: O(n²)
+
+INICIO
+    ENTERO n = 100;
+    ENTERO arr[n];
+    ENTERO i, j, temp;
+    
+    # Algoritmo de ordenamiento burbuja
+    PARA i = 0 HASTA n-1 HACER
+        PARA j = 0 HASTA n-i-2 HACER
+            SI arr[j] > arr[j+1] ENTONCES
+                # Intercambio
+                temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            FIN_SI
+        FIN_PARA
+    FIN_PARA
+FIN
