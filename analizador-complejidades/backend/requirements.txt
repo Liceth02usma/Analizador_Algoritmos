@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+lark-parser
+sympy
+networkx
+matplotlib
+openai
+langchain
+pytest
