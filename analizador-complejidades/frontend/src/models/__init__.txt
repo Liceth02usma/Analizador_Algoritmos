@@ -1,1 +1,0 @@
-# Aquí van las clases y estructuras de datos del frontend
