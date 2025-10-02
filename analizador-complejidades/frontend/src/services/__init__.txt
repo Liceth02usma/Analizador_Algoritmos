@@ -1,1 +1,0 @@
-# Aquí van las llamadas a la API backend
