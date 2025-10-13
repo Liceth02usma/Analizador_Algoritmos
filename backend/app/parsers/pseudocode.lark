@@ -1,1 +1,101 @@
- 
+// ========================================
+// Gramática extendida y corregida
+// para el Analizador de Complejidades
+// ========================================
+
+start: stmt+
+
+// -------------------
+// Sentencias principales
+// -------------------
+?stmt: assign
+     | for_loop
+     | while_loop
+     | repeat_loop
+     | if_stmt
+     | call_stmt
+     | return_stmt
+     | class_def
+     | object_decl
+     | procedure_def
+     | comment
+
+// -------------------
+// Asignaciones y llamadas
+// -------------------
+assign: NAME "🡨" expr
+call_stmt: "CALL" NAME "(" [args] ")"
+return_stmt: "return" expr
+args: expr ("," expr)*
+
+// -------------------
+// Estructuras de control
+// -------------------
+for_loop: "for" NAME "🡨" expr "to" expr "do" "begin" stmt+ "end"
+while_loop: "while" "(" condition ")" "do" "begin" stmt+ "end"
+repeat_loop: "repeat" stmt+ "until" "(" condition ")"
+
+// -------------------
+// Condicional
+// -------------------
+else_block: "else" "begin" stmt+ "end"
+if_stmt: "if" "(" condition ")" "then" "begin" stmt+ "end" else_block?
+
+// -------------------
+// Clases y objetos
+// -------------------
+class_def: "Clase" NAME "{" NAME* "}"
+object_decl: "Clase" NAME NAME
+
+// -------------------
+// Procedimientos
+// -------------------
+procedure_def: NAME "(" [param_list] ")" "begin" stmt+ "end"
+param_list: NAME ("," NAME)*
+
+// -------------------
+// Condiciones y lógica
+// -------------------
+COMPARATOR: "<" | ">" | "<=" | ">=" | "=" | "≠"
+
+?condition: expr COMPARATOR expr
+          | condition "and" condition   -> and_op
+          | condition "or" condition    -> or_op
+          | "not" condition             -> not_op
+          | "T"                         -> bool_true
+          | "F"                         -> bool_false
+
+// -------------------
+// Expresiones aritméticas
+// -------------------
+?expr: term
+     | expr "+" term   -> add
+     | expr "-" term   -> sub
+
+?term: factor
+     | term "*" factor -> mul
+     | term "/" factor -> div
+     | term "mod" factor -> mod
+     | term "div" factor -> intdiv
+
+?factor: NUMBER              -> number
+       | NAME                -> var
+       | NAME "[" expr "]"   -> array_access
+       | NAME "." NAME       -> field_access
+       | "┌" expr "┐"        -> ceil
+       | "└" expr "┘"        -> floor
+       | "(" expr ")"        -> grouped
+
+// -------------------
+// Comentarios
+// -------------------
+comment: "►" /.+/
+
+// -------------------
+// Tokens base
+// -------------------
+NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
+NUMBER: /-?\d+/
+
+%ignore /\s+/
+%ignore /\/\/[^\n]*/   // comentarios tipo //
