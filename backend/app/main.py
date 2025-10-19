@@ -9,3 +9,5 @@ app.include_router(analysis.router)
 @app.get("/")
 def read_root():
     return {"message": "Hola, FastAPI está corriendo 🚀"}
+
+

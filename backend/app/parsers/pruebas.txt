@@ -1,0 +1,35 @@
+    sum 🡨 1
+    for i 🡨 1 to n do
+        begin
+            sum 🡨 sum * i
+        end
+    return sum
+
+
+
+
+
+
+    Clase Persona {nombre edad}
+    Clase Persona p
+
+    suma(x, y)
+    begin
+        z 🡨 x + y
+        return z
+    end
+
+    CALL suma(5, 10)
+
+    if (T and not F) then
+        begin
+            return 1
+        end
+    else
+        begin
+            return -1
+        end
+
+
+
+
