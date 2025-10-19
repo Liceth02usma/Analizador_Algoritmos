@@ -48,5 +48,10 @@ FastAPI genera documentación interactiva automáticamente:
 * **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 * **Redoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
+## Tests
 
+Permite correr las pruebas del proyecto
 
+```bash
+$ pytest -q
+```
