@@ -88,6 +88,18 @@ class TreeToDict(Transformer):
             elif isinstance(item, dict):
                 body.append(item)
         return {"type": "procedure_def", "name": name, "params": params, "body": body}
+    
+    def call_expr(self, items):
+        name = str(items[0])
+        args = []
+        for x in items[1:]:
+            if isinstance(x, list):
+                args.extend(x)
+            elif hasattr(x, "data") and x.data == "args":
+                args.extend(x.children)
+            elif not isinstance(x, Token):
+                args.append(x)
+        return {"type": "call", "name": name, "args": args}
 
     def param_list(self, items):
         return [str(i) for i in items]
@@ -151,25 +163,27 @@ def pretty_print(obj, indent=0):
 
 if __name__ == "__main__":
     code = """
-    Clase Persona {nombre edad}
-    Clase Persona p
-
-    suma(x, y)
-    begin
-        z 🡨 x + y
-        return z
-    end
-
-    CALL suma(5, 10)
-
-    if (T and not F) then
+busqueda_lineal(A, x, n)
+begin
+    i 🡨 0
+    while (i < n) do
         begin
-            return 1
+            if (A[i] = x) then
+                begin
+                    return i
+                end
+            else
+                begin
+                    i 🡨 i + 1
+                end
         end
-    else
-        begin
-            return -1
-        end
+    return -1
+end
+
+index 🡨 CALL busqueda_lineal(A, 10, n)
+return index
+
+
 
     """
 
