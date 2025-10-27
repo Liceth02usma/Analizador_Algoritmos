@@ -21,8 +21,11 @@ def parse_and_transform(src: str) -> list[dict[str, Any]]:
         TypeError: Si el resultado no es Tree ni list
     """
     pm = import_module("app.parsers.parser")
-    tree = pm.parser.parse(src)  
-    result = pm.TreeToDict().transform(tree)  
+    # Obtener parser usando el método get_parser()
+    transformer = pm.TreeToDict()
+    parser_instance = transformer.get_parser()
+    tree = parser_instance.parse(src)  
+    result = transformer.transform(tree)  
     if isinstance(result, Tree) and result.data == "start":
         return list(result.children)
     elif isinstance(result, list):
