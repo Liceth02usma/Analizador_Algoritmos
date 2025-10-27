@@ -420,3 +420,97 @@ def test_random_garbage_input():
     code = "@#$%^&*()\n"
     with pytest.raises((UnexpectedCharacters, LarkError)):
         parse_and_transform(code)
+
+
+def test_call_assignment_in_expression():
+    """
+    Valida que se pueda asignar el resultado de una llamada a función.
+    Esto es necesario para algoritmos recursivos como Fibonacci.
+    """
+    code = (
+        "fibonacci(n)\n"
+        "begin\n"
+        "  n1 🡨 n - 1\n"
+        "  fib1 🡨 CALL fibonacci(n1)\n"
+        "  return fib1\n"
+        "end\n"
+    )
+    nodes = parse_and_transform(code)
+    proc = _find_first(nodes, "procedure_def")
+    assert proc is not None
+    assert proc["name"] == "fibonacci"
+    
+    # Buscar la asignación de fib1
+    body = proc["body"]
+    fib1_assign = next((n for n in body if n.get("type") == "assign" and n.get("var") == "fib1"), None)
+    assert fib1_assign is not None, "No se encontró la asignación fib1 🡨 CALL fibonacci(n1)"
+    
+    # Verificar que el valor es una llamada
+    value = fib1_assign["value"]
+    assert isinstance(value, dict), f"El valor debería ser un dict, pero es {type(value)}"
+    assert value.get("type") == "call", f"El tipo debería ser 'call', pero es {value.get('type')}"
+    assert value.get("name") == "fibonacci", f"El nombre debería ser 'fibonacci', pero es {value.get('name')}"
+    assert value.get("args") == ["n1"], f"Los argumentos deberían ser ['n1'], pero son {value.get('args')}"
+
+
+def test_multiple_call_assignments_fibonacci():
+    """
+    Valida múltiples asignaciones de llamadas recursivas (patrón Fibonacci).
+    Verifica que se puedan asignar dos llamadas diferentes y luego sumar sus resultados.
+    """
+    code = (
+        "fibonacci(n)\n"
+        "begin\n"
+        "  if (n <= 1) then\n"
+        "    begin\n"
+        "      return n\n"
+        "    end\n"
+        "  else\n"
+        "    begin\n"
+        "      n1 🡨 n - 1\n"
+        "      n2 🡨 n - 2\n"
+        "      fib1 🡨 CALL fibonacci(n1)\n"
+        "      fib2 🡨 CALL fibonacci(n2)\n"
+        "      resultado 🡨 fib1 + fib2\n"
+        "      return resultado\n"
+        "    end\n"
+        "end\n"
+    )
+    nodes = parse_and_transform(code)
+    proc = _find_first(nodes, "procedure_def")
+    assert proc is not None and proc["name"] == "fibonacci"
+    
+    # Verificar estructura if-else
+    ifn = next(n for n in proc["body"] if n.get("type") == "if")
+    assert ifn is not None
+    
+    # Verificar el bloque else
+    else_body = ifn.get("else", [])
+    assert len(else_body) > 0, "El bloque else no debería estar vacío"
+    
+    # Buscar las dos asignaciones de llamadas
+    fib1_assign = next((n for n in else_body if n.get("type") == "assign" and n.get("var") == "fib1"), None)
+    fib2_assign = next((n for n in else_body if n.get("type") == "assign" and n.get("var") == "fib2"), None)
+    
+    assert fib1_assign is not None, "No se encontró fib1 🡨 CALL fibonacci(n1)"
+    assert fib2_assign is not None, "No se encontró fib2 🡨 CALL fibonacci(n2)"
+    
+    # Verificar fib1
+    assert fib1_assign["value"].get("type") == "call"
+    assert fib1_assign["value"].get("name") == "fibonacci"
+    assert fib1_assign["value"].get("args") == ["n1"]
+    
+    # Verificar fib2
+    assert fib2_assign["value"].get("type") == "call"
+    assert fib2_assign["value"].get("name") == "fibonacci"
+    assert fib2_assign["value"].get("args") == ["n2"]
+    
+    # Verificar que se suma fib1 + fib2
+    resultado_assign = next((n for n in else_body if n.get("type") == "assign" and n.get("var") == "resultado"), None)
+    assert resultado_assign is not None, "No se encontró resultado 🡨 fib1 + fib2"
+    
+    # Verificar que es una suma
+    value = resultado_assign["value"]
+    assert value.get("op") == "+", f"Debería ser suma (+), pero es {value.get('op')}"
+    assert value.get("lhs") == "fib1", f"El operando izquierdo debería ser 'fib1', pero es {value.get('lhs')}"
+    assert value.get("rhs") == "fib2", f"El operando derecho debería ser 'fib2', pero es {value.get('rhs')}"
