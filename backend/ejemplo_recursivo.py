@@ -15,24 +15,30 @@ def main():
     
     # Pseudocódigo de Fibonacci (sintaxis del proyecto)
     pseudocodigo = """
-    fibonacci(n)
+    busquedaBinaria(array, izquierda, derecha, objetivo)
     begin
-        if (n <= 1) then
+        if (izquierda > derecha) then
         begin
-            return n
+            return -1
+        end
+        medio 🡨 (izquierda + derecha) / 2
+        if (array[medio] = objetivo) then
+        begin
+            return medio
         end
         else
         begin
-            n1 🡨 n - 1
-            n2 🡨 n - 2
-            fib1 🡨 CALL fibonacci(n1)
-            fib2 🡨 CALL fibonacci(n2)
-            resultado 🡨 fib1 + fib2
-            return resultado
+            if (array[medio] < objetivo) then
+            begin
+                CALL busquedaBinaria(array, medio + 1, derecha, objetivo)
+            end
+            else
+            begin
+                CALL busquedaBinaria(array, izquierda, medio - 1, objetivo)
+            end
         end
     end
     """
-    
     print("📝 Pseudocódigo:")
     print(pseudocodigo)
     print()
@@ -40,7 +46,7 @@ def main():
     # Realizar análisis
     print("🔍 Analizando...")
     results = controller.analyze_from_parsed_tree(
-        "Fibonacci",
+        "busquedaBinaria",
         pseudocodigo
     )
     
@@ -61,12 +67,6 @@ def main():
     print(f"  Relación de recurrencia: {results['analysis']['recurrence_relation']}")
     print(f"  Profundidad estimada: {results['analysis']['recursion_depth']}")
     
-    # Detalles de llamadas recursivas
-    if results['analysis']['recursive_call_details']:
-        print("\n  Detalles de llamadas recursivas:")
-        for i, call in enumerate(results['analysis']['recursive_call_details'], 1):
-            print(f"    {i}. Función: {call.get('function', 'N/A')}")
-            print(f"       Patrón: {call.get('pattern', 'N/A')}")
     
     # Complejidad
     print("\n⏱️ Complejidad Temporal:")
@@ -83,34 +83,15 @@ def main():
     print(f"  Big Omega (Ω): {results['complexity']['notation']['big_omega']}")
     print(f"  Big Theta (Θ): {results['complexity']['notation']['big_theta']}")
     
-    # Soluciones de recurrencia
-    print("\n🧮 Soluciones de la Recurrencia:")
-    for method, solution in results['recurrence_solutions'].items():
-        print(f"  {method}: {solution}")
     
-    # Patrón detectado
-    print("\n🎯 Patrón Detectado:")
-    print(f"  Nombre: {results['pattern']['name']}")
-    print(f"  Descripción: {results['pattern']['description']}")
-    print(f"  Pista de complejidad: {results['pattern']['complexity_hint']}")
-    if 'characteristics' in results['pattern']:
-        print(f"  Características: {', '.join(results['pattern']['characteristics'])}")
     
-    # Optimizaciones sugeridas
-    print("\n💡 Optimizaciones Sugeridas:")
-    for i, opt in enumerate(results['optimizations'], 1):
-        print(f"  {i}. {opt}")
     
     # Razonamiento
     if results['complexity']['reasoning']:
         print("\n📝 Razonamiento:")
         print(results['complexity']['reasoning'])
     
-    # Resumen
-    print("\n" + "=" * 80)
-    print("  RESUMEN")
-    print("=" * 80)
-    print(results['summary'])
+
     
     # Exportar reportes
     print("\n" + "=" * 80)
