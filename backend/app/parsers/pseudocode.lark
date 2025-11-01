@@ -82,6 +82,7 @@ COMPARATOR: "<" | ">" | "<=" | ">=" | "=" | "≠"
        | NAME                -> var
        | NAME "[" expr "]"   -> array_access
        | NAME "." NAME       -> field_access
+       | "CALL" NAME "(" [args] ")"  -> call_expr
        | "┌" expr "┐"        -> ceil
        | "└" expr "┘"        -> floor
        | "(" expr ")"        -> grouped

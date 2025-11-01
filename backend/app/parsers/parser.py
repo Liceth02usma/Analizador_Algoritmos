@@ -1,3 +1,4 @@
+from html import parser
 from lark import Lark, Transformer
 import os
 from lark.lexer import Token
@@ -5,22 +6,30 @@ from lark.lexer import Token
 # Ruta de la gramática
 GRAMMAR_FILE = os.path.join(os.path.dirname(__file__), "pseudocode.lark")
 
-with open(GRAMMAR_FILE, "r", encoding="utf-8") as f:
-    grammar = f.read()
-
-parser = Lark(grammar, start="start", parser="lalr")
-
 
 class TreeToDict(Transformer):
     # ---------------------------
     # Estructuras principales
     # ---------------------------
+
+    def get_parser(self) -> Lark:
+        with open(GRAMMAR_FILE, "r", encoding="utf-8") as f:
+            grammar = f.read()
+
+        parser = Lark(grammar, start="start", parser="lalr")
+        return parser
+
     def assign(self, items):
         return {"type": "assign", "var": str(items[0]), "value": items[1]}
 
     def for_loop(self, items):
-        return {"type": "for", "var": str(items[0]), "from": items[1],
-                "to": items[2], "body": list(items[3:])}
+        return {
+            "type": "for",
+            "var": str(items[0]),
+            "from": items[1],
+            "to": items[2],
+            "body": list(items[3:]),
+        }
 
     def while_loop(self, items):
         return {"type": "while", "cond": items[0], "body": list(items[1:])}
@@ -88,6 +97,18 @@ class TreeToDict(Transformer):
             elif isinstance(item, dict):
                 body.append(item)
         return {"type": "procedure_def", "name": name, "params": params, "body": body}
+    
+    def call_expr(self, items):
+        name = str(items[0])
+        args = []
+        for x in items[1:]:
+            if isinstance(x, list):
+                args.extend(x)
+            elif hasattr(x, "data") and x.data == "args":
+                args.extend(x.children)
+            elif not isinstance(x, Token):
+                args.append(x)
+        return {"type": "call", "name": name, "args": args}
 
     def param_list(self, items):
         return [str(i) for i in items]
@@ -107,26 +128,56 @@ class TreeToDict(Transformer):
     def not_op(self, items):
         return {"op": "not", "value": items[0]}
 
-    def bool_true(self, _): return True
-    def bool_false(self, _): return False
-    def COMPARATOR(self, token): return str(token)
+    def bool_true(self, _):
+        return True
+
+    def bool_false(self, _):
+        return False
+
+    def COMPARATOR(self, token):
+        return str(token)
 
     # ---------------------------
     # Expresiones aritméticas
     # ---------------------------
-    def number(self, items): return int(items[0])
-    def var(self, items): return str(items[0])
-    def array_access(self, items): return {"type": "array_access", "array": str(items[0]), "index": items[1]}
-    def field_access(self, items): return {"type": "field_access", "object": str(items[0]), "field": str(items[1])}
-    def add(self, items): return {"op": "+", "lhs": items[0], "rhs": items[1]}
-    def sub(self, items): return {"op": "-", "lhs": items[0], "rhs": items[1]}
-    def mul(self, items): return {"op": "*", "lhs": items[0], "rhs": items[1]}
-    def div(self, items): return {"op": "/", "lhs": items[0], "rhs": items[1]}
-    def mod(self, items): return {"op": "mod", "lhs": items[0], "rhs": items[1]}
-    def intdiv(self, items): return {"op": "div", "lhs": items[0], "rhs": items[1]}
-    def ceil(self, items): return {"op": "ceil", "value": items[0]}
-    def floor(self, items): return {"op": "floor", "value": items[0]}
-    def grouped(self, items): return items[0]
+    def number(self, items):
+        return int(items[0])
+
+    def var(self, items):
+        return str(items[0])
+
+    def array_access(self, items):
+        return {"type": "array_access", "array": str(items[0]), "index": items[1]}
+
+    def field_access(self, items):
+        return {"type": "field_access", "object": str(items[0]), "field": str(items[1])}
+
+    def add(self, items):
+        return {"op": "+", "lhs": items[0], "rhs": items[1]}
+
+    def sub(self, items):
+        return {"op": "-", "lhs": items[0], "rhs": items[1]}
+
+    def mul(self, items):
+        return {"op": "*", "lhs": items[0], "rhs": items[1]}
+
+    def div(self, items):
+        return {"op": "/", "lhs": items[0], "rhs": items[1]}
+
+    def mod(self, items):
+        return {"op": "mod", "lhs": items[0], "rhs": items[1]}
+
+    def intdiv(self, items):
+        return {"op": "div", "lhs": items[0], "rhs": items[1]}
+
+    def ceil(self, items):
+        return {"op": "ceil", "value": items[0]}
+
+    def floor(self, items):
+        return {"op": "floor", "value": items[0]}
+
+    def grouped(self, items):
+        return items[0]
 
     def comment(self, items):
         return {"type": "comment", "text": str(items[0]).strip()}
@@ -151,36 +202,37 @@ def pretty_print(obj, indent=0):
 
 if __name__ == "__main__":
     code = """
-    Clase Persona {nombre edad}
-    Clase Persona p
-
-    suma(x, y)
-    begin
-        z 🡨 x + y
-        return z
-    end
-
-    CALL suma(5, 10)
-
-    if (T and not F) then
+busqueda_lineal(A, x, n)
+begin
+    i 🡨 0
+    while (i < n) do
         begin
-            return 1
+            if (A[i] = x) then
+                begin
+                    return i
+                end
+            else
+                begin
+                    i 🡨 i + 1
+                end
         end
-    else
-        begin
-            return -1
-        end
+    return -1
+end
+
+index 🡨 CALL busqueda_lineal(A, 10, n)
+return index
+
+
 
     """
 
     try:
-        tree = parser.parse(code)
         transformer = TreeToDict()
+        tree = transformer.get_parser().parse(code)
+
         result = transformer.transform(tree)
         print("\n=== Árbol resultante ===")
         pretty_print(result)
     except Exception as e:
         print("Error al parsear:", e)
         raise
-
-

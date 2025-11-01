@@ -33,3 +33,68 @@
 
 
 
+    fibonacci(n)
+    begin
+        if (n <= 1) then
+            begin
+                return n
+            end
+        else
+            begin
+                return CALL fibonacci(n - 1) + CALL fibonacci(n - 2)
+            end
+    end
+
+    result 🡨 CALL fibonacci(5)
+    return result
+
+
+
+
+
+    factorial(n)
+begin
+    f 🡨 1
+    for i 🡨 1 to n do
+        begin
+            f 🡨 f * i
+        end
+    return f
+end
+
+result 🡨 CALL factorial(5)
+return result
+
+
+busqueda_lineal(A, x, n)
+begin
+    i 🡨 0
+    while (i < n) do
+        begin
+            if (A[i] = x) then
+                begin
+                    return i
+                end
+            else
+                begin
+                    i 🡨 i + 1
+                end
+        end
+    return -1
+end
+
+index 🡨 CALL busqueda_lineal(A, 10, n)
+return index
+
+
+
+
+
+
+
+
+
+
+
+
+
