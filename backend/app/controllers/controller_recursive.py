@@ -335,7 +335,6 @@ class ControlRecursive(ControlAlgorithm):
 
         Args:
             solutions: Soluciones de la recurrencia
-            diagrams: Diagramas generados
 
         Returns:
             Dict completo con todos los resultados
@@ -358,6 +357,29 @@ class ControlRecursive(ControlAlgorithm):
                 "recursion_depth": self.recursion_depth,
                 "recurrence_relation": self.recurrence_relation,
             },
+            "recursion_summary": {
+                "total_base_cases": self.base_cases,
+                "total_recursive_calls": self.algorithm.recursive_calls,
+                "recurrence_relation": self.recurrence_relation,
+                "estimated_depth": str(self.recursion_depth),
+                "base_cases_found": [
+                    {
+                        "condition": base.get('condition', 'N/A'),
+                        "return_value": base.get('return_value', 'N/A'),
+                        "line": base.get('line', 'N/A')
+                    }
+                    for base in self.base_case_details
+                ],
+                "recursive_calls_found": [
+                    {
+                        "function": call.get('function', 'N/A'),
+                        "pattern": call.get('pattern', 'N/A'),
+                        "depth": call.get('depth', 0),
+                        "arguments": call.get('arguments', [])
+                    }
+                    for call in self.algorithm.recursive_call_nodes
+                ]
+            },
             "complexity": {
                 "time": {
                     "worst_case": self.complexity.worst_case,
@@ -376,6 +398,7 @@ class ControlRecursive(ControlAlgorithm):
                 },
                 "reasoning": getattr(self.complexity, "reasoning", ""),
             },
+            "recurrence_solutions": solutions,
         }
 
     def _generate_summary(self) -> str:

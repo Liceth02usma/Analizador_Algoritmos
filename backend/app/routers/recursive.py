@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+from ..controllers.controller_recursive import ControlRecursive
+from ..models.AnalysisRequestRecursive import AnalysisRequestRecursive
 
 
 router = APIRouter(
@@ -6,13 +8,9 @@ router = APIRouter(
     tags=["Recursive"]         
 )
 
-@router.post("/CreateTree")
-def create_tree(data: dict):
-    # Lógica para crear un árbol
-    return {"message": "Árbol creado", "data": data}
-
-
-@router.post("/ResolveRecurrence")
-def recurrence(data: dict):
-    # Lógica para resolver la recurrencia
-    return {"message": "Recurrencia resuelta"}
+@router.post("/Analysis")
+def generate_Analysis(data: AnalysisRequestRecursive):
+    return ControlRecursive().analyze_from_parsed_tree(
+        data.algorithm_name,
+        data.pseudocode
+    )
