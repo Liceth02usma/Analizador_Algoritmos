@@ -1,13 +1,21 @@
 from fastapi import FastAPI
-from app.routers import analysis  # importamos el módulo
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import input_algorithm
 
-app = FastAPI()
+app = FastAPI(title="Analizador de Complejidades")
 
-# Incluimos el router
-app.include_router(analysis.router)
+# CORS para permitir llamadas desde el frontend (localhost:5173)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # o ["http://localhost:5173"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Registrar router
+app.include_router(input_algorithm.router)
 
 @app.get("/")
-def read_root():
-    return {"message": "Hola, FastAPI está corriendo 🚀"}
-
-
+def root():
+    return {"message": "API del Analizador de Complejidades lista 🚀"}
