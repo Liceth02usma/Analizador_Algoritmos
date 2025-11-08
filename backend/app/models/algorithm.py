@@ -21,6 +21,7 @@ class Algorithm(ABC):
         self.parsed_tree: Optional[LarkTree] = None
         self.complexity = None
         self._parser = None
+        self.type_case = "MEJOR CASO"
 
     def preprocess_code(self) -> None:
         """

@@ -21,6 +21,39 @@ class ControlIterative(ControlAlgorithm):
         pseudocode = kwargs.get("pseudocode", "")
         structure = kwargs.get("structure", None)
 
+        # Analizar que tipo de algoritmo es para ver si tiene MEJOR PEOR o PROMEDIO o si no APLICA (implementar Alghoritm pattern de models)
+
+        # if(pattern.best_case) ->
+        # self.analyze_from_parsed_tree(
+        #     algorithm_name=algorithm_name,
+        #     pseudocode=pseudocode,
+        #     parsed_tree=tree,
+        #     structure=structure,
+        #     case = "Mejor"
+        # )
+        # self.analyze_from_parsed_tree(
+        #     algorithm_name=algorithm_name,
+        #     pseudocode=pseudocode,
+        #     parsed_tree=tree,
+        #     structure=structure,
+        #     case = "Promedio"
+        # )
+        # self.analyze_from_parsed_tree(
+        #     algorithm_name=algorithm_name,
+        #     pseudocode=pseudocode,
+        #     parsed_tree=tree,
+        #     structure=structure,
+        #     case = "Peor"
+        # )
+        #else:
+        # self.analyze_from_parsed_tree(
+        #     algorithm_name=algorithm_name,
+        #     pseudocode=pseudocode,
+        #     parsed_tree=tree,
+        #     structure=structure,
+        #     case = "No Aplica"
+        # )
+
         self.tree = tree
 
         self.analyze_from_parsed_tree(
@@ -46,9 +79,6 @@ class ControlIterative(ControlAlgorithm):
         else:
 
             self.algorithm.preprocess_code()
-
-        print("Estructura generada por lark: ", self.algorithm.structure)
-        print("Tokens de lark: ", self.algorithm.tokens)
 
         self.algorithm.detect_loops()
 
