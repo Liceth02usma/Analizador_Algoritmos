@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import input_algorithm
+from app.routers import analysis
+from app.routers import recursive
+from app.routers import iterative  # importamos el módulo
 
 app = FastAPI(title="Analizador de Complejidades")
 
@@ -15,6 +18,8 @@ app.add_middleware(
 
 # Registrar router
 app.include_router(input_algorithm.router)
+app.include_router(iterative.router)
+app.include_router(recursive.router)
 
 @app.get("/")
 def root():
