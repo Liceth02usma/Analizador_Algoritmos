@@ -1,0 +1,2 @@
+class StrategyResolve:
+    pass

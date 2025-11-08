@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional, List, Union
 from lark import Tree as LarkTree
 
 from app.controllers.control_algorithm import ControlAlgorithm
-from app.models.recursive import Recursive
+from backend.app.models.recursive.recursive import Recursive
 from app.models.complexity import Complexity
 from app.models.recurrence_method import RecurrenceMethods
 from app.models.algorithm_pattern import AlgorithmPatterns
@@ -399,6 +399,7 @@ class ControlRecursive(ControlAlgorithm):
                 "reasoning": getattr(self.complexity, "reasoning", ""),
             },
             "recurrence_solutions": solutions,
+            "Tree_diagram": self.recursion_tree
         }
 
     def _generate_summary(self) -> str:

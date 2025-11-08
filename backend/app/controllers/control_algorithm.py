@@ -1,15 +1,8 @@
-"""
-Clase abstracta base para todos los controladores de análisis de algoritmos.
-
-Este módulo define la interfaz común que deben implementar todos los
-controladores de análisis (iterativo, recursivo, etc.).
-"""
-
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from lark import Tree
 
-from app.models.complexity import Complexity
+from ..models.complexity import Complexity
 
 
 class ControlAlgorithm(ABC):
@@ -89,72 +82,3 @@ class ControlAlgorithm(ABC):
             NotImplementedError: Si no se implementa en la clase derivada
         """
         pass
-    
-    def get_complexity_report(self, format: str = "text") -> str:
-        """
-        Obtiene un reporte de complejidad en el formato especificado.
-        
-        Método de plantilla que puede ser sobrescrito por las clases derivadas
-        para proporcionar reportes personalizados.
-        
-        Args:
-            format: Formato del reporte ('text', 'json', 'markdown')
-        
-        Returns:
-            String con el reporte formateado
-        """
-        if not self.complexity:
-            return "No hay análisis de complejidad disponible"
-        
-        if format == "json":
-            import json
-            return json.dumps({
-                'time_complexity': {
-                    'worst_case': self.complexity.time_complexity.worst_case,
-                    'best_case': self.complexity.time_complexity.best_case,
-                    'average_case': self.complexity.time_complexity.average_case
-                },
-                'space_complexity': {
-                    'worst_case': self.complexity.space_complexity.worst_case,
-                    'best_case': self.complexity.space_complexity.best_case
-                }
-            }, indent=2)
-        
-        elif format == "markdown":
-            md = "# Análisis de Complejidad\n\n"
-            md += f"## Complejidad Temporal\n"
-            md += f"- **Peor Caso**: `{self.complexity.time_complexity.worst_case}`\n"
-            md += f"- **Mejor Caso**: `{self.complexity.time_complexity.best_case}`\n"
-            md += f"- **Caso Promedio**: `{self.complexity.time_complexity.average_case}`\n\n"
-            md += f"## Complejidad Espacial\n"
-            md += f"- **Peor Caso**: `{self.complexity.space_complexity.worst_case}`\n"
-            return md
-        
-        else:  # text
-            report = "=" * 50 + "\n"
-            report += "  ANÁLISIS DE COMPLEJIDAD\n"
-            report += "=" * 50 + "\n\n"
-            report += f"Complejidad Temporal (Peor Caso): {self.complexity.time_complexity.worst_case}\n"
-            report += f"Complejidad Temporal (Mejor Caso): {self.complexity.time_complexity.best_case}\n"
-            report += f"Complejidad Espacial: {self.complexity.space_complexity.worst_case}\n"
-            return report
-    
-    def _validate_tree(self, tree: Tree) -> bool:
-        """
-        Valida que el árbol sintáctico sea válido.
-        
-        Args:
-            tree: Árbol sintáctico a validar
-        
-        Returns:
-            True si el árbol es válido, False en caso contrario
-        """
-        return tree is not None and isinstance(tree, Tree)
-    
-    def __str__(self) -> str:
-        """Representación en string del controlador."""
-        return f"{self.__class__.__name__}(complexity={self.complexity})"
-    
-    def __repr__(self) -> str:
-        """Representación técnica del controlador."""
-        return f"{self.__class__.__name__}(tree={self.tree is not None}, complexity={self.complexity is not None})"

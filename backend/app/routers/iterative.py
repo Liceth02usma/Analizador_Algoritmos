@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.controller_iterative import ControlIterative
-from ..models.AnalysisRequest import AnalysisRequest
+from ..schemas.request import AnalysisIterative
 
 
 router = APIRouter(
@@ -9,7 +9,7 @@ router = APIRouter(
 )
 
 @router.post("/Analysis")
-def generate_Analysis(data: AnalysisRequest):
+def generate_Analysis(data: AnalysisIterative):
     return ControlIterative().analyze_from_parsed_tree(
         data.algorithm_name,
         data.pseudocode
