@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.controller_recursive import ControlRecursive
-from ..models.request import AnalysisRecursive
+from ..schemas.request import AnalysisRecursive
 
 
 router = APIRouter(

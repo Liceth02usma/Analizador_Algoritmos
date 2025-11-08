@@ -1,24 +1,37 @@
-from html import parser
 from lark import Lark, Transformer
-import os
 from lark.lexer import Token
+import os
 
-# Ruta de la gramática
+# ---------------------------
+# Configuración general
+# ---------------------------
 GRAMMAR_FILE = os.path.join(os.path.dirname(__file__), "pseudocode.lark")
 
+with open(GRAMMAR_FILE, "r", encoding="utf-8") as f:
+    grammar = f.read()
 
+# Parser global (reutilizable en backend)
+parser = Lark(grammar, start="start", parser="lalr")
+
+
+# ---------------------------
+# Transformador principal
+# ---------------------------
 class TreeToDict(Transformer):
+    """
+    Convierte el árbol sintáctico de Lark en un diccionario JSON estructurado.
+    """
+
+    # Permitir crear un parser nuevo si se desea recargar la gramática
+    def get_parser(self) -> Lark:
+        """Devuelve una nueva instancia del parser (para reload dinámico)."""
+        with open(GRAMMAR_FILE, "r", encoding="utf-8") as f:
+            grammar_text = f.read()
+        return Lark(grammar_text, start="start", parser="lalr")
+
     # ---------------------------
     # Estructuras principales
     # ---------------------------
-
-    def get_parser(self) -> Lark:
-        with open(GRAMMAR_FILE, "r", encoding="utf-8") as f:
-            grammar = f.read()
-
-        parser = Lark(grammar, start="start", parser="lalr")
-        return parser
-
     def assign(self, items):
         return {"type": "assign", "var": str(items[0]), "value": items[1]}
 
@@ -41,8 +54,7 @@ class TreeToDict(Transformer):
 
     def if_stmt(self, items):
         cond = items[0]
-        then_body = []
-        else_body = None
+        then_body, else_body = [], None
         for part in items[1:]:
             if isinstance(part, list):
                 else_body = part
@@ -56,12 +68,25 @@ class TreeToDict(Transformer):
     def else_block(self, items):
         return list(items)
 
-    # ✅ Ahora 'args' es un método explícito que devuelve directamente la lista
+    # ---------------------------
+    # Llamadas y argumentos
+    # ---------------------------
     def args(self, items):
         return list(items)
 
-    # ✅ FIX: simplificar el manejo de args dentro del call
     def call_stmt(self, items):
+        name = str(items[0])
+        args = []
+        for x in items[1:]:
+            if isinstance(x, list):
+                args.extend(x)
+            elif hasattr(x, "data") and x.data == "args":
+                args.extend(x.children)
+            elif not isinstance(x, Token):
+                args.append(x)
+        return {"type": "call", "name": name, "args": args}
+
+    def call_expr(self, items):
         name = str(items[0])
         args = []
         for x in items[1:]:
@@ -77,7 +102,7 @@ class TreeToDict(Transformer):
         return {"type": "return", "value": items[0]}
 
     # ---------------------------
-    # Clases, objetos y procedimientos
+    # Clases, objetos, procedimientos
     # ---------------------------
     def class_def(self, items):
         name = str(items[0])
@@ -89,26 +114,13 @@ class TreeToDict(Transformer):
 
     def procedure_def(self, items):
         name = str(items[0])
-        params = []
-        body = []
+        params, body = [], []
         for item in items[1:]:
             if isinstance(item, list) and not body:
                 params = item
             elif isinstance(item, dict):
                 body.append(item)
         return {"type": "procedure_def", "name": name, "params": params, "body": body}
-    
-    def call_expr(self, items):
-        name = str(items[0])
-        args = []
-        for x in items[1:]:
-            if isinstance(x, list):
-                args.extend(x)
-            elif hasattr(x, "data") and x.data == "args":
-                args.extend(x.children)
-            elif not isinstance(x, Token):
-                args.append(x)
-        return {"type": "call", "name": name, "args": args}
 
     def param_list(self, items):
         return [str(i) for i in items]
@@ -179,10 +191,16 @@ class TreeToDict(Transformer):
     def grouped(self, items):
         return items[0]
 
+    # ---------------------------
+    # Comentarios
+    # ---------------------------
     def comment(self, items):
         return {"type": "comment", "text": str(items[0]).strip()}
 
 
+# ---------------------------
+# Utilidad de impresión
+# ---------------------------
 def pretty_print(obj, indent=0):
     space = "  " * indent
     if isinstance(obj, dict):
@@ -200,6 +218,9 @@ def pretty_print(obj, indent=0):
         print(space + repr(obj))
 
 
+# ---------------------------
+# Prueba local
+# ---------------------------
 if __name__ == "__main__":
     code = """
 busqueda_lineal(A, x, n)
@@ -221,18 +242,14 @@ end
 
 index 🡨 CALL busqueda_lineal(A, 10, n)
 return index
-
-
-
     """
 
     try:
         transformer = TreeToDict()
-        tree = transformer.get_parser().parse(code)
-
+        tree = parser.parse(code)
         result = transformer.transform(tree)
         print("\n=== Árbol resultante ===")
         pretty_print(result)
     except Exception as e:
-        print("Error al parsear:", e)
+        print("❌ Error al parsear:", e)
         raise

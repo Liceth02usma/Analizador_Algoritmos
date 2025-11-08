@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.controller_iterative import ControlIterative
-from ..models.request import AnalysisIterative
+from ..schemas.request import AnalysisIterative
 
 
 router = APIRouter(
