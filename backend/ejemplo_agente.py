@@ -1,5 +1,4 @@
 import os
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -169,13 +168,13 @@ def calculate_tree_levels(array_size: int, branching_factor: int = 2) -> Dict[st
 # ============================================================================
 
 
-class BestCaseVisualizationAgent(AgentBase):
+class BestCaseVisualizationAgent(AgentBase[BestCaseResponse]):
     """
     Agente especializado en analizar el mejor caso de algoritmos y
     generar una representación visual en árbol.
     """
 
-    def _configure(self):
+    def _configure(self) -> None:
         """Configura el agente con sus herramientas, esquemas y prompt del sistema"""
 
         # Configurar herramientas disponibles
@@ -210,15 +209,15 @@ FORMATO DEL ÁRBOL:
 
 Usa las herramientas disponibles para obtener información sobre algoritmos y calcular niveles del árbol."""
 
-    def invoke_agent(
+    def analyze_algorithm(
         self,
         algorithm_name: str,
         array_size: int = 7,
         additional_info: Optional[str] = None,
         thread_id: str = "default_thread",
-    ) -> Dict[str, Any]:
+    ) -> BestCaseResponse:
         """
-        Invoca el agente para analizar un algoritmo y generar su árbol de mejor caso.
+        Analiza un algoritmo y genera su representación en árbol del mejor caso.
 
         Args:
             algorithm_name: Nombre del algoritmo a analizar
@@ -227,19 +226,19 @@ Usa las herramientas disponibles para obtener información sobre algoritmos y ca
             thread_id: ID del hilo de conversación
 
         Returns:
-            Diccionario con la respuesta estructurada del agente
-        """
+            BestCaseResponse con la estructura del árbol y análisis completo
 
+        Raises:
+            ValueError: Si no se puede extraer una respuesta estructurada válida
+        """
         # Preparar el contexto
-        context_data = AlgorithmContext(
+        context = AlgorithmContext(
             algorithm_name=algorithm_name,
             array_size=array_size,
             additional_info=additional_info,
         )
 
-        # Configurar el agente
-        config = {"configurable": {"thread_id": thread_id}}
-
+        # Construir el contenido del mensaje
         content = f"""Analiza el algoritmo '{algorithm_name}' y genera una representación en árbol de su MEJOR CASO.
 
 Requisitos:
@@ -253,32 +252,53 @@ Requisitos:
         if additional_info:
             content += f"\n\nInformación adicional: {additional_info}"
 
-        result = self._invoke_agent(content, config, context_data.model_dump()) # de clase a dict
-
-        return result
-
-    def execute_agent(
-        self,
-        algorithm_name: str,
-        array_size: int = 7,
-        additional_info: Optional[str] = None,
-        thread_id: str = "default_thread",
-    ) -> BestCaseResponse:
-        """
-        Ejecuta el agente y retorna la respuesta estructurada.
-        """
-        result = self.invoke_agent(
-            algorithm_name=algorithm_name,
-            array_size=array_size,
-            additional_info=additional_info,
+        # Invocar el agente usando el método helper de la clase base
+        result = self.invoke_simple(
+            content=content,
             thread_id=thread_id,
+            context=context.model_dump()
         )
 
-        if "structured_response" in result and isinstance(
-            result["structured_response"], BestCaseResponse
-        ):
-            return result["structured_response"]
+        # Extraer y validar la respuesta estructurada
+        response = self.extract_response(result)
+        if response is None:
+            raise ValueError(
+                f"No se pudo obtener una respuesta estructurada válida para el algoritmo '{algorithm_name}'"
+            )
 
+        return response
+
+    def compare_algorithms(
+        self,
+        algorithm_names: List[str],
+        array_size: int = 7,
+        thread_id: str = "comparison_thread"
+    ) -> List[BestCaseResponse]:
+        """
+        Compara múltiples algoritmos analizando sus mejores casos.
+
+        Args:
+            algorithm_names: Lista de nombres de algoritmos
+            array_size: Tamaño del arreglo para todos los ejemplos
+            thread_id: ID del hilo de conversación
+
+        Returns:
+            Lista de BestCaseResponse, una por cada algoritmo
+        """
+        results = []
+        for algo_name in algorithm_names:
+            try:
+                response = self.analyze_algorithm(
+                    algorithm_name=algo_name,
+                    array_size=array_size,
+                    thread_id=f"{thread_id}_{algo_name}"
+                )
+                results.append(response)
+            except ValueError as e:
+                print(f"Error analizando {algo_name}: {e}")
+                continue
+
+        return results
 
 
 # ============================================================================
@@ -294,8 +314,10 @@ if __name__ == "__main__":
     print("EJEMPLO 1: QUICKSORT")
     print("=" * 80)
 
-    response = agent.execute_agent(
-        algorithm_name="quicksort", array_size=7, thread_id="quicksort_example"
+    response = agent.analyze_algorithm(
+        algorithm_name="quicksort",
+        array_size=7,
+        thread_id="quicksort_example"
     )
 
     print(f"\nAlgoritmo: {response.algorithm_name}")
@@ -308,7 +330,8 @@ if __name__ == "__main__":
 
     for node in response.tree_structure[:5]:
         print(
-            f"  Nivel {node.level}, Pos {node.position}: Valor={node.value}, Hijos={node.children_indices}"
+            f"  Nivel {node.level}, Pos {node.position}: "
+            f"Valor={node.value}, Hijos={node.children_indices}"
         )
 
     # Ejemplo 2: Binary Search
@@ -316,18 +339,41 @@ if __name__ == "__main__":
     print("EJEMPLO 2: BINARY SEARCH")
     print("=" * 80)
 
-    response2 = agent.execute_agent(
+    response2 = agent.analyze_algorithm(
         algorithm_name="binary_search",
         array_size=15,
         additional_info="Buscar el elemento 8 en un arreglo ordenado",
-        thread_id="binary_search_example",
+        thread_id="binary_search_example"
     )
 
     print(f"\nAlgoritmo: {response2.algorithm_name}")
     print(f"Mejor caso: {response2.best_case_description}")
     print(f"Complejidad temporal: {response2.time_complexity}")
     print(f"\nExplicación:\n{response2.explanation}")
+
     for node in response2.tree_structure[:5]:
         print(
-            f"  Nivel {node.level}, Pos {node.position}: Valor={node.value}, Hijos={node.children_indices}"
+            f"  Nivel {node.level}, Pos {node.position}: "
+            f"Valor={node.value}, Hijos={node.children_indices}"
         )
+
+    # Ejemplo 3: Comparación de múltiples algoritmos
+    print("\n" + "=" * 80)
+    print("EJEMPLO 3: COMPARACIÓN DE ALGORITMOS")
+    print("=" * 80)
+
+    algorithms_to_compare = ["quicksort", "mergesort", "heapsort"]
+    comparison_results = agent.compare_algorithms(
+        algorithm_names=algorithms_to_compare,
+        array_size=7,
+        thread_id="comparison_example"
+    )
+
+    print(f"\nComparación de {len(comparison_results)} algoritmos:\n")
+    for result in comparison_results:
+        print(f"• {result.algorithm_name}:")
+        print(f"  - Mejor caso: {result.time_complexity}")
+        print(f"  - Nodos en árbol: {len(result.tree_structure)}")
+        print(f"  - {result.best_case_description[:80]}...")
+        print()
+
