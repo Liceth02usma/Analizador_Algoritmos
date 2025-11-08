@@ -76,17 +76,3 @@ if results.get('optimizations'):
     print(f"\n💡 Sugerencias de optimización:")
     for opt in results['optimizations']:
         print(f"  {opt}")
-
-print(f"\n📈 Diagrama de flujo (Mermaid):")
-print(results['diagrams']['flowchart_mermaid'])
-
-print(f"\n📝 Resumen:")
-print(results['summary'])
-
-# Imprimir resumen de ciclos desde el modelo si está disponible
-try:
-    loop_summary = controller.algorithm.get_loop_summary()
-    if loop_summary:
-        print('\n' + loop_summary)
-except Exception:
-    pass

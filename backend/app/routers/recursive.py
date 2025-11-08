@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..controllers.controller_recursive import ControlRecursive
-from ..models.AnalysisRequestRecursive import AnalysisRequestRecursive
+from ..models.request import AnalysisRecursive
 
 
 router = APIRouter(
@@ -9,7 +9,7 @@ router = APIRouter(
 )
 
 @router.post("/Analysis")
-def generate_Analysis(data: AnalysisRequestRecursive):
+def generate_Analysis(data: AnalysisRecursive):
     return ControlRecursive().analyze_from_parsed_tree(
         data.algorithm_name,
         data.pseudocode

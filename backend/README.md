@@ -175,7 +175,7 @@ flake8 app/ tests/
 Para actualizar las dependencias:
 
 ```bash
-pip freeze > requirements.txt
+  pip freeze > requirements.txt
 ```
 
 ---
