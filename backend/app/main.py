@@ -20,6 +20,7 @@ app.add_middleware(
 app.include_router(input_algorithm.router)
 app.include_router(iterative.router)
 app.include_router(recursive.router)
+app.include_router(input_algorithm.router)
 
 @app.get("/")
 def root():

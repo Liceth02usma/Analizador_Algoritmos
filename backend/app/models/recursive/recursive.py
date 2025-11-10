@@ -1,8 +1,8 @@
 from typing import Optional, List, Dict, Any
 from app.models.algorithm import Algorithm
 from app.models.complexity import Complexity
-from app.models.tree import Tree
-from app.models.recurrence_method import RecurrenceMethods
+from app.models.recursive.tree import Tree
+from app.models.recursive.recurrence_method import RecurrenceMethods
 from app.models.algorithm_pattern import AlgorithmPatterns
 
 

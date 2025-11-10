@@ -1,4 +1,4 @@
-from lark import Lark, Transformer
+from lark import Lark, Transformer, UnexpectedInput
 from lark.lexer import Token
 import os
 
@@ -13,6 +13,14 @@ with open(GRAMMAR_FILE, "r", encoding="utf-8") as f:
 # Parser global (reutilizable en backend)
 parser = Lark(grammar, start="start", parser="lalr")
 
+def parse_pseudocode(pseudocode: str):
+    """Parsea pseudocódigo usando Lark y devuelve un árbol transformado"""
+    try:
+        tree = parser.parse(pseudocode)
+        transformer = TreeToDict()
+        return transformer.transform(tree)
+    except UnexpectedInput as e:
+        return {"error": f"Error al parsear el pseudocódigo: {str(e)}"}
 
 # ---------------------------
 # Transformador principal

@@ -1,23 +1,32 @@
+// src/pages/HomePage.jsx
 import React, { useState } from "react";
 import InputAlgorithm from "../components/InputAlgorithm";
 import OutputSolution from "../components/OutputSolution";
+import ResultAnalysis from "../components/ResultAnalysis";
 
 export default function HomePage() {
   const [pseudocode, setPseudocode] = useState("");
   const [output, setOutput] = useState("");
+  const [analysis, setAnalysis] = useState(null);
 
   const handleRun = async () => {
     try {
-      const response = await fetch("http://localhost:8000/parse", {
+      const response = await fetch("http://localhost:8000/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pseudocode }),
       });
       const data = await response.json();
+
+      // Mostrar AST en la parte izquierda
       setOutput(JSON.stringify(data.ast, null, 2));
+
+      // Mostrar resultado del agente en el centro
+      setAnalysis(data.algorithm_type);
     } catch (error) {
       console.error("Error al analizar:", error);
       setOutput("❌ Error al analizar el pseudocódigo.");
+      setAnalysis({ error: "Error al conectarse con el backend" });
     }
   };
 
@@ -28,9 +37,6 @@ export default function HomePage() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           🔍 Analizador de Complejidad Algorítmica
         </h1>
-        <button className="bg-black px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-          Mostrar análisis línea a línea
-        </button>
       </header>
 
       {/* BODY GRID */}
@@ -51,7 +57,7 @@ export default function HomePage() {
           </button>
 
           <h2 className="bg-black text-white text-center py-1 rounded font-semibold">
-            OUTPUT
+            OUTPUT (AST)
           </h2>
           <OutputSolution result={output} />
         </aside>
@@ -62,22 +68,18 @@ export default function HomePage() {
             📊 Análisis paso a paso
           </h2>
           <div className="bg-gray-800 rounded-xl shadow-inner p-4 flex-1 overflow-y-auto">
-            <p className="text-gray-400 italic">
-              Aquí se mostrará el análisis línea por línea...
-            </p>
+            <ResultAnalysis analysis={analysis} />
           </div>
         </main>
 
         {/* RIGHT ACTION BAR */}
         <aside className="w-1/6 bg-gray-900 border-l border-gray-700 flex flex-col items-center justify-center gap-4 p-4">
-          {[1, 2, 3, 4].map((i) => (
-            <button
-              key={i}
-              className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-full shadow-md text-sm w-40 text-center"
-            >
-              ⚙️ Comprobar Algoritmo
-            </button>
-          ))}
+          <button
+            onClick={handleRun}
+            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-full shadow-md text-sm w-40 text-center"
+          >
+            ⚙️ Analizar Tipo
+          </button>
         </aside>
       </div>
     </div>
