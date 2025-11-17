@@ -1,6 +1,10 @@
 import os
 from dotenv import load_dotenv
 
+import sys
+sys.path.append(os.getenv("PYTHONPATH", "backend"))
+
+
 load_dotenv()
 
 from app.external_services.Agentes.Agent import AgentBase
@@ -15,7 +19,7 @@ from langchain_core.tools import tool
 class AlgorithmClassifierInput(BaseModel):
     """Entrada del agente de clasificación funcional y estructural."""
     pseudocode: str = Field(description="Pseudocódigo completo del algoritmo")
-    ast: Dict[str, Any] = Field(description="Árbol sintáctico abstracto (AST) generado por el parser")
+    ast: Any = Field(description="Árbol sintáctico abstracto (AST) generado por el parser (puede ser un objeto Tree o un dict)")
     algorithm_type: str = Field(description="Tipo general detectado: recursivo, iterativo o programación dinámica")
     algorithm_name: Optional[str] = Field(default=None, description="Nombre conocido del algoritmo (opcional)")
     additional_info: Optional[str] = Field(default=None, description="Contexto adicional del análisis")
@@ -39,6 +43,13 @@ def extract_keywords_from_ast(ast: Dict[str, Any]) -> Dict[str, int]:
     """
     Extrae indicadores del AST que pueden ayudar a clasificar el tipo de algoritmo.
     """
+    if not isinstance(ast, dict):
+        try:
+            from app.parsers.parser import TreeToDict
+            transformer = TreeToDict()
+            ast = transformer.transform(ast)
+        except Exception:
+            ast = {}
     import json
     ast_str = json.dumps(ast).lower()
     keywords = {
@@ -63,6 +74,13 @@ def summarize_ast_structure(ast: Dict[str, Any]) -> Dict[str, Any]:
     """
     Resume la estructura del AST para dar contexto al agente (número de bucles, condicionales, recursiones, etc.)
     """
+    if not isinstance(ast, dict):
+        try:
+            from app.parsers.parser import TreeToDict
+            transformer = TreeToDict()
+            ast = transformer.transform(ast)
+        except Exception:
+            ast = {}
     from collections import Counter
     def traverse(node, counter):
         if isinstance(node, dict):

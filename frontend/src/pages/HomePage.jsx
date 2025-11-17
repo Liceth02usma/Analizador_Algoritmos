@@ -3,11 +3,15 @@ import React, { useState } from "react";
 import InputAlgorithm from "../components/InputAlgorithm";
 import OutputSolution from "../components/OutputSolution";
 import ResultAnalysis from "../components/ResultAnalysis";
+import ResultClassifier from "../components/ResultClassifier";
+
 
 export default function HomePage() {
   const [pseudocode, setPseudocode] = useState("");
   const [output, setOutput] = useState("");
   const [analysis, setAnalysis] = useState(null);
+  const [classification, setClassification] = useState(null);
+
 
   const handleRun = async () => {
     try {
@@ -23,6 +27,11 @@ export default function HomePage() {
 
       // Mostrar resultado del agente en el centro
       setAnalysis(data.algorithm_type);
+
+        // 🔹 Mostrar resultado del segundo agente
+      setClassification(data.algorithm_classification);
+
+      console.log("📘 Respuesta completa:", data);
     } catch (error) {
       console.error("Error al analizar:", error);
       setOutput("❌ Error al analizar el pseudocódigo.");
@@ -68,7 +77,9 @@ export default function HomePage() {
             📊 Análisis paso a paso
           </h2>
           <div className="bg-gray-800 rounded-xl shadow-inner p-4 flex-1 overflow-y-auto">
-            <ResultAnalysis analysis={analysis} />
+           { /*<ResultAnalysis analysis={analysis} /> */}
+            <ResultClassifier analysis={analysis} classification={classification} />
+
           </div>
         </main>
 
