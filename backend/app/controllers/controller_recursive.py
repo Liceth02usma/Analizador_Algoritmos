@@ -9,11 +9,11 @@ from typing import Dict, Any, Optional, List, Union
 from lark import Tree as LarkTree
 
 from app.controllers.control_algorithm import ControlAlgorithm
-from backend.app.models.recursive.recursive import Recursive
+from app.models.recursive.recursive import Recursive
 from app.models.complexity import Complexity
-from app.models.recurrence_method import RecurrenceMethods
+from app.models.recursive.recurrence_method import RecurrenceMethods
 from app.models.algorithm_pattern import AlgorithmPatterns
-from app.models.tree import Tree as RecTree
+from app.models.recursive.tree import Tree as RecTree
 from app.parsers.parser import TreeToDict
 
 
