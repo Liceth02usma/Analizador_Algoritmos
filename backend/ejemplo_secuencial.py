@@ -18,7 +18,8 @@ print("=" * 60)
 controller = ControlIterative()
 
 results = controller.analyze_from_parsed_tree(
-    "BúsquedaSecuencial", pseudocodigo_busqueda
+    "BúsquedaSecuencial",
+    pseudocodigo_busqueda
 )
 
 print("\n📊 Resultados del análisis:\n")
@@ -30,17 +31,13 @@ print(f"  - Ciclos detectados: {results['analysis']['loops_detected']}")
 print(f"  - Niveles de anidamiento: {results['analysis']['nested_levels']}")
 
 # Detalles por ciclo (si los hay)
-loop_details = results["analysis"].get("loop_details", [])
+loop_details = results['analysis'].get('loop_details', [])
 if loop_details:
     print("\n🔎 Detalle de cada ciclo:")
     for i, loop in enumerate(loop_details, 1):
-        print(
-            f"  -> Ciclo #{i}: type={loop.get('type')}, level={loop.get('nesting_level')}"
-        )
-        if loop.get("type") == "for":
-            print(
-                f"     variable={loop.get('variable')}, from={loop.get('from')}, to={loop.get('to')}, pattern={loop.get('range_pattern')}"
-            )
+        print(f"  -> Ciclo #{i}: type={loop.get('type')}, level={loop.get('nesting_level')}")
+        if loop.get('type') == 'for':
+            print(f"     variable={loop.get('variable')}, from={loop.get('from')}, to={loop.get('to')}, pattern={loop.get('range_pattern')}")
         else:
             print(f"     condition={loop.get('condition')}")
         print(f"     operaciones en el cuerpo: {loop.get('operations_count')}")
@@ -52,14 +49,14 @@ print(f"  - Mejor caso: {results['complexity']['time']['best_case']}")
 print(f"  - Espacio: {results['complexity']['space']}")
 
 # Mostrar razonamiento completo de la estimación
-print("\n🧾 Razonamiento de la complejidad:")
-reasoning = results["complexity"].get("reasoning", "")
+print('\n🧾 Razonamiento de la complejidad:')
+reasoning = results['complexity'].get('reasoning', '')
 if reasoning:
     print(reasoning)
 else:
     # Fallback: pedir al controlador que exporte el reporte completo
     try:
-        print(controller.get_complexity_report("markdown"))
+        print(controller.get_complexity_report('markdown'))
     except Exception:
         pass
 
@@ -68,14 +65,14 @@ print(f"  - Nombre: {results['pattern']['name']}")
 print(f"  - Descripción: {results['pattern']['description']}")
 print(f"  - Complejidad esperada: {results['pattern']['complexity_hint']}")
 
-if results["pattern"] and results["pattern"].get("examples"):
-    examples = results["pattern"].get("examples", [])
+if results['pattern'] and results['pattern'].get('examples'):
+    examples = results['pattern'].get('examples', [])
     if examples:
-        print("\n  Ejemplos:")
+        print('\n  Ejemplos:')
         for e in examples:
             print(f"    - {e}")
 
-if results.get("optimizations"):
+if results.get('optimizations'):
     print(f"\n💡 Sugerencias de optimización:")
-    for opt in results["optimizations"]:
+    for opt in results['optimizations']:
         print(f"  {opt}")

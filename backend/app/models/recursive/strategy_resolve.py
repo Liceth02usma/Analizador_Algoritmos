@@ -49,3 +49,5 @@ class RecurrenceStrategy(ABC):
             ValueError: Si la recurrencia no puede ser resuelta por esta estrategia
         """
         raise NotImplementedError()
+    
+

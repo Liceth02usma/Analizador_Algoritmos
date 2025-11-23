@@ -10,7 +10,6 @@ from .recurrence_method import StrategyType
 # 1. Tipos y Schemas
 # **********************************************
 
-
 class ClassificationOutput(BaseModel):
     """Resultado de la clasificación de la ecuación."""
 
@@ -31,7 +30,6 @@ class ClassificationOutput(BaseModel):
 # **********************************************
 # 2. Clasificador por Reglas (Capa Rápida)
 # **********************************************
-
 
 class RuleBasedClassifier:
     """
@@ -122,7 +120,7 @@ class RuleBasedClassifier:
         # ==================================================
         if pattern["is_trivial"] or not pattern["has_any_recursive_call"]:
             # Verificar si es una constante
-            if re.match(r"^t\(n\)\s*=\s*\d+$", eq_norm):
+            if re.match(r'^t\(n\)\s*=\s*\d+$', eq_norm):
                 return ClassificationOutput(
                     method=StrategyType.NONE,
                     confidence=1.0,
@@ -133,12 +131,12 @@ class RuleBasedClassifier:
                     ),
                     equation_normalized=eq_norm,
                 )
-
+            
             # Verificar si es una función polinomial simple
-            if re.search(r"t\(n\)\s*=\s*n(\*\*\d+)?$", eq_norm):
-                degree_match = re.search(r"n\*\*(\d+)", eq_norm)
+            if re.search(r't\(n\)\s*=\s*n(\*\*\d+)?$', eq_norm):
+                degree_match = re.search(r'n\*\*(\d+)', eq_norm)
                 degree = int(degree_match.group(1)) if degree_match else 1
-
+                
                 return ClassificationOutput(
                     method=StrategyType.NONE,
                     confidence=1.0,
@@ -149,7 +147,7 @@ class RuleBasedClassifier:
                     ),
                     equation_normalized=eq_norm,
                 )
-
+            
             # Otros casos sin recursión
             if not pattern["has_any_recursive_call"]:
                 return ClassificationOutput(
@@ -192,71 +190,36 @@ class RuleBasedClassifier:
                 )
 
         # ==================================================
-        # REGLA 2: Sustitución Inteligente
-        # Forma: T(n) = T(n-k) + f(n) con UN solo término recursivo
+        # REGLA 2: Ecuación Característica - MEJORADA
+        # Detecta: T(n-k), sumatorias con T(i)
         # ==================================================
-        if (
-            pattern["has_subtraction"]
-            and not pattern["has_division"]
-            and pattern["num_subtraction_calls"] == 1  # Solo UN término recursivo
-            and not pattern["has_multiple_recursive_terms"]
-        ):
-            k = pattern["subtraction_values"][0] if pattern["subtraction_values"] else 1
-            return ClassificationOutput(
-                method=StrategyType.INTELLIGENT_SUBSTITUTION,
-                confidence=0.90,
-                reasoning=(
-                    f"Recurrencia lineal con UN solo término recursivo T(n-{k}). "
-                    f"Trabajo adicional: {pattern['work_function'] or 'constante'}. "
-                    "La sustitución inteligente permite expandir iterativamente "
-                    "la recurrencia para identificar el patrón general."
-                ),
-                equation_normalized=eq_norm,
-            )
-
-        # ==================================================
-        # REGLA 3: Ecuación Característica - MEJORADA
-        # Detecta: Múltiples términos T(n-k), sumatorias con T(i)
-        # ==================================================
-
+        
         # Detectar patrones T(n-k) directamente
-        linear_pattern = re.search(r"t\s*\(\s*n\s*-\s*\d+\s*\)", eq_norm)
-
+        linear_pattern = re.search(r't\s*\(\s*n\s*-\s*\d+\s*\)', eq_norm)
+        
         # Detectar sumatorias con recurrencias lineales
-        has_summation = any(symbol in equation for symbol in ["Σ", "∑", "sum", "σ"])
-        has_ti_pattern = "t(i)" in eq_norm and (
-            "t(i-1)" in eq_norm or "t(i-k)" in eq_norm
-        )
-
+        has_summation = any(symbol in equation for symbol in ['Σ', '∑', 'sum', 'σ'])
+        has_ti_pattern = 't(i)' in eq_norm and ('t(i-1)' in eq_norm or 't(i-k)' in eq_norm)
+        
         if linear_pattern or (has_summation and has_ti_pattern):
             reasoning_parts = []
-
+            
             if has_summation and has_ti_pattern:
-                reasoning_parts.append(
-                    "Sumatoria con recurrencia lineal T(i) = T(i-1) + c detectada"
-                )
+                reasoning_parts.append("Sumatoria con recurrencia lineal T(i) = T(i-1) + c detectada")
             elif pattern["has_multiple_recursive_terms"]:
                 reasoning_parts.append(
                     f"Recurrencia lineal de orden superior. "
                     f"Términos: {', '.join([f'T(n-{v})' for v in pattern['subtraction_values']])}"
                 )
             else:
-                k = (
-                    pattern["subtraction_values"][0]
-                    if pattern["subtraction_values"]
-                    else 1
-                )
-                reasoning_parts.append(
-                    f"Recurrencia lineal simple T(n) = cT(n-{k}) + f(n)"
-                )
-
-            if pattern["work_function"]:
+                k = pattern["subtraction_values"][0] if pattern["subtraction_values"] else 1
+                reasoning_parts.append(f"Recurrencia lineal simple T(n) = cT(n-{k}) + f(n)")
+            
+            if pattern['work_function']:
                 reasoning_parts.append(f"Trabajo adicional: {pattern['work_function']}")
-
-            reasoning_parts.append(
-                "La ecuación característica es ideal para resolver este tipo de recurrencia."
-            )
-
+            
+            reasoning_parts.append("La ecuación característica es ideal para resolver este tipo de recurrencia.")
+            
             return ClassificationOutput(
                 method=StrategyType.EQUATION_CHARACTERISTICS,
                 confidence=0.90,
@@ -265,7 +228,7 @@ class RuleBasedClassifier:
             )
 
         # ==================================================
-        # REGLA 4: Método del Árbol - Casos Complejos
+        # REGLA 3: Método del Árbol - Casos Complejos
         # ==================================================
         if pattern["has_exponential"]:
             return ClassificationOutput(
@@ -309,7 +272,6 @@ class RuleBasedClassifier:
 # 3. Agente de Clasificación (Capa Inteligente)
 # **********************************************
 
-
 class ClassificationAgent(AgentBase[ClassificationOutput]):
     """
     Agente IA para clasificar ecuaciones complejas o ambiguas.
@@ -325,13 +287,13 @@ class ClassificationAgent(AgentBase[ClassificationOutput]):
     def _configure(self) -> None:
         """Configura el agente según la clase base."""
         self.response_format = ClassificationOutput
-        self.tools = []  # <-- IMPORTANTÍSIMO
+        self.tools = []         # <-- IMPORTANTÍSIMO
         self.tool_choice = "none"  # <-- Evita tool_calls del modelo
         self.context_schema = None
 
         self.SYSTEM_PROMPT = """Eres un experto en análisis de algoritmos especializado en clasificar ecuaciones de recurrencia.
 
-**TU TAREA:** Clasificar la ecuación en UNO de estos 5 métodos de resolución:
+**TU TAREA:** Clasificar la ecuación en UNO de estos 4 métodos de resolución:
 
 ---
 **0. NONE (Sin Recursión)**
@@ -351,71 +313,38 @@ class ClassificationAgent(AgentBase[ClassificationOutput]):
 - **Ejemplos:**
   * T(n) = 2T(n/2) + n → Merge Sort
   * T(n) = T(n/2) + 1 → Búsqueda binaria
-- **Ventaja:** Solución directa usando fórmulas del teorema
 
 ---
 **2. EQUATION_CHARACTERISTICS (Ecuación Característica)**
 - **Forma:** T(n) = c₁T(n-k₁) + c₂T(n-k₂) + ... + g(n)
-- **Características:** Coeficientes constantes, resta en argumentos, múltiples términos recursivos
+- **Características:** Coeficientes constantes, resta en argumentos
 - **Ejemplos:**
-  * T(n) = T(n-1) + T(n-2) → Fibonacci (dos términos)
+  * T(n) = T(n-1) + T(n-2) → Fibonacci
   * T(n) = 2T(n-1) + 1 → Torres de Hanoi
-  * T(n) = 3T(n-1) - 2T(n-2) → Recurrencia lineal de orden 2
-- **Ventaja:** Maneja múltiples términos recursivos con coeficientes constantes
 
 ---
-**3. INTELLIGENT_SUBSTITUTION (Sustitución Inteligente)**
-- **Forma:** T(n) = T(n-k) + f(n) o T(n) = aT(n/b) + f(n)
-- **Características:** UN solo término recursivo, expansión iterativa
-- **Ejemplos:**
-  * T(n) = T(n-1) + n → Sumatoria aritmética
-  * T(n) = T(n-1) + 1 → Contador simple
-  * T(n) = 2T(n/2) + 1 → División simple
-  * T(n) = T(n/2) + n → Reducción por mitad
-- **Ventaja:** Muestra el proceso de expansión paso a paso
-- **Cuándo usar:** Cuando hay UN solo término recursivo y se quiere ver la expansión explícita
-
----
-**4. TREE_METHOD (Método del Árbol)**
+**3. TREE_METHOD (Método del Árbol)**
 - **Casos:** Recurrencias complejas que no encajan en los anteriores
 - **Incluye:**
   * Múltiples ramas de tamaño diferente
   * Exponenciales, logaritmos complejos
   * Recurrencias no estándar
-  * Cuando se requiere visualización del árbol de recursión
-
----
-**CRITERIOS DE DECISIÓN:**
-
-1. **NONE:** Sin llamadas recursivas T(...)
-
-2. **MASTER_THEOREM vs INTELLIGENT_SUBSTITUTION:**
-   - Si T(n) = aT(n/b) + f(n) con parámetros claros → MASTER_THEOREM (más directo)
-   - Si T(n) = aT(n/b) + f(n) pero se busca expansión detallada → INTELLIGENT_SUBSTITUTION
-
-3. **EQUATION_CHARACTERISTICS vs INTELLIGENT_SUBSTITUTION:**
-   - Si hay MÚLTIPLES términos recursivos T(n-k₁) + T(n-k₂) → EQUATION_CHARACTERISTICS
-   - Si hay UN SOLO término recursivo T(n-k) → INTELLIGENT_SUBSTITUTION
-
-4. **TREE_METHOD:** Cuando ninguno de los anteriores aplica claramente
 
 ---
 **INSTRUCCIONES:**
 1. **PRIMERO** verifica si hay llamadas recursivas T(...)
    - Si NO hay: usa NONE
    - Si hay: continúa con el análisis
-2. Cuenta los términos recursivos (¿uno o varios?)
-3. Identifica el tipo de reducción (división, resta, mixto)
-4. Elige el método MÁS APROPIADO según los criterios
-5. Asigna confidence (0.6-1.0)
-6. Explica brevemente tu decisión
+2. Identifica parámetros clave (a, b, tipo de división/resta)
+3. Elige el método MÁS APROPIADO
+4. Asigna confidence (0.6-1.0)
+5. Explica brevemente tu decisión
 
-**EJEMPLOS:**
-- "T(n) = 1" → NONE
-- "T(n) = 2T(n/2) + n" → MASTER_THEOREM (división, parámetros claros)
-- "T(n) = T(n-1) + n" → INTELLIGENT_SUBSTITUTION (un término, expansión útil)
-- "T(n) = T(n-1) + T(n-2)" → EQUATION_CHARACTERISTICS (dos términos)
-- "T(n) = T(n-1) + 1" → INTELLIGENT_SUBSTITUTION (un término, simple)
+**EJEMPLOS DE NONE:**
+- "T(n) = 1" → NONE (constante)
+- "T(n) = n" → NONE (lineal directo)
+- "T(n) = 5" → NONE (constante)
+- "T(n) = n²" → NONE (cuadrático directo)
 
 **RESPONDE con el objeto ClassificationOutput.**"""
 
@@ -441,9 +370,7 @@ Responde con el objeto ClassificationOutput."""
                 raise ValueError("El agente no retornó una clasificación válida")
 
             if self.enable_verbose:
-                print(
-                    f"[ClassificationAgent] ✅ Método: {output.method.value} (conf: {output.confidence:.2f})"
-                )
+                print(f"[ClassificationAgent] ✅ Método: {output.method.value} (conf: {output.confidence:.2f})")
 
             return output
 
@@ -463,11 +390,10 @@ Responde con el objeto ClassificationOutput."""
 # 4. Clase Principal - Clasificador Híbrido
 # **********************************************
 
-
 class ClassificationEquation:
     """
     Clasificador híbrido de ecuaciones de recurrencia.
-
+    
     Incluye detección de casos triviales (NONE) sin recursión.
     """
 
@@ -493,7 +419,7 @@ class ClassificationEquation:
         """
         if self.enable_verbose:
             print(f"\n{'='*70}")
-            print(f"[ClassificationEquation]  Clasificando ecuación")
+            print(f"[ClassificationEquation] 📊 Clasificando ecuación")
             print(f"{'='*70}")
             print(f"Ecuación: {equation}")
 
@@ -505,9 +431,7 @@ class ClassificationEquation:
 
         if rule_result and rule_result.confidence >= 0.80:
             if self.enable_verbose:
-                print(
-                    f" Clasificado por reglas (confianza: {rule_result.confidence:.2f})"
-                )
+                print(f"✅ Clasificado por reglas (confianza: {rule_result.confidence:.2f})")
                 print(f"   Método: {rule_result.method.value}")
             return rule_result
 
@@ -519,9 +443,7 @@ class ClassificationEquation:
             agent_result = self.agent.classify(equation)
 
             if self.enable_verbose:
-                print(
-                    f" Clasificado por agente (confianza: {agent_result.confidence:.2f})"
-                )
+                print(f"✅ Clasificado por agente (confianza: {agent_result.confidence:.2f})")
 
             return agent_result
 
@@ -540,7 +462,7 @@ class ClassificationEquation:
         )
 
         if self.enable_verbose:
-            print(f" Clasificación por defecto: {fallback.method.value}")
+            print(f"⚠️ Clasificación por defecto: {fallback.method.value}")
 
         return fallback
 
@@ -568,9 +490,8 @@ class ClassificationEquation:
 # 5. Función de Conveniencia
 # **********************************************
 
-
 def classify_recurrence(
-    equation, use_agent: bool = True, verbose: bool = False, type="C"
+    equation, use_agent: bool = True, verbose: bool = False, type = "C"
 ) -> ClassificationOutput:
     """
     Función de conveniencia para clasificar una ecuación.
@@ -586,10 +507,10 @@ def classify_recurrence(
     Ejemplos:
         >>> classify_recurrence("T(n) = 2T(n/2) + n")
         ClassificationOutput(method=StrategyType.MASTER_THEOREM, ...)
-
+        
         >>> classify_recurrence("T(n) = 1")
         ClassificationOutput(method=StrategyType.NONE, ...)
-
+        
         >>> classify_recurrence("T(n) = n")
         ClassificationOutput(method=StrategyType.NONE, ...)
     """

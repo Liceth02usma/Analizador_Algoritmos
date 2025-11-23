@@ -43,6 +43,7 @@ def main():
     print(pseudocodigo)
     print()
 
+
     results = controller.analyze_from_parsed_tree("No se", pseudocodigo)
 
     # Mostrar resultados
@@ -52,7 +53,6 @@ def main():
 
     print(results)
     print(results.to_backend())
-
 
 if __name__ == "__main__":
     main()

@@ -83,10 +83,12 @@ class ControlRecursive(ControlAlgorithm):
     ) -> Dict[str, Any]:
 
         # 1. Crear instancia del modelo Recursive
-        self.algorithm = Recursive(algorithm_name, pseudocode, True)
-
+        self.algorithm = Recursive(algorithm_name, pseudocode, False)
+        
         # 2. Parsear si es necesario
         self.algorithm.preprocess_code()
+
+
 
         # 4. Extraer relación de recurrencia
         # 5. Detectar casos base y llamadas recursivas
@@ -95,6 +97,7 @@ class ControlRecursive(ControlAlgorithm):
         result = self.get_recurrence_solver()
         # 10. Exportar resultados completos
         return result
+    
 
     def get_recurrence_solver(self) -> None:
         """
@@ -103,6 +106,7 @@ class ControlRecursive(ControlAlgorithm):
         """
         if self.algorithm:
             return self.algorithm.get_analysis_recurrence()
+
 
     def detect_base_cases(self) -> None:
         """
@@ -119,6 +123,8 @@ class ControlRecursive(ControlAlgorithm):
             self.base_cases = len(base_cases)
             self.base_case_details = base_cases
 
+
+
     def export_results(self) -> Dict[str, Any]:
         """
         Exporta todos los resultados del análisis.
@@ -130,17 +136,17 @@ class ControlRecursive(ControlAlgorithm):
             Dict completo con todos los resultados
         """
         pass
-
+    
     def calculate_complexity(self):
         """
         Calcula la complejidad del algoritmo analizado.
-
+        
         Debe implementar la lógica específica para calcular las complejidades
         temporal y espacial según el tipo de algoritmo.
-
+        
         Returns:
             Complexity: Objeto con análisis de complejidad completo
-
+        
         Raises:
             NotImplementedError: Si no se implementa en la clase derivada
         """

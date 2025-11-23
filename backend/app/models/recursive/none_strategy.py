@@ -201,12 +201,8 @@ Regla: En Big-O, solo importa el término de crecimiento más rápido.
 - Eliminar términos de menor orden: n² + n → n²
 - Mantener la base en exponenciales y logaritmos cuando sea relevante
 
-**PASO 4: EXPRESAR FORMA CERRADA Y COMPLEJIDAD**
-Primero expresar T(n) como ecuación exacta, luego determinar la complejidad Big-O basándose en el término dominante.
-
-Ejemplo: T(n) = 3n + 10
-  → Forma directa: T(n) = 3n + 10
-  → Complejidad: O(n)
+**PASO 4: DETERMINAR COMPLEJIDAD BIG-O**
+Expresar el resultado en notación O(...) basándose en el término dominante.
 
 ---
 **REGLAS DE DOMINANCIA (De menor a mayor):**
@@ -218,35 +214,30 @@ O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(n³) < O(2^n) < O(n!)
 🔹 **Ejemplo 1: T(n) = 5**
 - Tipo: Constante
 - Término dominante: 5 (constante)
-- Forma cerrada: T(n) = 5
 - Complejidad: O(1)
 - Explicación: No depende de n, por lo tanto es tiempo constante.
 
 🔹 **Ejemplo 2: T(n) = 3n + 10**
 - Tipo: Lineal
 - Término dominante: 3n
-- Forma cerrada: T(n) = 3n + 10
 - Complejidad: O(n)
 - Explicación: El término 3n domina sobre la constante 10. Las constantes se eliminan en Big-O.
 
 🔹 **Ejemplo 3: T(n) = n² + 5n + 3**
 - Tipo: Cuadrática
 - Término dominante: n²
-- Forma cerrada: T(n) = n² + 5n + 3
 - Complejidad: O(n²)
 - Explicación: n² crece más rápido que 5n y 3, por lo tanto domina.
 
 🔹 **Ejemplo 4: T(n) = 2n log n + n**
 - Tipo: Logarítmico-Lineal
 - Término dominante: n log n
-- Forma cerrada: T(n) = 2n log n + n
 - Complejidad: O(n log n)
 - Explicación: n log n domina sobre n lineal.
 
 🔹 **Ejemplo 5: T(n) = 2^n + n³**
 - Tipo: Exponencial
 - Término dominante: 2^n
-- Forma cerrada: T(n) = 2^n + n³
 - Complejidad: O(2^n)
 - Explicación: El crecimiento exponencial domina completamente sobre el polinomial.
 

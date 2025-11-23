@@ -165,3 +165,4 @@ class Algorithm(ABC):
             return current_depth
 
         return calculate_depth(self.structure)
+

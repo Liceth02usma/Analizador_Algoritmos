@@ -16,9 +16,6 @@ export default function AnalysisFlow({ analysis }) {
     code_explain,
     complexity_line_to_line,
     explain_complexity,
-    asymptotic_notation,
-    algorithm_name,
-    algorithm_category,
     equation,
     method_solution,
     solution_equation,
@@ -27,10 +24,10 @@ export default function AnalysisFlow({ analysis }) {
     extra,
   } = analysis;
 
-  // Detectar múltiples casos
+  // Detectar múltiples casos desde extra o desde diagrams
   const hasMultipleCases = 
     extra?.has_multiple_cases || 
-    (Array.isArray(equation) && equation.length > 1) ||
+    diagrams?.recursion_trees?.has_multiple_cases || 
     false;
 
   return (
@@ -41,45 +38,10 @@ export default function AnalysisFlow({ analysis }) {
           <h1 className="text-4xl font-bold text-purple-400">
             Análisis de Algoritmo Recursivo
           </h1>
-          {algorithm_name && (
-            <p className="text-xl text-gray-300">{algorithm_name}</p>
-          )}
-          {algorithm_category && (
-            <p className="text-sm text-gray-400 uppercase tracking-wider">{algorithm_category}</p>
+          {extra?.algorithm_name && (
+            <p className="text-xl text-gray-300">{extra.algorithm_name}</p>
           )}
         </div>
-
-        {/* Notación Asintótica */}
-        {asymptotic_notation && (
-          <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-xl p-6 border border-purple-700">
-            <h3 className="text-2xl font-bold text-purple-400 mb-4">📈 Notación Asintótica</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {asymptotic_notation.best && (
-                <div className="bg-gray-800/70 p-4 rounded-lg border-l-4 border-green-500">
-                  <p className="text-sm text-gray-400 mb-1">Mejor Caso (Ω)</p>
-                  <p className="text-green-400 font-bold text-2xl">{asymptotic_notation.best}</p>
-                </div>
-              )}
-              {asymptotic_notation.worst && (
-                <div className="bg-gray-800/70 p-4 rounded-lg border-l-4 border-red-500">
-                  <p className="text-sm text-gray-400 mb-1">Peor Caso (O)</p>
-                  <p className="text-red-400 font-bold text-2xl">{asymptotic_notation.worst}</p>
-                </div>
-              )}
-              {asymptotic_notation.average && (
-                <div className="bg-gray-800/70 p-4 rounded-lg border-l-4 border-yellow-500">
-                  <p className="text-sm text-gray-400 mb-1">Caso Promedio (Θ)</p>
-                  <p className="text-yellow-400 font-bold text-2xl">{asymptotic_notation.average}</p>
-                </div>
-              )}
-            </div>
-            {asymptotic_notation.explanation && asymptotic_notation.explanation !== "..." && (
-              <div className="mt-4 bg-gray-800/70 p-4 rounded-lg">
-                <p className="text-gray-300 text-sm">{asymptotic_notation.explanation}</p>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* 1. Mostrar el código */}
         <CodeViewer
@@ -119,17 +81,42 @@ export default function AnalysisFlow({ analysis }) {
                 </div>
               )}
               
-              {extra.analysis_details && typeof extra.analysis_details === 'string' && (
+              {extra.time_complexities && (
                 <div className="bg-gray-700 p-4 rounded-lg">
-                  <p className="text-sm text-gray-400 mb-1">Detalles:</p>
-                  <p className="text-gray-300 text-sm">{extra.analysis_details}</p>
+                  <p className="text-sm text-gray-400 mb-2">Complejidades por Caso:</p>
+                  <div className="space-y-1">
+                    {extra.time_complexities.best_case && (
+                      <p className="text-sm">
+                        <span className="text-green-400">🟢 Mejor:</span>{" "}
+                        <span className="text-white font-mono">{extra.time_complexities.best_case}</span>
+                      </p>
+                    )}
+                    {extra.time_complexities.worst_case && (
+                      <p className="text-sm">
+                        <span className="text-red-400">🔴 Peor:</span>{" "}
+                        <span className="text-white font-mono">{extra.time_complexities.worst_case}</span>
+                      </p>
+                    )}
+                    {extra.time_complexities.average_case && (
+                      <p className="text-sm">
+                        <span className="text-yellow-400">🟡 Promedio:</span>{" "}
+                        <span className="text-white font-mono">{extra.time_complexities.average_case}</span>
+                      </p>
+                    )}
+                    {extra.time_complexities.single && (
+                      <p className="text-sm">
+                        <span className="text-purple-400">🔵 Único:</span>{" "}
+                        <span className="text-white font-mono">{extra.time_complexities.single}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
             {extra.analysis_details && Array.isArray(extra.analysis_details) && (
               <div className="bg-gray-700 p-4 rounded-lg">
-                <p className="text-sm text-gray-400 mb-2">Detalles del Análisis por Caso:</p>
+                <p className="text-sm text-gray-400 mb-2">Detalles del Análisis:</p>
                 <div className="space-y-2">
                   {extra.analysis_details.map((detail, idx) => (
                     <div key={idx} className="bg-gray-800 p-3 rounded text-sm">
@@ -140,14 +127,8 @@ export default function AnalysisFlow({ analysis }) {
                            detail.case_type === 'worst_case' ? 'Peor Caso' :
                            detail.case_type === 'average_case' ? 'Caso Promedio' : detail.case_type}:
                         </span>{" "}
-                        {detail.complexity} 
-                        {detail.classification_confidence && (
-                          <span className="text-gray-400"> (Confianza: {(detail.classification_confidence * 100).toFixed(0)}%)</span>
-                        )}
+                        {detail.complexity} (Confianza: {(detail.classification_confidence * 100).toFixed(0)}%)
                       </p>
-                      {detail.equation && (
-                        <p className="text-green-400 font-mono text-xs mt-1">{detail.equation}</p>
-                      )}
                     </div>
                   ))}
                 </div>
