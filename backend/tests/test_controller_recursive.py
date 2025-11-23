@@ -4,7 +4,7 @@ from app.controllers.controller_recursive import ControlRecursive
 
 # Utilidad para extraer condiciones de casos base
 def extract_base_conditions(details):
-    return [base['condition'] for base in details]
+    return [base["condition"] for base in details]
 
 
 def test_fibonacci_recursion_detection():
@@ -25,18 +25,18 @@ def test_fibonacci_recursion_detection():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("fibonacci", pseudocodigo)
-    
+
     # Verificar número de llamadas recursivas
-    assert results['analysis']['recursive_calls'] == 2
+    assert results["analysis"]["recursive_calls"] == 2
     assert len(controller.algorithm.recursive_call_nodes) == 2
-    
+
     # Verificar caso base
-    base_conditions = extract_base_conditions(results['analysis']['base_case_details'])
+    base_conditions = extract_base_conditions(results["analysis"]["base_case_details"])
     assert any("n" in cond and "<=" in cond for cond in base_conditions)
-    
+
     # Verificar relación de recurrencia
-    assert "T(n-1)" in results['analysis']['recurrence_relation']
-    assert "T(n-2)" in results['analysis']['recurrence_relation']
+    assert "T(n-1)" in results["analysis"]["recurrence_relation"]
+    assert "T(n-2)" in results["analysis"]["recurrence_relation"]
 
 
 def test_factorial_recursion_detection():
@@ -55,17 +55,17 @@ def test_factorial_recursion_detection():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("factorial", pseudocodigo)
-    
+
     # Verificar número de llamadas recursivas
-    assert results['analysis']['recursive_calls'] == 1
+    assert results["analysis"]["recursive_calls"] == 1
     assert len(controller.algorithm.recursive_call_nodes) == 1
-    
+
     # Verificar caso base
-    base_conditions = extract_base_conditions(results['analysis']['base_case_details'])
+    base_conditions = extract_base_conditions(results["analysis"]["base_case_details"])
     assert any("n" in cond and "<=" in cond for cond in base_conditions)
-    
+
     # Verificar relación de recurrencia
-    assert "T(n-1)" in results['analysis']['recurrence_relation']
+    assert "T(n-1)" in results["analysis"]["recurrence_relation"]
 
 
 def test_busqueda_binaria_recursion_detection():
@@ -96,18 +96,18 @@ def test_busqueda_binaria_recursion_detection():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("busquedaBinaria", pseudocodigo)
-    
+
     # Verificar número de llamadas recursivas
-    assert results['analysis']['recursive_calls'] == 2
+    assert results["analysis"]["recursive_calls"] == 2
     assert len(controller.algorithm.recursive_call_nodes) == 2
-    
+
     # Verificar casos base
-    base_conditions = extract_base_conditions(results['analysis']['base_case_details'])
+    base_conditions = extract_base_conditions(results["analysis"]["base_case_details"])
     assert any("izquierda" in cond and ">" in cond for cond in base_conditions)
     assert any("array" in cond and "=" in cond for cond in base_conditions)
-    
+
     # Verificar relación de recurrencia
-    assert "T(" in results['analysis']['recurrence_relation']
+    assert "T(" in results["analysis"]["recurrence_relation"]
 
 
 def test_quicksort_recursion_detection():
@@ -124,18 +124,20 @@ def test_quicksort_recursion_detection():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("quicksort", pseudocodigo)
-    
+
     # Verificar número de llamadas recursivas
-    assert results['analysis']['recursive_calls'] == 2
+    assert results["analysis"]["recursive_calls"] == 2
     assert len(controller.algorithm.recursive_call_nodes) == 2
-    
+
     # Verificar caso base - quicksort detecta caso base implícito
-    base_conditions = extract_base_conditions(results['analysis']['base_case_details'])
+    base_conditions = extract_base_conditions(results["analysis"]["base_case_details"])
     # El caso base implícito es "low >= high" (negación de "low < high")
-    assert len(base_conditions) >= 1, "Debe detectar al menos un caso base (implícito o explícito)"
-    
+    assert (
+        len(base_conditions) >= 1
+    ), "Debe detectar al menos un caso base (implícito o explícito)"
+
     # Verificar relación de recurrencia
-    assert "T(" in results['analysis']['recurrence_relation']
+    assert "T(" in results["analysis"]["recurrence_relation"]
 
 
 def test_quicksort_with_partition_analysis():
@@ -168,25 +170,28 @@ def test_quicksort_with_partition_analysis():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("quicksort", pseudocodigo)
-    
+
     # Si el parser no reconoce correctamente el código, saltar el test
     if controller.algorithm.recursive_calls == 0:
         pytest.skip("El parser no detectó las llamadas recursivas correctamente")
-    
+
     # Verificar número de llamadas recursivas (solo quicksort)
-    assert results['analysis']['recursive_calls'] == 2
+    assert results["analysis"]["recursive_calls"] == 2
     assert len(controller.algorithm.recursive_call_nodes) == 2
-    
+
     # Verificar caso base
-    base_conditions = extract_base_conditions(results['analysis']['base_case_details'])
+    base_conditions = extract_base_conditions(results["analysis"]["base_case_details"])
     assert len(base_conditions) >= 1, "Debe detectar al menos un caso base"
-    
+
     # Verificar que partition no se cuenta como recursiva
-    recursive_names = [node.get('name', '').lower() for node in controller.algorithm.recursive_call_nodes]
-    assert all(name != 'partition' for name in recursive_names)
-    
+    recursive_names = [
+        node.get("name", "").lower()
+        for node in controller.algorithm.recursive_call_nodes
+    ]
+    assert all(name != "partition" for name in recursive_names)
+
     # Verificar relación de recurrencia
-    assert "T(" in results['analysis']['recurrence_relation']
+    assert "T(" in results["analysis"]["recurrence_relation"]
 
 
 def test_recursion_nodes_content():
@@ -207,29 +212,32 @@ def test_recursion_nodes_content():
     """
     controller = ControlRecursive()
     controller.analyze_from_parsed_tree("fibonacci", pseudocodigo)
-    
+
     # Verificar contenido de los nodos recursivos
     assert controller.algorithm is not None
     assert len(controller.algorithm.recursive_call_nodes) == 2
-    
+
     for node in controller.algorithm.recursive_call_nodes:
-        assert node.get('type') == 'call'
-        assert node.get('name', '').lower() == 'fibonacci'
+        assert node.get("type") == "call"
+        assert node.get("name", "").lower() == "fibonacci"
 
 
 def test_empty_algorithm():
     """Verifica que el controlador maneja algoritmos vacíos correctamente"""
     pseudocodigo = ""
     controller = ControlRecursive()
-    
+
     # El controlador no lanza excepción, simplemente retorna análisis vacío
     results = controller.analyze_from_parsed_tree("empty", pseudocodigo)
-    
+
     # Verificar que retorna estructura con error o valores por defecto
-    assert 'analysis' in results
-    assert results['analysis']['recursive_calls'] == 0
+    assert "analysis" in results
+    assert results["analysis"]["recursive_calls"] == 0
     # Puede tener mensaje de error
-    assert 'error' in results['analysis'] or results['analysis']['recurrence_relation'] == "No disponible"
+    assert (
+        "error" in results["analysis"]
+        or results["analysis"]["recurrence_relation"] == "No disponible"
+    )
 
 
 def test_no_recursive_calls():
@@ -246,9 +254,9 @@ def test_no_recursive_calls():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("simple", pseudocodigo)
-    
+
     # No debe detectar llamadas recursivas
-    assert results['analysis']['recursive_calls'] == 0
+    assert results["analysis"]["recursive_calls"] == 0
     assert len(controller.algorithm.recursive_call_nodes) == 0
 
 
@@ -270,10 +278,10 @@ def test_multiple_base_cases():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("multiBase", pseudocodigo)
-    
+
     # Debe detectar al menos un caso base
-    assert results['analysis']['base_cases'] >= 1
-    assert len(results['analysis']['base_case_details']) >= 1
+    assert results["analysis"]["base_cases"] >= 1
+    assert len(results["analysis"]["base_case_details"]) >= 1
 
 
 def test_for_loop_with_recursion():
@@ -295,10 +303,10 @@ def test_for_loop_with_recursion():
     """
     controller = ControlRecursive()
     results = controller.analyze_from_parsed_tree("procesarArray", pseudocodigo)
-    
+
     # Debe detectar 1 llamada recursiva
-    assert results['analysis']['recursive_calls'] == 1
+    assert results["analysis"]["recursive_calls"] == 1
     assert len(controller.algorithm.recursive_call_nodes) == 1
-    
+
     # Debe detectar caso base
-    assert results['analysis']['base_cases'] >= 1
+    assert results["analysis"]["base_cases"] >= 1

@@ -12,8 +12,10 @@ load_dotenv()
 # 1. Definición del Output Schema
 # **********************************************
 
+
 class CaseRecurrence(BaseModel):
     """Ecuación de recurrencia para un caso específico."""
+
     case_name: str = Field(
         description="Nombre del caso: MEJOR CASO, PEOR CASO, o CASO PROMEDIO"
     )
@@ -22,7 +24,7 @@ class CaseRecurrence(BaseModel):
     )
     reasoning: str = Field(
         default="",
-        description="Explicación de por qué esta es la ecuación para este caso"
+        description="Explicación de por qué esta es la ecuación para este caso",
     )
 
 
@@ -32,27 +34,24 @@ class RecurrenceOutput(BaseModel):
     has_multiple_cases: bool = Field(
         description="True si el algoritmo tiene diferentes casos (mejor/peor/promedio)"
     )
-    
+
     # Para algoritmos con un solo caso (type_case = False)
     recurrence_equation: Optional[str] = Field(
         default=None,
         description="La ecuación de recurrencia (solo para algoritmos sin diferencia de casos)",
     )
-    
+
     # Para algoritmos con múltiples casos (type_case = True)
     best_case: Optional[CaseRecurrence] = Field(
-        default=None,
-        description="Ecuación y análisis del mejor caso"
+        default=None, description="Ecuación y análisis del mejor caso"
     )
     worst_case: Optional[CaseRecurrence] = Field(
-        default=None,
-        description="Ecuación y análisis del peor caso"
+        default=None, description="Ecuación y análisis del peor caso"
     )
     average_case: Optional[CaseRecurrence] = Field(
-        default=None,
-        description="Ecuación y análisis del caso promedio"
+        default=None, description="Ecuación y análisis del caso promedio"
     )
-    
+
     general_reasoning: str = Field(
         default="",
         description="Explicación general del análisis de recurrencia",
@@ -63,7 +62,9 @@ class AlgorithmRecurrenceContext(BaseModel):
     """Contexto de entrada para el análisis de recurrencia"""
 
     algorithm_name: str = Field(description="Nombre del algoritmo a analizar")
-    parsed_tree: str = Field(description="Árbol de sintaxis abstracta (AST) del algoritmo")
+    parsed_tree: str = Field(
+        description="Árbol de sintaxis abstracta (AST) del algoritmo"
+    )
     pseudocode: str = Field(description="Pseudocódigo del algoritmo")
     type_case: bool = Field(
         description="True si hay diferencia entre casos, False si no"
@@ -79,6 +80,7 @@ class AlgorithmRecurrenceContext(BaseModel):
 # **********************************************
 # 2. Funciones de Herramientas
 # **********************************************
+
 
 @tool
 def get_common_recurrence_patterns() -> Dict[str, str]:
@@ -175,6 +177,7 @@ def analyze_recursive_structure(
 # 3. Agente Principal
 # **********************************************
 
+
 class RecurrenceEquationAgent(AgentBase[RecurrenceOutput]):
     """
     Agente especializado en determinar ecuaciones de recurrencia
@@ -189,7 +192,7 @@ class RecurrenceEquationAgent(AgentBase[RecurrenceOutput]):
 
     def _configure(self) -> None:
         """Configura el agente con herramientas, esquemas y prompt."""
-        
+
         self.tools = [get_common_recurrence_patterns, analyze_recursive_structure]
         self.context_schema = AlgorithmRecurrenceContext
         self.response_format = RecurrenceOutput
@@ -394,11 +397,11 @@ Para caso promedio: SIEMPRE escribe la sumatoria completa sin resolver.
     ) -> Optional[RecurrenceOutput]:
         """
         Analiza la ecuación de recurrencia considerando múltiples casos.
-        
+
         Args:
             recursive_instance: Instancia con el algoritmo
             thread_id: ID del hilo (opcional)
-            
+
         Returns:
             RecurrenceOutput con una o múltiples ecuaciones según type_case
         """
@@ -419,11 +422,14 @@ Para caso promedio: SIEMPRE escribe la sumatoria completa sin resolver.
             type_case = recursive_instance.type_case
 
             recursive_instance.extract_recurrence()
-            recursive_calls_info = json.dumps({
-                "num_calls": recursive_instance.recursive_calls,
-                "calls_detected": len(recursive_instance.recursive_call_nodes),
-                "call_details": recursive_instance.recursive_call_nodes,
-            }, indent=2)
+            recursive_calls_info = json.dumps(
+                {
+                    "num_calls": recursive_instance.recursive_calls,
+                    "calls_detected": len(recursive_instance.recursive_call_nodes),
+                    "call_details": recursive_instance.recursive_call_nodes,
+                },
+                indent=2,
+            )
 
             base_cases = recursive_instance.extract_base_case()
             base_cases_info = json.dumps(base_cases, indent=2)
@@ -533,9 +539,7 @@ Responde con el objeto RecurrenceOutput completo."""
                 print(f"\n[RecurrenceAnalysis] Enviando prompt...")
 
             result = self.invoke_simple(
-                content=content, 
-                thread_id=thread_id, 
-                context=context.model_dump()
+                content=content, thread_id=thread_id, context=context.model_dump()
             )
 
             output = self.extract_response(result)
@@ -547,20 +551,28 @@ Responde con el objeto RecurrenceOutput completo."""
             if type_case and not output.has_multiple_cases:
                 if self.enable_verbose:
                     print("⚠️ ADVERTENCIA: type_case=True pero has_multiple_cases=False")
-            
-            if type_case and (not output.best_case or not output.worst_case or not output.average_case):
+
+            if type_case and (
+                not output.best_case or not output.worst_case or not output.average_case
+            ):
                 if self.enable_verbose:
                     print("⚠️ ADVERTENCIA: Faltan casos en respuesta multi-caso")
 
             if self.enable_verbose:
                 print(f"\n[RecurrenceAnalysis] ✅ Análisis completado:")
                 if output.has_multiple_cases:
-                    print(f"  - MEJOR CASO: {output.best_case.recurrence_equation if output.best_case else 'N/A'}")
-                    print(f"  - PEOR CASO: {output.worst_case.recurrence_equation if output.worst_case else 'N/A'}")
-                    print(f"  - CASO PROMEDIO: {output.average_case.recurrence_equation if output.average_case else 'N/A'}")
+                    print(
+                        f"  - MEJOR CASO: {output.best_case.recurrence_equation if output.best_case else 'N/A'}"
+                    )
+                    print(
+                        f"  - PEOR CASO: {output.worst_case.recurrence_equation if output.worst_case else 'N/A'}"
+                    )
+                    print(
+                        f"  - CASO PROMEDIO: {output.average_case.recurrence_equation if output.average_case else 'N/A'}"
+                    )
                 else:
                     print(f"  - Ecuación: {output.recurrence_equation}")
-                
+
             return output
 
         except Exception as e:

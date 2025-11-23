@@ -86,66 +86,75 @@ class Recursive(Algorithm):
                 recurrence_result.worst_case.recurrence_equation,
                 recurrence_result.average_case.recurrence_equation,
             ]
-            
+
             # Generar árboles para múltiples casos
             tree_sketches = self._create_tree(
                 best_case=recurrence_result.best_case.recurrence_equation,
                 worst_case=recurrence_result.worst_case.recurrence_equation,
-                average_case=recurrence_result.average_case.recurrence_equation
+                average_case=recurrence_result.average_case.recurrence_equation,
             )
         else:
             equations_to_analyze = [("single", recurrence_result.recurrence_equation)]
             equation_display = recurrence_result.recurrence_equation
-            
+
             # Generar árbol para ecuación única
-            tree_sketches = self._create_tree(single_equation=recurrence_result.recurrence_equation)
-        
+            tree_sketches = self._create_tree(
+                single_equation=recurrence_result.recurrence_equation
+            )
+
         # Clasificar y resolver cada ecuación
         analysis_results = []
-        
+
         for case_type, eq in equations_to_analyze:
             # Clasificar la ecuación
             classification = self._classify_recurrence(eq)
-            
+
             # Obtener solución unificada
             # classification puede ser una lista o un solo objeto
             if isinstance(classification, list):
                 classifications = classification
             else:
                 classifications = [classification]
-            
+
             for cls in classifications:
-                recurrence_resolve = RecurrenceMethods(recurrence=cls.equation_normalized)
+                recurrence_resolve = RecurrenceMethods(
+                    recurrence=cls.equation_normalized
+                )
                 recurrence_resolve.set_strategy(cls.method)
-                
+
                 # solve() retorna RecurrenceSolution unificado
                 unified_solution = recurrence_resolve.solve()
-                
+
                 # Recopilar toda la información relevante
-                analysis_results.append({
-                    "case_type": case_type,
-                    "equation": cls.equation_normalized,
-                    "method": cls.method.value,
-                    "method_enum": cls.method,
-                    "complexity": unified_solution.complexity,
-                    "steps": unified_solution.steps or [],
-                    "explanation": unified_solution.detailed_explanation or unified_solution.explanation,
-                    "details": unified_solution.details,
-                    "classification_confidence": cls.confidence,
-                    "classification_reasoning": cls.reasoning,
-                })
-                
+                analysis_results.append(
+                    {
+                        "case_type": case_type,
+                        "equation": cls.equation_normalized,
+                        "method": cls.method.value,
+                        "method_enum": cls.method,
+                        "complexity": unified_solution.complexity,
+                        "steps": unified_solution.steps or [],
+                        "explanation": unified_solution.detailed_explanation
+                        or unified_solution.explanation,
+                        "details": unified_solution.details,
+                        "classification_confidence": cls.confidence,
+                        "classification_reasoning": cls.reasoning,
+                    }
+                )
+
                 print(unified_solution, "SOLUCIÓN UNIFICADA")
-        
+
         # Construir diagrams que incluya árboles de recursión + árboles del método cuando aplique
         diagrams = {
             "recursion_trees": tree_sketches,  # Bosquejos de árboles de recursión
         }
-        
+
         # Agregar árboles del método (si se usó TreeMethod)
         for result in analysis_results:
             if result["method_enum"] == StrategyType.TREE_METHOD:
-                tree_details = result["details"].get("tree_depth") or result["details"].get("levels_detail")
+                tree_details = result["details"].get("tree_depth") or result[
+                    "details"
+                ].get("levels_detail")
                 if tree_details:
                     case_key = f"tree_method_{result['case_type']}"
                     diagrams[case_key] = {
@@ -154,44 +163,42 @@ class Recursive(Algorithm):
                         "levels_expansion": result["details"].get("levels_detail"),
                         "work_per_level": result["details"].get("work_per_level"),
                     }
-        
+
         print(tree_sketches, "ARBOLES DE RECURSION")
-        
+
         # =====================================================================
         # 6. ANÁLISIS DE COMPLEJIDAD LÍNEA POR LÍNEA
         # =====================================================================
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("6. ANÁLISIS DE COMPLEJIDAD LÍNEA POR LÍNEA")
-        print("="*70)
-        
+        print("=" * 70)
+
         complexity_agent = ComplexityLineByLineAgent(
-            model_type="Modelo_Codigo",
-            enable_verbose=True
+            model_type="Modelo_Codigo", enable_verbose=True
         )
-        
+
         code_explain = None
         complexity_line_to_line = self.pseudocode  # Default
         explain_complexity = None
-        
+
         try:
             if self.type_case and recurrence_result.has_multiple_cases:
                 # Analizar múltiples casos
                 print("Analizando complejidad para múltiples casos...")
                 complexity_analysis = complexity_agent.analyze_multiple_cases(
-                    pseudocode=self.pseudocode,
-                    algorithm_name=self.name
+                    pseudocode=self.pseudocode, algorithm_name=self.name
                 )
-                
+
                 # Combinar los 3 análisis
                 code_explain = complexity_analysis.best_case.code_explanation
-                
+
                 # Crear anotación combinada con los 3 casos
                 complexity_line_to_line = (
                     f"=== MEJOR CASO ===\n{complexity_analysis.best_case.pseudocode_annotated}\n\n"
                     f"=== PEOR CASO ===\n{complexity_analysis.worst_case.pseudocode_annotated}\n\n"
                     f"=== CASO PROMEDIO ===\n{complexity_analysis.average_case.pseudocode_annotated}"
                 )
-                
+
                 explain_complexity = (
                     f"Mejor caso: {complexity_analysis.best_case.complexity_explanation}\n\n"
                     f"Peor caso: {complexity_analysis.worst_case.complexity_explanation}\n\n"
@@ -201,39 +208,50 @@ class Recursive(Algorithm):
                 # Analizar caso único
                 print("Analizando complejidad para caso único...")
                 complexity_analysis = complexity_agent.analyze_single_case(
-                    pseudocode=self.pseudocode,
-                    algorithm_name=self.name
+                    pseudocode=self.pseudocode, algorithm_name=self.name
                 )
-                
+
                 code_explain = complexity_analysis.analysis.code_explanation
-                complexity_line_to_line = complexity_analysis.analysis.pseudocode_annotated
+                complexity_line_to_line = (
+                    complexity_analysis.analysis.pseudocode_annotated
+                )
                 explain_complexity = complexity_analysis.analysis.complexity_explanation
-        
+
         except Exception as e:
             print(f"⚠️ Error en análisis de complejidad línea por línea: {e}")
             code_explain = f"Algoritmo: {self.name}"
             explain_complexity = "No se pudo generar análisis automático"
-        
+
         # =====================================================================
         # 7. CONSTRUCCIÓN DE LA SOLUCIÓN FINAL
         # =====================================================================
-        
+
         return Solution(
             type="Recursivo",
             code_explain=code_explain,
             complexity_line_to_line=complexity_line_to_line,
             explain_complexity=explain_complexity,
             equation=equation_display,
+            algorithm_name="Busqueda lineal",
+            algorithm_category="Busqueda y Ordenamiento",
+            asymptotic_notation={
+                "best": "Ω(1)",
+                "worst": "O(n²)",
+                "average": "Θ(n log n)",
+                "explanation": "...",
+            },
             method_solution=[r["method"] for r in analysis_results],
-            solution_equation=[r["complexity"] for r in analysis_results if r["complexity"]],
+            solution_equation=[
+                r["complexity"] for r in analysis_results if r["complexity"]
+            ],
             explain_solution_steps=analysis_results,  # Lista completa con toda la info
             diagrams=diagrams,
             extra={
-                "has_multiple_cases": recurrence_result.has_multiple_cases and self.type_case,
+                "has_multiple_cases": recurrence_result.has_multiple_cases
+                and self.type_case,
                 "analysis_details": analysis_results,
-            }
+            },
         )
-
 
     def _get_equation_recurrence(self):
         analysis_agent = RecurrenceEquationAgent(
@@ -245,8 +263,8 @@ class Recursive(Algorithm):
     def _classify_recurrence(self, equation_recurrence):
         result_master = classify_recurrence(
             equation=equation_recurrence,
-            use_agent=True,  
-            verbose=True,  
+            use_agent=True,
+            verbose=True,
         )
 
         print(f"\n Resultado Final:")
@@ -266,14 +284,14 @@ class Recursive(Algorithm):
 
         return solution
 
-        #print(self.create_tree(), "ESTE ES EL ARBOL DESDE RECURRENCE")
+        # print(self.create_tree(), "ESTE ES EL ARBOL DESDE RECURRENCE")
 
     def _create_tree(
-        self, 
+        self,
         best_case: Optional[str] = None,
         worst_case: Optional[str] = None,
         average_case: Optional[str] = None,
-        single_equation: Optional[str] = None
+        single_equation: Optional[str] = None,
     ) -> dict:
         """
         Construye los bosquejos de árboles de recursión del algoritmo.
@@ -441,8 +459,6 @@ class Recursive(Algorithm):
 
         negated_op = negation_map.get(op, f"not {op}")
         return f"{lhs} {negated_op} {rhs}"
-
-
 
 
 """

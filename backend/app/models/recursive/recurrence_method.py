@@ -13,6 +13,7 @@ from .equation_characteristic import CharacteristicEquationStrategy
 from .strategy_resolve import RecurrenceStrategy, RecurrenceSolution
 from .master_theorem import MasterTheoremStrategy
 from .tree_method import TreeMethodStrategy
+from .intelligent_substitution import IntelligentSubstitutionStrategy
 from .none_strategy import NoneStrategy
 
 
@@ -22,6 +23,7 @@ class StrategyType(Enum):
     TREE_METHOD = "tree_method"
     EQUATION_CHARACTERISTICS = "equation_characteristics"
     MASTER_THEOREM = "master_theorem"
+    INTELLIGENT_SUBSTITUTION = "intelligent_substitution"
     NONE = "none"
 
 
@@ -61,7 +63,8 @@ class RecurrenceMethods:
             StrategyType.EQUATION_CHARACTERISTICS: CharacteristicEquationStrategy(),
             StrategyType.TREE_METHOD: TreeMethodStrategy(),
             StrategyType.MASTER_THEOREM: MasterTheoremStrategy(),
-            StrategyType.NONE: NoneStrategy(enable_verbose = True)
+            StrategyType.INTELLIGENT_SUBSTITUTION: IntelligentSubstitutionStrategy(),
+            StrategyType.NONE: NoneStrategy(),
         }
 
     def set_strategy(self, strategy_type: StrategyType) -> None:
@@ -119,7 +122,8 @@ class RecurrenceMethods:
             return RecurrenceSolution(
                 complexity=result.get("complexity"),
                 steps=result.get("steps"),
-                explanation=result.get("explanation") or result.get("detailed_explanation"),
+                explanation=result.get("explanation")
+                or result.get("detailed_explanation"),
                 applicable=result.get("applicable", True),
                 method=result.get("method") or getattr(self._strategy, "name", None),
                 details=result,
@@ -138,5 +142,3 @@ class RecurrenceMethods:
             Nombre de la estrategia o None si no hay ninguna configurada
         """
         return self._strategy.name if self._strategy else None
-
-

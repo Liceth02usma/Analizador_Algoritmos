@@ -4,6 +4,7 @@ from app.schemas.pseudocode_request import PseudocodeRequest
 
 router = APIRouter()
 
+
 @router.post("/parse")
 async def parse_code(request: PseudocodeRequest):
     """
