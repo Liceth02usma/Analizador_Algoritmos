@@ -58,6 +58,7 @@ class CharacteristicAnalyzer:
         Formas esperadas:
         - T(n) = aT(n-1) + bT(n-2) + ... + g(n)
         - T(n) = T(n-1) + T(n-2) + c
+        - T_avg(n) = (1/k) × Σ[i=a to b] T(i), donde T(i) = T(i-1) + c
         """
         eq = equation.replace(" ", "").lower()
 
@@ -73,7 +74,23 @@ class CharacteristicAnalyzer:
             "is_applicable": False,  # Si la ecuación característica aplica
             "is_standard": False,  # Si es caso estándar (resolvible con reglas)
             "standard_result": None,  # Resultado directo
+            "has_summation": False,  # Si contiene sumatoria
+            "summation_params": {},  # Parámetros de la sumatoria
         }
+
+        # Detectar sumatorias
+        summation_symbols = ['σ', '∑', 'sum', 'Σ']
+        has_summation = any(symbol in equation for symbol in summation_symbols)
+        
+        if has_summation:
+            params["has_summation"] = True
+            params["is_applicable"] = True
+            summation_result = CharacteristicAnalyzer._parse_summation(equation)
+            if summation_result:
+                params["summation_params"] = summation_result
+                params["is_standard"] = True
+                params["standard_result"] = CharacteristicAnalyzer._solve_summation(summation_result)
+                return params
 
         # Detectar términos T(n-k)
         # Patrón: coeficiente opcional + t(n-delay)
@@ -114,6 +131,197 @@ class CharacteristicAnalyzer:
             params["standard_result"] = CharacteristicAnalyzer._solve_standard(params)
 
         return params
+
+    @staticmethod
+    def _parse_summation(equation: str) -> Optional[Dict[str, Any]]:
+        """
+        Parsea ecuaciones con sumatorias.
+        Formato esperado: T_avg(n) = (1/k) × Σ[i=a to b] T(i), donde T(i) = T(i-1) + c, T(base) = c
+        También acepta: T_avg(n) = (1/k) × σ[i=aton] T(i), donde t(i) = t(i-1) + c
+        """
+        try:
+            # Buscar factor multiplicativo (1/k) o (1/(k))
+            factor_pattern = r'\(1/\(?([^)]+)\)?\)'
+            factor_match = re.search(factor_pattern, equation)
+            multiplicative_factor = None
+            if factor_match:
+                multiplicative_factor = factor_match.group(1).strip()
+            
+            # Buscar límites de la sumatoria con múltiples formatos:
+            # Formato 1: Σ[i=a to b] (con espacios y "to")
+            # Formato 2: σ[i=aton] (sin espacios)
+            summation_pattern = r'[Σ∑σsum]\s*\[i=(\d+)\s*(?:to|TO)?\s*([^\]]+)\]'
+            summation_match = re.search(summation_pattern, equation, re.IGNORECASE)
+            
+            if not summation_match:
+                return None
+            
+            lower_bound = summation_match.group(1).strip()
+            upper_bound = summation_match.group(2).strip()
+            
+            # Limpiar upper_bound: remover "to" si quedó pegado (ej: "ton" -> "n")
+            if upper_bound.startswith('to'):
+                upper_bound = upper_bound[2:].strip()
+            # Extraer solo la variable si hay otros caracteres
+            var_match = re.search(r'([a-zA-Z]+)', upper_bound)
+            if var_match:
+                upper_bound = var_match.group(1)
+            
+            # Buscar la recurrencia interna T(i) = ... o t(i) = ...
+            # Formato 1: "donde T(i) = T(i-1) + c"
+            # Formato 2: "dondet(i)=t(i-1)+c" (sin espacios)
+            # Formato 3: ",dondet(i)=t(i-1)+c"
+            inner_pattern = r'(?:,\s*)?donde\s*t\(i\)\s*=\s*([^,]+)'
+            inner_match = re.search(inner_pattern, equation, re.IGNORECASE)
+            
+            inner_recurrence = None
+            if inner_match:
+                inner_recurrence = inner_match.group(1).strip()
+            
+            # Buscar caso base: T(base) = c
+            base_pattern = r't\((\d+)\)\s*=\s*(\d+)'
+            base_match = re.search(base_pattern, equation, re.IGNORECASE)
+            
+            base_case = None
+            base_value = None
+            if base_match:
+                base_case = base_match.group(1)
+                base_value = base_match.group(2)
+            
+            return {
+                'original': equation,
+                'multiplicative_factor': multiplicative_factor,
+                'lower_bound': lower_bound,
+                'upper_bound': upper_bound,
+                'inner_recurrence': inner_recurrence,
+                'base_case': base_case,
+                'base_value': base_value
+            }
+        except Exception as e:
+            return None
+
+    @staticmethod
+    def _solve_summation(summation_params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Resuelve sumatorias del tipo T_avg(n) = (1/k) × Σ[i=a to b] T(i).
+        Donde T(i) sigue una recurrencia lineal simple.
+        """
+        steps = []
+        
+        # Paso 1: Identificar la estructura
+        steps.append("**Paso 1 - Identificar estructura de sumatoria:**")
+        steps.append(f"   Ecuación: {summation_params['original']}")
+        steps.append(f"   Factor multiplicativo: 1/{summation_params['multiplicative_factor']}")
+        steps.append(f"   Límites de sumatoria: i = {summation_params['lower_bound']} hasta {summation_params['upper_bound']}")
+        
+        if summation_params['inner_recurrence']:
+            steps.append(f"   Recurrencia interna: T(i) = {summation_params['inner_recurrence']}")
+        if summation_params['base_case']:
+            steps.append(f"   Caso base: T({summation_params['base_case']}) = {summation_params['base_value']}")
+        steps.append("")
+        
+        # Paso 2: Expandir la recurrencia interna
+        steps.append("**Paso 2 - Expandir recurrencia interna T(i):**")
+        
+        # Detectar patrón de la recurrencia interna
+        inner_rec = summation_params.get('inner_recurrence', '').lower()
+        
+        # Caso común: T(i) = T(i-1) + c
+        if 't(i-1)' in inner_rec:
+            # Extraer constante c
+            const_match = re.search(r'\+\s*(\d+)', inner_rec)
+            c = int(const_match.group(1)) if const_match else 1
+            base_val = int(summation_params.get('base_value', 0))
+            base_idx = int(summation_params.get('base_case', 0))
+            
+            steps.append(f"   T(i) = T(i-1) + {c}")
+            steps.append(f"   Expandiendo desde T({base_idx}) = {base_val}:")
+            steps.append(f"      T({base_idx}) = {base_val}")
+            steps.append(f"      T({base_idx+1}) = T({base_idx}) + {c} = {base_val + c}")
+            steps.append(f"      T({base_idx+2}) = T({base_idx+1}) + {c} = {base_val + 2*c}")
+            steps.append(f"      ...")
+            steps.append(f"      T(i) = {base_val} + {c}·(i - {base_idx})")
+            if base_idx == 0 and base_val == c:
+                steps.append(f"      T(i) = {c}·(i + 1)")
+            steps.append("")
+            
+            # Paso 3: Aplicar la sumatoria
+            steps.append("**Paso 3 - Calcular Σ[i=a to b] T(i):**")
+            lower = summation_params['lower_bound']
+            upper = summation_params['upper_bound']
+            
+            if base_idx == 0 and base_val == c:
+                # Caso simple: T(i) = c(i+1), Σ[i=0 to n] c(i+1)
+                steps.append(f"   Σ[i={lower} to {upper}] {c}(i+1)")
+                steps.append(f"   = {c} × Σ[i={lower} to {upper}] (i+1)")
+                steps.append(f"   = {c} × (1 + 2 + 3 + ... + ({upper}+1))")
+                steps.append(f"   = {c} × ({upper}+1)({upper}+2)/2")
+                
+                # Paso 4: Aplicar factor multiplicativo
+                steps.append("")
+                steps.append("**Paso 4 - Aplicar factor multiplicativo:**")
+                factor = summation_params['multiplicative_factor']
+                steps.append(f"   T_avg(n) = (1/{factor}) × {c} × (n+1)(n+2)/2")
+                
+                # Simplificar si factor = n+1
+                if factor == 'n+1' or factor == '(n+1)':
+                    steps.append(f"   T_avg(n) = {c} × (n+2)/2")
+                    steps.append(f"   T_avg(n) = {c}n/2 + {c}")
+                    complexity = "O(n)"
+                elif factor == 'n':
+                    steps.append(f"   T_avg(n) = {c} × (n+1)(n+2)/(2n)")
+                    steps.append(f"   T_avg(n) ≈ {c}n/2 (para n grande)")
+                    complexity = "O(n)"
+                else:
+                    complexity = "O(n²)" if 'n' not in factor else "O(n)"
+                
+                steps.append("")
+                steps.append("**Paso 5 - Determinar complejidad:**")
+                steps.append(f"   El término dominante es lineal en n")
+                steps.append(f"   Complejidad: {complexity}")
+                
+                explanation = (
+                    f"Sumatoria con recurrencia lineal T(i) = T(i-1) + {c}. "
+                    f"La expansión de T(i) resulta en {c}(i+1). "
+                    f"La suma Σ[i=0 to n] {c}(i+1) = {c}(n+1)(n+2)/2. "
+                    f"Aplicando el factor (1/{factor}), obtenemos complejidad {complexity}."
+                )
+                
+                return {
+                    "complexity": complexity,
+                    "steps": steps,
+                    "explanation": explanation,
+                    "applicable": True,
+                    "method": "Ecuación Característica (Sumatoria)",
+                    "summation_form": f"Σ[i={lower} to {upper}] T(i)",
+                    "expanded_form": f"{c}(i+1)",
+                    "sum_result": f"{c}(n+1)(n+2)/2",
+                    "final_result": f"T_avg(n) = {complexity}"
+                }
+            else:
+                # Caso general: serie aritmética
+                complexity = "O(n)"
+                explanation = (
+                    f"Sumatoria con recurrencia lineal simple. "
+                    f"La suma de una progresión aritmética resulta en complejidad {complexity}."
+                )
+                
+                return {
+                    "complexity": complexity,
+                    "steps": steps,
+                    "explanation": explanation,
+                    "applicable": True,
+                    "method": "Ecuación Característica (Sumatoria)"
+                }
+        
+        # Si no se reconoce el patrón, devolver respuesta genérica
+        return {
+            "complexity": "O(n)",
+            "steps": steps,
+            "explanation": "Sumatoria detectada. Análisis detallado requiere más contexto.",
+            "applicable": True,
+            "method": "Ecuación Característica (Sumatoria)"
+        }
 
     @staticmethod
     def _solve_standard(params: Dict[str, Any]) -> Optional[Dict[str, Any]]:

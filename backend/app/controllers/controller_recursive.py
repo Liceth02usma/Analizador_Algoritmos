@@ -83,7 +83,7 @@ class ControlRecursive(ControlAlgorithm):
     ) -> Dict[str, Any]:
 
         # 1. Crear instancia del modelo Recursive
-        self.algorithm = Recursive(algorithm_name, pseudocode, True)
+        self.algorithm = Recursive(algorithm_name, pseudocode, False)
         
         # 2. Parsear si es necesario
         self.algorithm.preprocess_code()

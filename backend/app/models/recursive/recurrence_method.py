@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Dict, Any, Optional
 
 from .equation_characteristic import CharacteristicEquationStrategy
-from .strategy_resolve import RecurrenceStrategy
+from .strategy_resolve import RecurrenceStrategy, RecurrenceSolution
 from .master_theorem import MasterTheoremStrategy
 from .tree_method import TreeMethodStrategy
 from .none_strategy import NoneStrategy
@@ -86,7 +86,7 @@ class RecurrenceMethods:
         """
         self._strategy = strategy
 
-    def solve(self) -> Dict[str, Any]:
+    def solve(self) -> RecurrenceSolution:
         """Resuelve la ecuación de recurrencia usando la estrategia actual.
 
         Returns:
@@ -108,7 +108,28 @@ class RecurrenceMethods:
                 "Use set_strategy() primero."
             )
 
-        return self._strategy.solve(self.recurrence)
+        result = self._strategy.solve(self.recurrence)
+
+        # Normalizar a RecurrenceSolution
+        if isinstance(result, RecurrenceSolution):
+            return result
+
+        # Si la estrategia retorna un dict convertible, construir el modelo
+        if isinstance(result, dict):
+            return RecurrenceSolution(
+                complexity=result.get("complexity"),
+                steps=result.get("steps"),
+                explanation=result.get("explanation") or result.get("detailed_explanation"),
+                applicable=result.get("applicable", True),
+                method=result.get("method") or getattr(self._strategy, "name", None),
+                details=result,
+            )
+
+        # Si no es ninguno de los anteriores, intentar construir directamente
+        try:
+            return RecurrenceSolution(**result)  # type: ignore[arg-type]
+        except Exception as e:
+            raise ValueError(f"Resultado de la estrategia no convertible: {e}")
 
     def get_current_strategy(self) -> Optional[str]:
         """Retorna el nombre de la estrategia actual.

@@ -88,13 +88,13 @@ def get_common_recurrence_patterns() -> Dict[str, str]:
             "equation": "T(n) = T(n/2) + 1",
             "base": "T(1) = 1",
             "type_case": False,
-            "description": "Divide el problema en una mitad + trabajo constante",
+            "description": "Divide el problema en una mitad + trabajo constante. No varía entre casos.",
         },
         "merge_sort": {
             "equation": "T(n) = 2T(n/2) + n",
             "base": "T(1) = 1",
             "type_case": False,
-            "description": "Divide en dos mitades y combina con costo lineal",
+            "description": "Divide en dos mitades y combina con costo lineal. Siempre ejecuta igual.",
         },
         "quick_sort_best": {
             "equation": "T(n) = 2T(n/2) + n",
@@ -108,11 +108,11 @@ def get_common_recurrence_patterns() -> Dict[str, str]:
             "case": "PEOR CASO",
             "description": "Pivote extremo + partición lineal",
         },
-        "fibonacci": {
-            "equation": "T(n) = T(n-1) + T(n-2)",
-            "base": "T(0) = 1, T(1) = 1",
-            "type_case": False,
-            "description": "Dos llamadas recursivas, el trabajo constante NO se cuenta",
+        "quick_sort_average": {
+            "equation": "T_avg(n) = (1/n) × Σ[i=1 to n] (T(i-1) + T(n-i) + n)",
+            "base": "T(1) = 1",
+            "case": "CASO PROMEDIO",
+            "description": "Sumatoria sobre todas las posiciones posibles del pivote (sin resolver)",
         },
         "linear_search_best": {
             "equation": "T(n) = 1",
@@ -125,6 +125,18 @@ def get_common_recurrence_patterns() -> Dict[str, str]:
             "base": "T(1) = 1",
             "case": "PEOR CASO",
             "description": "Elemento en última posición o no existe",
+        },
+        "linear_search_average": {
+            "equation": "T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1",
+            "base": "T(0) = 1",
+            "case": "CASO PROMEDIO",
+            "description": "Sumatoria con T(i) recursivo para todas las posiciones posibles (sin resolver)",
+        },
+        "fibonacci": {
+            "equation": "T(n) = T(n-1) + T(n-2)",
+            "base": "T(0) = 1, T(1) = 1",
+            "type_case": False,
+            "description": "Dos llamadas recursivas, el trabajo constante NO se cuenta",
         },
     }
     return patterns
@@ -182,59 +194,123 @@ class RecurrenceEquationAgent(AgentBase[RecurrenceOutput]):
         self.context_schema = AlgorithmRecurrenceContext
         self.response_format = RecurrenceOutput
 
-        self.SYSTEM_PROMPT = """Eres un experto en Análisis de Algoritmos especializado en ecuaciones de recurrencia.
+        self.SYSTEM_PROMPT = """Eres un experto en Análisis de Algoritmos especializado en GENERAR ecuaciones de recurrencia.
 
-**ESTRUCTURA DE RESPUESTA:**
+**TU ÚNICA TAREA:** Generar ecuaciones de recurrencia correctamente. NO resolverlas, NO simplificarlas, NO calcular complejidades.
 
-Si **type_case = False** (algoritmo sin diferencia de casos):
-```json
-{
-  "has_multiple_cases": false,
-  "recurrence_equation": "T(n) = ..., T(base) = ...",
-  "best_case": null,
-  "worst_case": null,
-  "average_case": null,
-  "general_reasoning": "Explicación del análisis..."
-}
-```
+═══════════════════════════════════════════════════════════════════════════════
+1. TIPOS DE CASOS (según type_case)
+═══════════════════════════════════════════════════════════════════════════════
 
-Si **type_case = True** (algoritmo CON diferencia de casos):
-```json
-{
-  "has_multiple_cases": true,
-  "recurrence_equation": null,
-  "best_case": {
-    "case_name": "MEJOR CASO",
-    "recurrence_equation": "T(n) = ..., T(base) = ...",
-    "reasoning": "Explicación del mejor caso..."
-  },
-  "worst_case": {
-    "case_name": "PEOR CASO",
-    "recurrence_equation": "T(n) = ..., T(base) = ...",
-    "reasoning": "Explicación del peor caso..."
-  },
-  "average_case": {
-    "case_name": "CASO PROMEDIO",
-    "recurrence_equation": "T(n) = ..., T(base) = ...",
-    "reasoning": "Explicación del caso promedio..."
-  },
-  "general_reasoning": "Explicación general de las diferencias entre casos..."
-}
-```
+👉 **type_case = false**
+   El algoritmo SIEMPRE ejecuta el mismo número de pasos, sin importar la entrada.
+   
+   Respuesta:
+   {
+     "has_multiple_cases": false,
+     "recurrence_equation": "T(n) = ..., T(base) = ...",
+     "best_case": null,
+     "worst_case": null,
+     "average_case": null,
+     "general_reasoning": "..."
+   }
 
-**REGLAS CRÍTICAS:**
+👉 **type_case = true**
+   El algoritmo tiene MEJOR caso, PEOR caso y CASO PROMEDIO diferentes.
+   
+   Respuesta:
+   {
+     "has_multiple_cases": true,
+     "recurrence_equation": null,
+     "best_case": {
+       "case_name": "MEJOR CASO",
+       "recurrence_equation": "T(n) = ..., T(base) = ...",
+       "reasoning": "..."
+     },
+     "worst_case": {
+       "case_name": "PEOR CASO",
+       "recurrence_equation": "T(n) = ..., T(base) = ...",
+       "reasoning": "..."
+     },
+     "average_case": {
+       "case_name": "CASO PROMEDIO",
+       "recurrence_equation": "T_avg(n) = [SUMATORIA SIN RESOLVER]",
+       "reasoning": "..."
+     },
+     "general_reasoning": "..."
+   }
 
-1. **Trabajo adicional**: Solo incluye el trabajo si es > O(1) o representa pasos significativos
-2. **Fibonacci**: `T(n) = T(n-1) + T(n-2)` (SIN +1)
-3. **Búsqueda Binaria**: `T(n) = T(n/2) + 1` (CON +1)
-4. **Búsqueda Lineal con type_case=True**:
-   - Mejor caso: `T(n) = 1` (elemento en primera posición)
-   - Peor caso: `T(n) = T(n-1) + 1` o `T(n) = n` (elemento al final)
-   - Promedio: `T(n) = n/2` o `T(n) = T(n/2) + 1`
+═══════════════════════════════════════════════════════════════════════════════
+2. CÓMO GENERAR ECUACIONES DE RECURRENCIA
+═══════════════════════════════════════════════════════════════════════════════
 
-**EJEMPLOS:**
+**2.1. MEJOR CASO**
+Escenario que MINIMIZA las llamadas recursivas.
 
-🔹 **Búsqueda Lineal Recursiva (type_case = True)**
+Formato típico:
+- Si termina inmediatamente: T(n) = 1
+- Si hace pocas recursiones: T(n) = T(n-k) + c
+
+**2.2. PEOR CASO**
+Escenario que MAXIMIZA las llamadas recursivas.
+
+Formato típico:
+- Recursión completa: T(n) = T(n-1) + c
+- División balanceada: T(n) = aT(n/b) + f(n)
+
+**2.3. CASO PROMEDIO (MUY IMPORTANTE)**
+
+❗ El caso promedio NUNCA es un valor directo como "n/2"
+❗ DEBE ser una ECUACIÓN DE RECURRENCIA con SUMATORIA, no una solución
+
+**Fórmula general del caso promedio:**
+
+T_avg(n) = (1/k) × Σ[i=inicio to fin] T(i)
+
+donde cada T(i) sigue su propia recurrencia T(i) = T(i-1) + c.
+
+**Formato OBLIGATORIO para caso promedio:**
+
+T_avg(n) = (1/k) × Σ[i=a to b] T(i), donde T(i) = [definición recursiva], T(base) = c
+
+**Ejemplo: Búsqueda lineal recursiva**
+
+Si el elemento x puede estar en posición 0, 1, 2, ..., n-1, o no estar:
+- Cada posición i requiere T(i) comparaciones
+- T(i) sigue la recurrencia: T(i) = T(i-1) + 1
+
+**Ecuación correcta del caso promedio:**
+T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1
+
+**NO escribas:** T_avg(n) = (1/(n+1)) × (1 + 2 + 3 + ... + n)
+**SIEMPRE escribe:** T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1
+
+La clave es mantener la notación T(i) con su recurrencia explícita.
+
+═══════════════════════════════════════════════════════════════════════════════
+3. CONDICIONES BASE
+═══════════════════════════════════════════════════════════════════════════════
+
+SIEMPRE incluye explícitamente:
+- T(1) = c  o  T(0) = c  según el algoritmo
+- Si hay múltiples bases: T(0) = c₀, T(1) = c₁
+
+═══════════════════════════════════════════════════════════════════════════════
+4. PROHIBICIONES ESTRICTAS
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ NO resolver ecuaciones
+❌ NO simplificar sumatorias
+❌ NO transformar a notación Big-O
+❌ NO inventar promedios como "T(n) = T(n/2) + 1" para caso promedio
+❌ NO omitir el razonamiento de cómo surge la ecuación
+
+═══════════════════════════════════════════════════════════════════════════════
+5. EJEMPLOS COMPLETOS
+═══════════════════════════════════════════════════════════════════════════════
+
+📌 **EJEMPLO 1: Búsqueda Lineal Recursiva (type_case = true)**
+
 ```python
 def buscar(A, n, x):
     if n == 0: return -1
@@ -242,53 +318,75 @@ def buscar(A, n, x):
     return buscar(A, n-1, x)
 ```
 
-Respuesta:
-```json
+Respuesta correcta:
 {
   "has_multiple_cases": true,
   "recurrence_equation": null,
   "best_case": {
     "case_name": "MEJOR CASO",
     "recurrence_equation": "T(n) = 1, T(1) = 1",
-    "reasoning": "El elemento se encuentra en la primera posición verificada. Solo se realiza una comparación."
+    "reasoning": "El elemento se encuentra en la primera posición verificada (posición n-1). Solo se realiza una comparación."
   },
   "worst_case": {
     "case_name": "PEOR CASO",
     "recurrence_equation": "T(n) = T(n-1) + 1, T(1) = 1",
-    "reasoning": "El elemento está al final o no existe. Se deben revisar todos los n elementos."
+    "reasoning": "El elemento está al final del arreglo o no existe. Se deben revisar todos los n elementos recursivamente."
   },
   "average_case": {
     "case_name": "CASO PROMEDIO",
-    "recurrence_equation": "T(n) = T(n/2) + 1, T(1) = 1",
-    "reasoning": "En promedio, el elemento se encuentra a la mitad del arreglo."
+    "recurrence_equation": "T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1",
+    "reasoning": "El elemento puede estar en cualquier posición con igual probabilidad. La sumatoria Σ[i=0 to n] T(i) suma los costos de todas las posiciones, donde cada T(i) sigue la recurrencia T(i) = T(i-1) + 1."
   },
-  "general_reasoning": "La búsqueda lineal tiene diferentes comportamientos según la posición del elemento..."
+  "general_reasoning": "La búsqueda lineal tiene diferentes comportamientos según la posición del elemento. El mejor caso ocurre cuando está al inicio (O(1)), el peor cuando no está o está al final (O(n)), y el promedio considera todas las posiciones posibles."
 }
+
+📌 **EJEMPLO 2: Búsqueda Binaria (type_case = false)**
+
+```python
+def busqueda_binaria(A, x, inicio, fin):
+    if inicio > fin: return -1
+    medio = (inicio + fin) // 2
+    if A[medio] == x: return medio
+    if A[medio] > x: return busqueda_binaria(A, x, inicio, medio-1)
+    return busqueda_binaria(A, x, medio+1, fin)
 ```
 
-🔹 **Fibonacci (type_case = False)**
+Respuesta correcta:
+{
+  "has_multiple_cases": false,
+  "recurrence_equation": "T(n) = T(n/2) + 1, T(1) = 1",
+  "best_case": null,
+  "worst_case": null,
+  "average_case": null,
+  "general_reasoning": "La búsqueda binaria siempre divide el espacio de búsqueda a la mitad, independientemente de dónde esté el elemento. El número de comparaciones es log₂(n) en todos los casos, por lo que no hay diferencia entre mejor, peor y promedio."
+}
+
+📌 **EJEMPLO 3: Fibonacci (type_case = false)**
+
 ```python
 def fib(n):
     if n <= 1: return n
     return fib(n-1) + fib(n-2)
 ```
 
-Respuesta:
-```json
+Respuesta correcta:
 {
   "has_multiple_cases": false,
   "recurrence_equation": "T(n) = T(n-1) + T(n-2), T(0) = 1, T(1) = 1",
   "best_case": null,
   "worst_case": null,
   "average_case": null,
-  "general_reasoning": "Dos llamadas recursivas. La suma es trabajo trivial O(1) que NO se incluye."
+  "general_reasoning": "Fibonacci siempre realiza dos llamadas recursivas para cualquier n > 1. La suma de los resultados es trabajo constante O(1) que NO se incluye en la ecuación de recurrencia pura."
 }
-```
 
-**IMPORTANTE:**
-- Cuando type_case=True, SIEMPRE proporciona las 3 ecuaciones (mejor, peor, promedio)
-- Cuando type_case=False, solo usa recurrence_equation
-- Explica claramente las diferencias entre casos cuando existan
+═══════════════════════════════════════════════════════════════════════════════
+6. RECORDATORIO FINAL
+═══════════════════════════════════════════════════════════════════════════════
+
+Tu trabajo es SOLO generar las ecuaciones de recurrencia correctas.
+NO resuelvas, NO simplifiques, NO calcules complejidades.
+
+Para caso promedio: SIEMPRE escribe la sumatoria completa sin resolver.
 """
 
     def analyze_recurrence(
@@ -351,14 +449,34 @@ Respuesta:
 
 Debes proporcionar LAS TRES ecuaciones de recurrencia:
 
-1. **best_case**: La ecuación cuando el algoritmo tiene el mejor comportamiento posible
-2. **worst_case**: La ecuación cuando el algoritmo tiene el peor comportamiento posible
-3. **average_case**: La ecuación para el comportamiento promedio
+1. **best_case**: Ecuación cuando el algoritmo tiene el MEJOR comportamiento
+   - Minimiza el número de llamadas recursivas
+   - Ejemplo: T(n) = 1 si termina inmediatamente
 
-Ejemplo para búsqueda lineal:
-- MEJOR CASO: Elemento en primera posición → T(n) = 1
-- PEOR CASO: Elemento al final → T(n) = T(n-1) + 1 o T(n) = n
-- CASO PROMEDIO: Elemento a la mitad → T(n) ≈ n/2
+2. **worst_case**: Ecuación cuando el algoritmo tiene el PEOR comportamiento
+   - Maximiza el número de llamadas recursivas
+   - Ejemplo: T(n) = T(n-1) + 1 si procesa todo
+
+3. **average_case**: Ecuación para el comportamiento PROMEDIO
+   ⚠️ **MUY IMPORTANTE:** El caso promedio DEBE ser una SUMATORIA con T(i) recursivo
+   
+   **Formato OBLIGATORIO:**
+   T_avg(n) = (1/k) × Σ[i=inicio to fin] T(i), donde T(i) = [recurrencia], T(base) = c
+   
+   **Ejemplo:**
+   T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1
+   
+   ❌ INCORRECTO: T_avg(n) = T(n/2) + 1
+   ❌ INCORRECTO: T_avg(n) = n/2
+   ❌ INCORRECTO: T_avg(n) = (1/(n+1)) × (1 + 2 + 3 + ... + n)
+   ✅ CORRECTO: T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1
+   
+   NO expandas la sumatoria. NO sustituyas valores. Mantén T(i) con su definición recursiva.
+
+Ejemplo completo para búsqueda lineal:
+- best_case: T(n) = 1, T(1) = 1
+- worst_case: T(n) = T(n-1) + 1, T(1) = 1
+- average_case: T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1
 
 Establece:
 - has_multiple_cases = true
@@ -369,7 +487,10 @@ Establece:
                 case_instruction = """
 **Este algoritmo NO tiene diferencia de casos (type_case = False)**
 
+El algoritmo ejecuta el MISMO número de pasos sin importar la entrada.
 Proporciona UNA SOLA ecuación de recurrencia general.
+
+Ejemplo: Búsqueda binaria siempre divide a la mitad → T(n) = T(n/2) + 1
 
 Establece:
 - has_multiple_cases = false

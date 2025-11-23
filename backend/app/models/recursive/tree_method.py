@@ -67,8 +67,24 @@ class EquationAnalyzer:
             'f_n': None,            # Función de trabajo
             'type': None,           # Tipo de recurrencia
             'is_trivial': False,    # Si es caso trivial
-            'trivial_result': None  # Resultado directo si es trivial
+            'trivial_result': None, # Resultado directo si es trivial
+            'has_summation': False, # Si contiene sumatoria
+            'summation_params': {}  # Parámetros de la sumatoria
         }
+        
+        # Detectar sumatorias
+        summation_symbols = ['σ', '∑', 'sum', 'Σ']
+        has_summation = any(symbol in equation for symbol in summation_symbols)
+        
+        if has_summation:
+            params['has_summation'] = True
+            params['type'] = 'summation'
+            summation_result = EquationAnalyzer._parse_summation(equation)
+            if summation_result:
+                params['summation_params'] = summation_result
+                params['is_trivial'] = False
+                # Las sumatorias no son triviales, necesitan expansión completa
+                return params
         
         # Detectar T(n) = aT(n/b) + f(n)
         div_pattern = r'(\d*)t\(n/(\d+)\)'
@@ -112,6 +128,60 @@ class EquationAnalyzer:
             params['trivial_result'] = EquationAnalyzer._solve_trivial(params)
         
         return params
+    
+    @staticmethod
+    def _parse_summation(equation: str) -> Optional[Dict[str, Any]]:
+        """
+        Parsea ecuaciones con sumatorias.
+        Formato esperado: T_avg(n) = (1/k) × Σ[i=a to b] T(i), donde T(i) = T(i-1) + c
+        """
+        try:
+            # Buscar factor multiplicativo (1/k)
+            factor_pattern = r'\(1/\(?([^)]+)\)?\)'
+            factor_match = re.search(factor_pattern, equation)
+            multiplicative_factor = None
+            if factor_match:
+                multiplicative_factor = factor_match.group(1).strip()
+            
+            # Buscar límites de la sumatoria: Σ[i=a to b]
+            summation_pattern = r'[Σ∑σsum]\s*\[i=(\d+)\s+to\s+([^\]]+)\]'
+            summation_match = re.search(summation_pattern, equation, re.IGNORECASE)
+            
+            if not summation_match:
+                return None
+            
+            lower_bound = summation_match.group(1).strip()
+            upper_bound = summation_match.group(2).strip()
+            
+            # Buscar la recurrencia interna T(i) = ...
+            inner_pattern = r'donde\s+t\(i\)\s*=\s*([^,]+)'
+            inner_match = re.search(inner_pattern, equation, re.IGNORECASE)
+            
+            inner_recurrence = None
+            if inner_match:
+                inner_recurrence = inner_match.group(1).strip()
+            
+            # Buscar caso base
+            base_pattern = r't\((\d+)\)\s*=\s*(\d+)'
+            base_match = re.search(base_pattern, equation, re.IGNORECASE)
+            
+            base_case = None
+            base_value = None
+            if base_match:
+                base_case = base_match.group(1)
+                base_value = base_match.group(2)
+            
+            return {
+                'original': equation,
+                'multiplicative_factor': multiplicative_factor,
+                'lower_bound': lower_bound,
+                'upper_bound': upper_bound,
+                'inner_recurrence': inner_recurrence,
+                'base_case': base_case,
+                'base_value': base_value
+            }
+        except Exception:
+            return None
     
     @staticmethod
     def _check_trivial_case(params: Dict[str, Any]) -> bool:
@@ -186,9 +256,11 @@ class TreeMethodAgent(AgentBase[TreeMethodAgentOutput]):
 
 - Para T(n) = aT(n/b) + f(n): profundidad = log_b(n)
 - Para T(n) = T(n-k) + f(n): profundidad = n/k
+- Para T_avg(n) = (1/k) × Σ[i=a to b] T(i): profundidad = n (sumatoria de 0 a n)
 - Para casos mixtos: analizar hasta el caso base
 
 Ejemplo: T(n) = 2T(n/2) + n → profundidad = log₂(n)
+Ejemplo sumatoria: T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i) → profundidad = n
 
 ---
 **PASO 2: EXPANDIR ÁRBOL NIVEL POR NIVEL**
@@ -198,7 +270,7 @@ Formato requerido para cada nivel:
 Nivel i: [número de nodos] × T([tamaño por nodo])
 ```
 
-Ejemplo:
+Ejemplo divide y conquista:
 ```
 Nivel 0: 1 × T(n)
 Nivel 1: 2 × T(n/2)
@@ -206,6 +278,17 @@ Nivel 2: 4 × T(n/4)
 Nivel 3: 8 × T(n/8)
 ...
 Nivel log₂(n): n × T(1)
+```
+
+Ejemplo sumatoria con T(i) = T(i-1) + c:
+```
+Nivel 0: T(0) = c (caso base)
+Nivel 1: T(1) = T(0) + c = 2c
+Nivel 2: T(2) = T(1) + c = 3c
+Nivel 3: T(3) = T(2) + c = 4c
+...
+Nivel i: T(i) = (i+1)c
+Nivel n: T(n) = (n+1)c
 ```
 
 ---
@@ -222,6 +305,14 @@ Nivel 3: 8 × (n/8) = n
 ...
 ```
 
+Ejemplo para sumatoria T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i):
+```
+Si T(i) = (i+1)c, entonces:
+Σ[i=0 to n] T(i) = Σ[i=0 to n] (i+1)c
+                 = c × Σ[i=0 to n] (i+1)
+                 = c × (1 + 2 + 3 + ... + (n+1))
+```
+
 ---
 **PASO 4: SUMAR TODOS LOS NIVELES**
 
@@ -229,8 +320,11 @@ Identificar el patrón:
 - **Serie constante:** c + c + c + ... = c × h(n)
 - **Serie geométrica:** c + cr + cr² + ... = c(r^h - 1)/(r - 1)
 - **Serie decreciente:** n + n/2 + n/4 + ... ≈ 2n
+- **Serie aritmética (sumatorias):** 1 + 2 + 3 + ... + n = n(n+1)/2
 
 Ejemplo: n + n + n + ... (log₂(n) veces) = n × log₂(n)
+
+Ejemplo sumatoria: c × (1 + 2 + 3 + ... + (n+1)) = c × (n+1)(n+2)/2
 
 ---
 **PASO 5: EXPRESAR EN BIG-O**
@@ -238,6 +332,8 @@ Ejemplo: n + n + n + ... (log₂(n) veces) = n × log₂(n)
 Tomar el término dominante de la suma simplificada.
 
 Ejemplo: n × log₂(n) → O(n log n)
+Ejemplo sumatoria: Con factor (1/(n+1)), si suma es c(n+1)(n+2)/2:
+  → T_avg(n) = (1/(n+1)) × c(n+1)(n+2)/2 = c(n+2)/2 → O(n)
 
 ---
 **EJEMPLOS COMPLETOS:**
@@ -263,6 +359,17 @@ Ejemplo: n × log₂(n) → O(n log n)
 - Suma: n(n+1)/2
 - Big-O: O(n²)
 
+**Ejemplo 4: T_avg(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1**
+- Profundidad: n (desde i=0 hasta i=n)
+- Expansión de T(i):
+  * T(0) = 1
+  * T(1) = T(0) + 1 = 2
+  * T(2) = T(1) + 1 = 3
+  * T(i) = i + 1
+- Suma: Σ[i=0 to n] (i+1) = 1 + 2 + 3 + ... + (n+1) = (n+1)(n+2)/2
+- Aplicar factor: T_avg(n) = (1/(n+1)) × (n+1)(n+2)/2 = (n+2)/2
+- Big-O: O(n)
+
 ---
 **FORMATO DE SALIDA:**
 
@@ -281,6 +388,8 @@ Debes responder con un objeto TreeMethodAgentOutput que contenga:
 
 - SIEMPRE simplifica algebraicamente
 - Identifica el tipo de serie (geométrica, aritmética, constante)
+- Para sumatorias, expande la recurrencia interna T(i) primero
+- Aplica fórmulas de series aritméticas: 1+2+...+n = n(n+1)/2
 - Menciona supuestos si los hay
 - Sé preciso con las notaciones matemáticas
 - Usa subíndices correctamente (log₂, no log2)"""
@@ -304,7 +413,24 @@ Debes responder con un objeto TreeMethodAgentOutput que contenga:
             
             # Preparar contexto para el agente
             context_info = ""
-            if params.get('type') == 'divide_conquer':
+            if params.get('type') == 'summation':
+                summation_params = params.get('summation_params', {})
+                context_info = f"""
+INFORMACIÓN DETECTADA:
+- Tipo: Sumatoria
+- Factor multiplicativo: 1/{summation_params.get('multiplicative_factor', '?')}
+- Límites: i = {summation_params.get('lower_bound', '?')} hasta {summation_params.get('upper_bound', '?')}
+- Recurrencia interna: T(i) = {summation_params.get('inner_recurrence', '?')}
+- Caso base: T({summation_params.get('base_case', '?')}) = {summation_params.get('base_value', '?')}
+- Profundidad esperada: n
+
+INSTRUCCIONES ESPECÍFICAS:
+1. Expande la recurrencia interna T(i) nivel por nivel desde el caso base
+2. Calcula Σ[i={summation_params.get('lower_bound', 0)} to {summation_params.get('upper_bound', 'n')}] T(i) usando fórmula de serie aritmética
+3. Aplica el factor multiplicativo (1/{summation_params.get('multiplicative_factor', '?')})
+4. Simplifica y determina complejidad Big-O
+"""
+            elif params.get('type') == 'divide_conquer':
                 context_info = f"""
 INFORMACIÓN DETECTADA:
 - Tipo: Divide y Conquista

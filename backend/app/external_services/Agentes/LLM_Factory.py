@@ -110,6 +110,7 @@ class LLM_Factory:
             "timeout": timeout,
             "max_tokens": max_tokens,
             "api_key": api_key,
+            "base_url": base_url
         }
         
         return ChatOpenAI(**config)

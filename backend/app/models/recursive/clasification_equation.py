@@ -190,52 +190,45 @@ class RuleBasedClassifier:
                 )
 
         # ==================================================
-        # REGLA 2: Ecuación Característica - Fibonacci
-        # Forma: T(n) = T(n-1) + T(n-2) + ...
+        # REGLA 2: Ecuación Característica - MEJORADA
+        # Detecta: T(n-k), sumatorias con T(i)
         # ==================================================
-        if (
-            pattern["has_subtraction"]
-            and pattern["has_multiple_recursive_terms"]
-            and not pattern["has_division"]
-            and not pattern["has_exponential"]
-        ):
-            if "t(n-1)" in eq_norm and "t(n-2)" in eq_norm:
-                return ClassificationOutput(
-                    method=StrategyType.EQUATION_CHARACTERISTICS,
-                    confidence=0.92,
-                    reasoning=(
-                        "Recurrencia lineal de orden superior tipo Fibonacci. "
-                        f"Términos: {', '.join([f'T(n-{v})' for v in pattern['subtraction_values']])}. "
-                        "La ecuación característica es ideal para este tipo de recurrencia."
-                    ),
-                    equation_normalized=eq_norm,
+        
+        # Detectar patrones T(n-k) directamente
+        linear_pattern = re.search(r't\s*\(\s*n\s*-\s*\d+\s*\)', eq_norm)
+        
+        # Detectar sumatorias con recurrencias lineales
+        has_summation = any(symbol in equation for symbol in ['Σ', '∑', 'sum', 'σ'])
+        has_ti_pattern = 't(i)' in eq_norm and ('t(i-1)' in eq_norm or 't(i-k)' in eq_norm)
+        
+        if linear_pattern or (has_summation and has_ti_pattern):
+            reasoning_parts = []
+            
+            if has_summation and has_ti_pattern:
+                reasoning_parts.append("Sumatoria con recurrencia lineal T(i) = T(i-1) + c detectada")
+            elif pattern["has_multiple_recursive_terms"]:
+                reasoning_parts.append(
+                    f"Recurrencia lineal de orden superior. "
+                    f"Términos: {', '.join([f'T(n-{v})' for v in pattern['subtraction_values']])}"
                 )
-
-        # ==================================================
-        # REGLA 3: Ecuación Característica - Lineal Simple
-        # Forma: T(n) = cT(n-k) + f(n)
-        # ==================================================
-        if (
-            pattern["has_subtraction"]
-            and not pattern["has_multiple_recursive_terms"]
-            and not pattern["has_division"]
-            and not pattern["has_exponential"]
-            and pattern["num_subtraction_calls"] == 1
-        ):
-            k = pattern["subtraction_values"][0]
+            else:
+                k = pattern["subtraction_values"][0] if pattern["subtraction_values"] else 1
+                reasoning_parts.append(f"Recurrencia lineal simple T(n) = cT(n-{k}) + f(n)")
+            
+            if pattern['work_function']:
+                reasoning_parts.append(f"Trabajo adicional: {pattern['work_function']}")
+            
+            reasoning_parts.append("La ecuación característica es ideal para resolver este tipo de recurrencia.")
+            
             return ClassificationOutput(
                 method=StrategyType.EQUATION_CHARACTERISTICS,
-                confidence=0.88,
-                reasoning=(
-                    f"Recurrencia lineal simple T(n) = cT(n-{k}) + f(n). "
-                    f"Trabajo adicional: {pattern['work_function'] or 'constante'}. "
-                    "Puede resolverse con ecuación característica o sustitución directa."
-                ),
+                confidence=0.90,
+                reasoning=". ".join(reasoning_parts) + ".",
                 equation_normalized=eq_norm,
             )
 
         # ==================================================
-        # REGLA 4: Método del Árbol - Casos Complejos
+        # REGLA 3: Método del Árbol - Casos Complejos
         # ==================================================
         if pattern["has_exponential"]:
             return ClassificationOutput(
@@ -498,7 +491,7 @@ class ClassificationEquation:
 # **********************************************
 
 def classify_recurrence(
-    equation, use_agent: bool = True, verbose: bool = False
+    equation, use_agent: bool = True, verbose: bool = False, type = "C"
 ) -> ClassificationOutput:
     """
     Función de conveniencia para clasificar una ecuación.
@@ -522,7 +515,7 @@ def classify_recurrence(
         ClassificationOutput(method=StrategyType.NONE, ...)
     """
     classifier = ClassificationEquation(use_agent=use_agent, enable_verbose=verbose)
-    if not isinstance(equation, list):
-        return [classifier.classify(equation)]
-    else:
+    if type == "C":
+        return classifier.classify(equation)
+    if type == "B":
         return classifier.classify_batch(equation)
