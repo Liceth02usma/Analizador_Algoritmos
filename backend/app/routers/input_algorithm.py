@@ -26,6 +26,10 @@ async def analyze_algorithm(payload: dict):
     transformer = TreeToDict()
     ast_dict = transformer.transform(tree)
 
+
+    print("este es ast")
+    print(ast_dict)
+
     # 2️⃣ Tipo de algoritmo (recursivo / iterativo / DP) → usa el Tree
     algo_type_result = analyze_algorithm_type(pseudocode, tree)
 
@@ -42,33 +46,37 @@ async def analyze_algorithm(payload: dict):
     print("=== ✅ Resultado final del segundo agente ===")
     print(algo_class_result)
 
-    """
     if "iterativo" in algo_type_value:
         print("⚙️ Invocando IterativeAnalyzerAgent...")
         
         iterative_agent = IterativeAnalyzerAgent(model_type="Modelo_Razonamiento")
+
+
         efficiency_result = iterative_agent.analyze_iterative_algorithm(
             pseudocode=pseudocode,
             ast=ast_dict,
-            algorithm_name=algo_class_result.get("algorithm_name", "Algoritmo iterativo"),
+            algorithm_name=algo_class_result.get("possible_known_algorithms", ["Algoritmo iterativo"])[0],
             functional_class=algo_class_result.get("functional_class", None),
             structural_pattern=algo_class_result.get("structural_pattern", "iteración simple"),
             additional_info="Análisis automático desde backend"
         )
+
+        # 🔥 Pydantic v2 → convertir a dict
+        efficiency_result = efficiency_result.model_dump()
         print("=== 🤖 Resultado del análisis de eficiencia iterativa ===")
         print(efficiency_result)
-        
+            
     elif "recursivo" in algo_type_value or "dinámica" in algo_type_value:
         print("⚙️ (Pendiente) Invocar agente para recursivos o programación dinámica")
         # Aquí luego invocaremos RecursiveOrDPAnalyzerAgent
         efficiency_result = {"message": "Agente de análisis recursivo/DP aún no implementado."}
     else:
         print("⚠️ Tipo de algoritmo no reconocido para análisis de eficiencia.")
-    """
+    
     # 5️⃣ Retornar todo al frontend
     return {
         "ast": ast_dict,
         "algorithm_type": algo_type_result,
-        "algorithm_classification": algo_class_result
-        #"efficiency_analysis": efficiency_result
+        "algorithm_classification": algo_class_result,
+        "efficiency_analysis": efficiency_result
     }
