@@ -74,7 +74,9 @@ class TestControlIterative:
         assert results["analysis"]["nested_levels"] == 2
         assert len(results["analysis"]["loop_details"]) == 2
         # verificar que hay un loop con nesting_level 2
-        assert any(ld["nesting_level"] == 2 for ld in results["analysis"]["loop_details"])
+        assert any(
+            ld["nesting_level"] == 2 for ld in results["analysis"]["loop_details"]
+        )
 
     def test_three_level_nested_loops(self):
         pseudocode = """
@@ -114,4 +116,3 @@ class TestControlIterative:
         assert results["analysis"]["nested_levels"] == 1
         types = {ld["type"] for ld in results["analysis"]["loop_details"]}
         assert "while" in types and "repeat" in types
-

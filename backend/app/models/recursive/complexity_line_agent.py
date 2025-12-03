@@ -1,16 +1,12 @@
 """
-Agente de análisis de complejidad línea por línea.
-
-Este agente analiza pseudocódigo y proporciona:
-- Complejidad temporal por cada línea de código
-- Explicación general del algoritmo
-- Análisis detallado de la complejidad total
-- Soporte para múltiples casos (mejor, peor, promedio)
+Agente de análisis de complejidad línea por línea (Modo Conteo de Pasos).
+FIX: Mejorado el manejo de JSON y caracteres especiales para evitar errores de parseo.
 """
 
 from typing import List, Optional, Dict, Any
 import json
 import re
+import ast  # Nuevo: para fallback de parseo
 from pydantic import BaseModel, Field
 from ...external_services.Agentes.Agent import AgentBase
 
@@ -19,495 +15,434 @@ from ...external_services.Agentes.Agent import AgentBase
 # SCHEMAS DE RESPUESTA
 # ============================================================================
 
-
 class ComplexityAnalysis(BaseModel):
     """Análisis de complejidad para un solo caso."""
-    
     case_type: Optional[str] = Field(
         default=None,
-        description="Tipo de caso: 'best', 'worst', 'average' o None para caso único"
+        description="Tipo de caso: 'best', 'worst', 'average' o None para caso único",
     )
     pseudocode_annotated: str = Field(
-        ...,
-        description="Pseudocódigo con anotaciones de complejidad por línea"
+        ..., description="Pseudocódigo con anotaciones de coste (c1, n+1, etc.)"
     )
     code_explanation: str = Field(
-        ...,
-        description="Explicación breve de qué hace el algoritmo"
+        ..., description="Explicación breve de qué hace el algoritmo"
     )
     complexity_explanation: str = Field(
-        ...,
-        description="Explicación de la complejidad temporal total"
+        ..., description="Derivación de la ecuación total (suma de costes)"
     )
     total_complexity: str = Field(
-        ...,
-        description="Complejidad total (ej: 'O(log n)', 'O(n²)')"
+        ..., description="Cota asintótica final (solo aquí, no en las líneas)"
     )
-
 
 class SingleCaseOutput(BaseModel):
-    """Salida para algoritmos con un solo caso."""
-    
-    has_multiple_cases: bool = Field(
-        default=False,
-        description="Siempre False para caso único"
-    )
-    analysis: ComplexityAnalysis = Field(
-        ...,
-        description="Análisis del caso único"
-    )
-
+    has_multiple_cases: bool = Field(default=False)
+    analysis: ComplexityAnalysis = Field(...)
 
 class MultipleCasesOutput(BaseModel):
-    """Salida para algoritmos con múltiples casos."""
-    
-    has_multiple_cases: bool = Field(
-        default=True,
-        description="Siempre True para múltiples casos"
-    )
-    best_case: ComplexityAnalysis = Field(
-        ...,
-        description="Análisis del mejor caso"
-    )
-    worst_case: ComplexityAnalysis = Field(
-        ...,
-        description="Análisis del peor caso"
-    )
-    average_case: ComplexityAnalysis = Field(
-        ...,
-        description="Análisis del caso promedio"
-    )
+    has_multiple_cases: bool = Field(default=True)
+    best_case: ComplexityAnalysis = Field(...)
+    worst_case: ComplexityAnalysis = Field(...)
+    average_case: ComplexityAnalysis = Field(...)
 
 
 # ============================================================================
 # AGENTE DE COMPLEJIDAD LÍNEA POR LÍNEA
 # ============================================================================
 
-
 class ComplexityLineByLineAgent(AgentBase):
     """
-    Agente especializado en análisis de complejidad línea por línea.
-    
-    Analiza pseudocódigo y proporciona anotaciones de complejidad
-    temporal para cada línea, junto con explicaciones detalladas.
+    Agente especializado en análisis de complejidad usando Conteo de Pasos.
+    Incluye robustez para parseo de JSON con código incrustado.
     """
-    
-    def __init__(
-        self,
-        model_type: str = "Modelo_Codigo",
-        enable_verbose: bool = False
-    ):
-        """
-        Inicializa el agente de complejidad línea por línea.
-        
-        Args:
-            model_type: Tipo de modelo LLM a usar (por defecto "Modelo_Codigo")
-            enable_verbose: Habilitar logs detallados
-        """
+
+    def __init__(self, model_type: str = "Gemini_Rapido", enable_verbose: bool = False):
         self.enable_verbose = enable_verbose
-        # No llamamos super().__init__ todavía, lo haremos según el caso
         self.model_type = model_type
+        self.provider = "gemini"
         self._agent_single = None
         self._agent_multiple = None
-    
+
     def _get_or_create_agent(self, for_multiple_cases: bool):
-        """Obtiene o crea el agente apropiado según el tipo de análisis."""
         if for_multiple_cases:
             if self._agent_multiple is None:
-                # Crear agente para múltiples casos
                 self.response_format = MultipleCasesOutput
-                super().__init__(self.model_type)
+                super().__init__(self.model_type, provider=self.provider)
                 self._agent_multiple = self.agent
             return self._agent_multiple
         else:
             if self._agent_single is None:
-                # Crear agente para caso único
                 self.response_format = SingleCaseOutput
-                super().__init__(self.model_type)
+                super().__init__(self.model_type, provider=self.provider)
                 self._agent_single = self.agent
             return self._agent_single
-    
-    def _extract_json_from_markdown(self, text: str) -> Optional[Dict[str, Any]]:
+
+    def _clean_and_repair_json(self, text: str) -> Optional[Dict[str, Any]]:
         """
-        Extrae JSON de una respuesta que puede estar envuelta en bloques markdown.
-        
-        Args:
-            text: Texto que puede contener ```json...``` o JSON directo
-            
-        Returns:
-            Dict con el JSON parseado o None si falla
+        Intenta limpiar y reparar el string JSON antes de parsearlo.
+        Estrategia: JSON estricto -> Regex -> Python Eval (Fallback seguro).
         """
         if not text:
             return None
-        
-        # Intentar parsear directamente como JSON
+
+        # 1. Intentar parseo directo
         try:
             return json.loads(text)
         except json.JSONDecodeError:
             pass
-        
-        # Buscar bloques de código JSON (```json ... ```)
-        json_pattern = r'```(?:json)?\s*\n(.*?)\n```'
+
+        # 2. Extraer bloque JSON de markdown ```json ... ```
+        json_pattern = r"```(?:json)?\s*\n(.*?)\n```"
         matches = re.findall(json_pattern, text, re.DOTALL)
         
-        if matches:
-            # Intentar parsear cada bloque encontrado
-            for match in matches:
-                try:
-                    return json.loads(match.strip())
-                except json.JSONDecodeError:
-                    continue
-        
-        # Buscar cualquier estructura que parezca JSON (con { ... })
-        json_like_pattern = r'\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}'
+        candidates = matches if matches else [text]
+
+        for candidate in candidates:
+            # Limpieza básica
+            cleaned = candidate.strip()
+            
+            # Intento A: JSON standard
+            try:
+                return json.loads(cleaned)
+            except json.JSONDecodeError:
+                pass
+            
+            # Intento B: Python Literal Eval (Salva errores de comillas simples vs dobles)
+            # Los LLMs a veces generan diccionarios de Python en vez de JSON estricto
+            try:
+                # ast.literal_eval es seguro, solo evalúa estructuras de datos, no ejecuta código
+                return ast.literal_eval(cleaned)
+            except (ValueError, SyntaxError):
+                pass
+
+        # 3. Buscar estructura JSON bruta con regex (último recurso)
+        json_like_pattern = r"\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}"
         matches = re.findall(json_like_pattern, text, re.DOTALL)
-        
         if matches:
-            # Intentar parsear el JSON más grande encontrado
-            matches_sorted = sorted(matches, key=len, reverse=True)
-            for match in matches_sorted:
+            # Tomar el bloque más largo que parezca JSON
+            longest_match = max(matches, key=len)
+            try:
+                return json.loads(longest_match)
+            except:
                 try:
-                    return json.loads(match)
-                except json.JSONDecodeError:
-                    continue
-        
+                    return ast.literal_eval(longest_match)
+                except:
+                    pass
+
         return None
-    
+
     def _configure(self) -> None:
-        """Configura el agente según la clase base."""
         self.tools = []
         self.context_schema = None
-        # response_format se establecerá dinámicamente antes de cada invocación
-        
-        self.SYSTEM_PROMPT = """Eres un experto en análisis de complejidad de algoritmos.
 
-**TU TAREA:** Analizar pseudocódigo y anotar la complejidad temporal de cada línea.
+        # Prompt blindado contra errores de formato
+        self.SYSTEM_PROMPT = """Eres un experto en análisis formal de algoritmos (Step Counting).
 
-**MUY IMPORTANTE:** Debes responder EXCLUSIVAMENTE con el formato JSON estructurado solicitado. NO respondas con texto libre, markdown ni explicaciones adicionales fuera del JSON.
+**TU TAREA:** Analizar pseudocódigo y anotar el coste de cada línea (c1, c2, n, etc).
 
-**REGLAS DE ANOTACIÓN:**
-1. **Operaciones básicas:** O(1)
-   - Asignaciones: `x = 5` → O(1)
-   - Comparaciones: `if (x > y)` → O(1)
-   - Operaciones aritméticas: `a + b`, `x * y` → O(1)
-   - Acceso a array: `arr[i]` → O(1)
-   - Retornos: `return x` → O(1)
+**REGLAS DE FORMATO JSON (CRÍTICO):**
+1. Debes responder con un **JSON válido**.
+2. El campo `pseudocode_annotated` contiene código. **CUIDADO CON LAS COMILLAS Y SALTOS DE LÍNEA**:
+   - Usa `\\n` literal para saltos de línea. (NO uses Enter real).
+   - Si el código tiene comillas dobles (`"`), ESCÁPALAS como `\\"`.
+   - Ejemplo bien: `"code": "print(\\"hola\\")\\nreturn 0"`
+   - Ejemplo mal: `"code": "print("hola")
+     return 0"`
 
-2. **Llamadas recursivas:** T(tamaño_subproblema)
-   - División: `func(n/2)` → T(n/2)
-   - Resta: `func(n-1)` → T(n-1)
-   - Múltiples llamadas: suma de todas
+**REGLAS DE ANÁLISIS (STEP COUNTING):**
+1. **Asignaciones/Ops:** `// c1`
+2. **For (1 a n):** Cabecera `// c_k * (n + 1)`, Cuerpo `// c_j * n`
+3. **While:** Cabecera `// c_k * (iteraciones + 1)`
+4. **Recursión:** `// T(n/b) + c`
+5. **PROHIBIDO:** Usar O(1) u O(n) en las líneas individuales.
 
-3. **Ciclos:**
-   - `for i = 1 to n` → O(n) para el ciclo completo
-   - Línea del for: O(1) por iteración
-   - Cuerpo del ciclo: suma de operaciones * n
-
-4. **Formato de anotación en pseudocode_annotated:**
-   ```
-   linea_de_codigo    // O(complejidad) - Descripción breve
-   ```
-
-**EJEMPLO DE FORMATO DE RESPUESTA PARA CASO ÚNICO (SingleCaseOutput):**
+**EJEMPLO SINGLE CASE:**
 ```json
 {
   "has_multiple_cases": false,
   "analysis": {
     "case_type": null,
-    "pseudocode_annotated": "busqueda(arr, x, i)\\nbegin\\n    if (i >= length(arr)) then    // O(1) - Comparación\\n        return -1    // O(1) - Retorno\\n    if (arr[i] = x) then    // O(1) - Comparación\\n        return i    // O(1) - Retorno\\n    return busqueda(arr, x, i+1)    // T(n-1) - Llamada recursiva\\nend",
-    "code_explanation": "Búsqueda lineal recursiva que recorre el arreglo elemento por elemento hasta encontrar el valor x o llegar al final.",
-    "complexity_explanation": "En cada llamada se realiza trabajo constante O(1) y se reduce el problema en 1. El árbol de recursión tiene profundidad n, por lo tanto T(n) = T(n-1) + O(1) = O(n).",
+    "pseudocode_annotated": "x = 0  // c1\\nfor i=0 to n:  // c2*(n+1)",
+    "code_explanation": "Iteración simple",
+    "complexity_explanation": "Suma total...",
     "total_complexity": "O(n)"
   }
 }
 ```
 
-**EJEMPLO DE FORMATO DE RESPUESTA PARA MÚLTIPLES CASOS (MultipleCasesOutput):**
+**EJEMPLO MULTIPLE CASES:**
 ```json
 {
   "has_multiple_cases": true,
   "best_case": {
     "case_type": "best",
-    "pseudocode_annotated": "busqueda(arr, x, i)\\nbegin\\n    if (i >= length(arr)) then    // O(1) - Comparación\\n        return -1    // O(1) - Retorno\\n    if (arr[i] = x) then    // O(1) - Comparación (elemento encontrado)\\n        return i    // O(1) - Retorno inmediato\\n    return busqueda(arr, x, i+1)    // No ejecutado\\nend",
-    "code_explanation": "Búsqueda lineal recursiva. Mejor caso: elemento en primera posición.",
-    "complexity_explanation": "El elemento está en la primera posición (i=0), por lo que se encuentra inmediatamente sin llamadas recursivas.",
+    "pseudocode_annotated": "if x == A[0]:  // c1\\n  return 0  // c2",
+    "code_explanation": "Elemento en primera posición",
+    "complexity_explanation": "Costo total: c1 + c2",
     "total_complexity": "O(1)"
   },
   "worst_case": {
     "case_type": "worst",
-    "pseudocode_annotated": "busqueda(arr, x, i)\\nbegin\\n    if (i >= length(arr)) then    // O(1) - Comparación (ejecutado en última llamada)\\n        return -1    // O(1) - Retorno\\n    if (arr[i] = x) then    // O(1) - Comparación (siempre falso)\\n        return i    // No ejecutado\\n    return busqueda(arr, x, i+1)    // T(n-1) - Llamada recursiva (n veces)\\nend",
-    "code_explanation": "Búsqueda lineal recursiva. Peor caso: elemento no existe o está al final.",
-    "complexity_explanation": "Se deben revisar todos los n elementos antes de determinar que x no existe. T(n) = T(n-1) + O(1) con n llamadas.",
+    "pseudocode_annotated": "for i=0 to n:  // c1*(n+1)\\n  if x == A[i]:  // c2*n",
+    "code_explanation": "Elemento no encontrado",
+    "complexity_explanation": "Costo total: c1*(n+1) + c2*n",
     "total_complexity": "O(n)"
   },
   "average_case": {
     "case_type": "average",
-    "pseudocode_annotated": "busqueda(arr, x, i)\\nbegin\\n    if (i >= length(arr)) then    // O(1) - Comparación\\n        return -1    // O(1) - Retorno\\n    if (arr[i] = x) then    // O(1) - Comparación (éxito en posición promedio n/2)\\n        return i    // O(1) - Retorno\\n    return busqueda(arr, x, i+1)    // T(n-1) - Llamada recursiva (~n/2 veces)\\nend",
-    "code_explanation": "Búsqueda lineal recursiva. Caso promedio: elemento en posición media.",
-    "complexity_explanation": "En promedio, el elemento se encuentra aproximadamente a mitad del arreglo (n/2 posiciones). La complejidad promedio sigue siendo O(n).",
+    "pseudocode_annotated": "for i=0 to n/2:  // c1*(n/2+1)\\n  if x == A[i]:  // c2*(n/2)",
+    "code_explanation": "Elemento en promedio a la mitad",
+    "complexity_explanation": "Costo total: c1*(n/2+1) + c2*(n/2)",
     "total_complexity": "O(n)"
   }
 }
 ```
+"""
 
-**ANÁLISIS POR CASOS:**
-- **Mejor caso:** Escenario más favorable (ej: elemento en primera posición)
-- **Peor caso:** Escenario más desfavorable (ej: elemento no existe o al final)
-- **Caso promedio:** Escenario típico esperado (ej: elemento en posición media)
-
-**INSTRUCCIONES CRÍTICAS:**
-1. DEBES responder SOLO con el objeto JSON solicitado (SingleCaseOutput o MultipleCasesOutput)
-2. NO incluyas explicaciones adicionales fuera del JSON
-3. NO uses formato markdown (```json o ```plaintext) - solo el JSON puro
-4. Asegúrate de que el JSON sea válido y tenga todos los campos requeridos
-5. En pseudocode_annotated, usa \\n para saltos de línea"""
-    
-    def analyze_single_case(
-        self,
-        pseudocode: str,
-        algorithm_name: str = "Algoritmo"
-    ) -> SingleCaseOutput:
-        """
-        Analiza pseudocódigo para un caso único.
-        
-        Args:
-            pseudocode: Código a analizar
-            algorithm_name: Nombre del algoritmo
-        
-        Returns:
-            SingleCaseOutput con análisis completo
-        """
-        # Configurar para caso único
+    def analyze_single_case(self, pseudocode: str, algorithm_name: str = "Algoritmo") -> SingleCaseOutput:
         agent = self._get_or_create_agent(for_multiple_cases=False)
-        self.response_format = SingleCaseOutput
         
         if self.enable_verbose:
-            print(f"\n{'='*70}")
-            print(f"[ComplexityLineAgent] 📊 Analizando caso único")
-            print(f"{'='*70}")
-            print(f"Algoritmo: {algorithm_name}")
-        
-        content = f"""Analiza la complejidad línea por línea del siguiente pseudocódigo.
+            print(f"\n[ComplexityLineAgent] 📊 Analizando caso único: {algorithm_name}")
 
-**Algoritmo:** {algorithm_name}
+        content = f"""Analiza la complejidad de este algoritmo usando Step Counting (Conteo de Pasos).
 
-**Pseudocódigo:**
+**ALGORITMO:** {algorithm_name}
+
+**PSEUDOCÓDIGO:**
 ```
 {pseudocode}
 ```
 
-**INSTRUCCIONES CRÍTICAS:**
-1. Anota CADA línea con su complejidad temporal
-2. Explica brevemente qué hace el algoritmo
-3. Calcula y explica la complejidad total
-4. Formato en pseudocode_annotated: `linea_codigo    // O(complejidad) - Descripción`
-5. **RESPONDE SOLO CON JSON ESTRUCTURADO - NO uses markdown ni texto libre**
+**INSTRUCCIONES:**
+1. Anota CADA LÍNEA del pseudocódigo con su coste usando notación de conteo de pasos:
+   - Asignaciones simples: `// c1`
+   - Comparaciones: `// c2`
+   - Llamadas recursivas: `// T(n-1)` o `// T(n/2)` según corresponda
+   - Ciclos: `// c_k * (n+1)` para la condición, `// c_j * n` para el cuerpo
+   - NO uses O(1), O(n), etc. en las líneas individuales
 
-**FORMATO REQUERIDO:** Objeto JSON SingleCaseOutput con estos campos:
-- has_multiple_cases: false
-- analysis.case_type: null
-- analysis.pseudocode_annotated: string (código anotado con \\n para saltos)
-- analysis.code_explanation: string (qué hace el algoritmo)
-- analysis.complexity_explanation: string (explicación de la complejidad)
-- analysis.total_complexity: string (ej: "O(n)", "O(log n)")"""
-        
+2. En complexity_explanation, suma todos los costes y deriva la complejidad final.
+
+3. En total_complexity, pon SOLO la notación Big-O final: "O(1)", "O(n)", "O(n²)", etc.
+
+**FORMATO DE RESPUESTA (JSON):**
+```json
+{{
+  "has_multiple_cases": false,
+  "analysis": {{
+    "case_type": null,
+    "pseudocode_annotated": "x = 0  // c1\\nfor i=0 to n:  // c2*(n+1)\\n    total = total + arr[i]  // c3*n\\nreturn total  // c4",
+    "code_explanation": "Suma todos los elementos de un arreglo",
+    "complexity_explanation": "Costo total: c1 + c2(n+1) + c3*n + c4 = (c2+c3)n + (c1+c2+c4). El término dominante es n.",
+    "total_complexity": "O(n)"
+  }}
+}}
+```
+
+**IMPORTANTE:** 
+- Usa \\n para saltos de línea (NO uses Enter real)
+- Escapa comillas dobles: \\" 
+- Responde SOLO con el JSON, sin texto adicional"""
+
         try:
             thread_id = f"complexity_single_{abs(hash(pseudocode))}"
             result = self.invoke_simple(content=content, thread_id=thread_id)
             output = self.extract_response(result)
-            
+
             if output is None:
-                if self.enable_verbose:
-                    print(f"⚠️  No se pudo extraer respuesta estructurada, intentando parsear JSON de markdown...")
-                    print(f"Result keys: {result.keys()}")
-                
-                # Intentar extraer JSON de la respuesta de texto
-                if "messages" in result and len(result["messages"]) > 0:
-                    last_message = result["messages"][-1]
-                    if hasattr(last_message, "content"):
-                        content_text = last_message.content
+                # Recuperación manual mejorada
+                if "messages" in result and result["messages"]:
+                    raw_content = result["messages"][-1].content
+                    if self.enable_verbose:
+                        print(f"⚠️ Intentando recuperar JSON crudo...")
+                    
+                    json_data = self._clean_and_repair_json(raw_content)
+                    if json_data:
+                        # Asegurar que cumple el schema
+                        if "analysis" not in json_data and "pseudocode_annotated" in json_data:
+                             # A veces el LLM devuelve el objeto analysis directamente
+                             json_data = {"has_multiple_cases": False, "analysis": json_data}
                         
-                        if self.enable_verbose:
-                            print(f"Contenido del mensaje (primeros 300 chars): {content_text[:300]}")
-                        
-                        # Intentar extraer JSON del markdown
-                        json_data = self._extract_json_from_markdown(content_text)
-                        
-                        if json_data:
-                            if self.enable_verbose:
-                                print("✓ JSON extraído exitosamente del markdown")
-                            
-                            # Validar y convertir a SingleCaseOutput
-                            try:
-                                output = SingleCaseOutput(**json_data)
-                                if self.enable_verbose:
-                                    print("✓ JSON validado como SingleCaseOutput")
-                            except Exception as e:
-                                if self.enable_verbose:
-                                    print(f"✗ Error validando JSON: {e}")
-                                raise ValueError(f"JSON extraído no es válido: {str(e)}")
-                        else:
-                            raise ValueError(f"No se pudo extraer JSON del contenido")
-                
-                if output is None:
-                    raise ValueError("El agente no retornó una respuesta válida")
-            
-            if self.enable_verbose:
-                print(f"\n✅ Análisis completado")
-                print(f"   Complejidad total: {output.analysis.total_complexity}")
-            
+                        return SingleCaseOutput(**json_data)
+
+                raise ValueError("No se pudo extraer JSON válido tras intentos de reparación.")
+
             return output
-        
+
         except Exception as e:
             if self.enable_verbose:
-                print(f"\n❌ ERROR: {str(e)}")
+                print(f"❌ Error crítico en ComplexityLineAgent: {e}")
             
-            # Fallback
+            # Fallback seguro para no romper el frontend
             return SingleCaseOutput(
                 has_multiple_cases=False,
                 analysis=ComplexityAnalysis(
                     case_type=None,
-                    pseudocode_annotated=pseudocode,
-                    code_explanation=f"Algoritmo: {algorithm_name}",
-                    complexity_explanation=f"Error en el análisis: {str(e)}",
-                    total_complexity="O(?)"
+                    pseudocode_annotated=f"// Error al analizar el código.\\n// Intenta simplificar el input.\\n{pseudocode}",
+                    code_explanation="Hubo un error técnico procesando la respuesta del modelo.",
+                    complexity_explanation=f"Detalle del error: {str(e)}",
+                    total_complexity="Error"
                 )
             )
-    
-    def analyze_multiple_cases(
-        self,
-        pseudocode: str,
-        algorithm_name: str = "Algoritmo"
-    ) -> MultipleCasesOutput:
-        """
-        Analiza pseudocódigo para múltiples casos (mejor, peor, promedio).
-        
-        Args:
-            pseudocode: Código a analizar
-            algorithm_name: Nombre del algoritmo
-        
-        Returns:
-            MultipleCasesOutput con análisis de los 3 casos
-        """
-        # Configurar para múltiples casos
+
+    def analyze_multiple_cases(self, pseudocode: str, algorithm_name: str = "Algoritmo") -> MultipleCasesOutput:
         agent = self._get_or_create_agent(for_multiple_cases=True)
-        self.response_format = MultipleCasesOutput
-        
+
         if self.enable_verbose:
-            print(f"\n{'='*70}")
-            print(f"[ComplexityLineAgent] 📊 Analizando múltiples casos")
-            print(f"{'='*70}")
-            print(f"Algoritmo: {algorithm_name}")
-        
-        content = f"""Analiza la complejidad línea por línea del siguiente pseudocódigo para TRES casos.
+            print(f"\n[ComplexityLineAgent] 📊 Analizando múltiples casos: {algorithm_name}")
 
-**Algoritmo:** {algorithm_name}
+        content = f"""Analiza 3 casos (Best, Worst, Average) usando Step Counting para este algoritmo recursivo.
 
-**Pseudocódigo:**
+**ALGORITMO:** {algorithm_name}
+
+**PSEUDOCÓDIGO:**
 ```
 {pseudocode}
 ```
 
 **INSTRUCCIONES CRÍTICAS:**
-Genera 3 análisis completos:
+1. Identifica los 3 escenarios:
+   - BEST CASE: Mejor escenario (ej: elemento encontrado inmediatamente)
+   - WORST CASE: Peor escenario (ej: elemento no encontrado, recorre todo)
+   - AVERAGE CASE: Caso promedio (ej: elemento en posición media)
 
-1. **MEJOR CASO (best_case):**
-   - case_type: "best"
-   - Escenario más favorable (ej: elemento en primera posición)
-   - Pseudocódigo anotado con complejidades optimistas
-   - Explicación del mejor escenario
-   - Complejidad total del mejor caso
+2. Para cada caso, anota CADA LÍNEA del pseudocódigo con su coste usando notación de conteo de pasos:
+   - Asignaciones simples: `// c1`
+   - Comparaciones: `// c2`
+   - Llamadas recursivas: `// T(n-1)` o `// T(n/2)` según corresponda
+   - Ciclos: `// c_k * (n+1)` para la condición, `// c_j * n` para el cuerpo
+   - NO uses O(1), O(n), etc. en las líneas individuales
 
-2. **PEOR CASO (worst_case):**
-   - case_type: "worst"
-   - Escenario más desfavorable (ej: elemento no existe)
-   - Pseudocódigo anotado con complejidades pesimistas
-   - Explicación del peor escenario
-   - Complejidad total del peor caso
+3. En complexity_explanation, suma los costes y deriva la complejidad final.
 
-3. **CASO PROMEDIO (average_case):**
-   - case_type: "average"
-   - Escenario típico esperado (ej: elemento a mitad)
-   - Pseudocódigo anotado con complejidades esperadas
-   - Explicación del caso típico
-   - Complejidad total promedio
+4. En total_complexity, pon SOLO la notación Big-O final: "O(1)", "O(n)", "O(n²)", etc.
 
-**FORMATO en pseudocode_annotated:** `linea_codigo    // O(complejidad) - Descripción`
+**FORMATO DE RESPUESTA (JSON):**
+```json
+{{
+  "has_multiple_cases": true,
+  "best_case": {{
+    "case_type": "best",
+    "pseudocode_annotated": "busqueda(A, x, i, n)\\n    if (i = n) then  // c1\\n        return -1  // c2\\n    if (A[i] = x) then  // c3\\n        return i  // c4",
+    "code_explanation": "Búsqueda que encuentra el elemento inmediatamente",
+    "complexity_explanation": "En el mejor caso, el elemento está en la primera posición. Costo: c1 + c3 + c4 = constante",
+    "total_complexity": "O(1)"
+  }},
+  "worst_case": {{
+    "case_type": "worst",
+    "pseudocode_annotated": "busqueda(A, x, i, n)\\n    if (i = n) then  // c1 * n\\n        return -1  // c2\\n    if (A[i] = x) then  // c3 * n\\n    return busqueda(A, x, i+1, n)  // T(n-1)",
+    "code_explanation": "Búsqueda que no encuentra el elemento",
+    "complexity_explanation": "En el peor caso, recorre todo el arreglo sin encontrar. Costo: T(n) = T(n-1) + c. Resolviendo: T(n) = O(n)",
+    "total_complexity": "O(n)"
+  }},
+  "average_case": {{
+    "case_type": "average",
+    "pseudocode_annotated": "busqueda(A, x, i, n)\\n    if (i = n) then  // c1 * (n/2)\\n    if (A[i] = x) then  // c3 * (n/2)\\n    return busqueda(A, x, i+1, n)  // T(n/2)",
+    "code_explanation": "Búsqueda que encuentra el elemento en promedio a la mitad",
+    "complexity_explanation": "En promedio, el elemento está en la mitad del arreglo. Costo: T(n) ≈ n/2. Resolviendo: T(n) = O(n)",
+    "total_complexity": "O(n)"
+  }}
+}}
+```
 
-**MUY IMPORTANTE:** 
-- RESPONDE SOLO CON JSON ESTRUCTURADO MultipleCasesOutput
-- NO uses markdown (```json), NO uses texto libre
-- has_multiple_cases: true
-- Cada caso (best_case, worst_case, average_case) tiene: case_type, pseudocode_annotated, code_explanation, complexity_explanation, total_complexity
-- Usa \\n para saltos de línea en pseudocode_annotated"""
-        
+**IMPORTANTE:** 
+- Usa \\n para saltos de línea (NO uses Enter real)
+- Escapa comillas dobles: \\" 
+- DEBES incluir los 3 casos: best_case, worst_case, average_case
+- Responde SOLO con el JSON, sin texto adicional"""
+
         try:
             thread_id = f"complexity_multiple_{abs(hash(pseudocode))}"
             result = self.invoke_simple(content=content, thread_id=thread_id)
             output = self.extract_response(result)
-            
+
             if output is None:
-                if self.enable_verbose:
-                    print(f"⚠️  No se pudo extraer respuesta estructurada, intentando parsear JSON de markdown...")
-                    print(f"Result keys: {result.keys()}")
-                
-                # Intentar extraer JSON de la respuesta de texto
-                if "messages" in result and len(result["messages"]) > 0:
-                    last_message = result["messages"][-1]
-                    if hasattr(last_message, "content"):
-                        content_text = last_message.content
-                        
+                if "messages" in result and result["messages"]:
+                    raw_content = result["messages"][-1].content
+                    if self.enable_verbose:
+                         print(f"⚠️ Intentando recuperar JSON crudo (Multiple)...")
+                         print(f"📄 Contenido crudo (primeros 500 chars): {raw_content[:500]}")
+
+                    json_data = self._clean_and_repair_json(raw_content)
+                    if json_data:
                         if self.enable_verbose:
-                            print(f"Contenido del mensaje (primeros 300 chars): {content_text[:300]}")
+                            print(f"🔍 Estructura JSON recuperada: {list(json_data.keys())}")
                         
-                        # Intentar extraer JSON del markdown
-                        json_data = self._extract_json_from_markdown(content_text)
+                        # Verificar si la estructura tiene los campos requeridos
+                        if "best_case" not in json_data and "analysis" in json_data:
+                            # El modelo devolvió una estructura anidada - extraer los casos
+                            analysis_data = json_data.get("analysis", {})
+                            if isinstance(analysis_data, dict):
+                                # Intentar extraer los 3 casos del análisis
+                                best = analysis_data.get("best_case") or analysis_data.get("best")
+                                worst = analysis_data.get("worst_case") or analysis_data.get("worst")
+                                average = analysis_data.get("average_case") or analysis_data.get("average")
+                                
+                                if best and worst and average:
+                                    json_data = {
+                                        "has_multiple_cases": True,
+                                        "best_case": best,
+                                        "worst_case": worst,
+                                        "average_case": average
+                                    }
+                                    if self.enable_verbose:
+                                        print(f"✅ Reestructurado JSON desde 'analysis'")
+                                else:
+                                    if self.enable_verbose:
+                                        print(f"⚠️ Faltan casos en analysis: best={bool(best)}, worst={bool(worst)}, avg={bool(average)}")
                         
-                        if json_data:
+                        # Último intento: si solo hay un caso, replicarlo en los 3
+                        if "best_case" not in json_data:
                             if self.enable_verbose:
-                                print("✓ JSON extraído exitosamente del markdown")
+                                print(f"⚠️ No se encontró best_case, worst_case, average_case")
+                                print(f"   Intentando replicar caso único...")
                             
-                            # Validar y convertir a MultipleCasesOutput
-                            try:
-                                output = MultipleCasesOutput(**json_data)
+                            # Buscar un caso único para replicar
+                            single_case = None
+                            for key in ["case", "analysis", "result"]:
+                                if key in json_data and isinstance(json_data[key], dict):
+                                    if "pseudocode_annotated" in json_data[key]:
+                                        single_case = json_data[key]
+                                        break
+                            
+                            if not single_case and "pseudocode_annotated" in json_data:
+                                single_case = json_data
+                            
+                            if single_case:
                                 if self.enable_verbose:
-                                    print("✓ JSON validado como MultipleCasesOutput")
-                            except Exception as e:
-                                if self.enable_verbose:
-                                    print(f"✗ Error validando JSON: {e}")
-                                raise ValueError(f"JSON extraído no es válido: {str(e)}")
-                        else:
-                            raise ValueError(f"No se pudo extraer JSON del contenido")
-                
-                if output is None:
-                    raise ValueError("El agente no retornó una respuesta válida")
-            
-            if self.enable_verbose:
-                print(f"\n✅ Análisis completado")
-                print(f"   Mejor caso: {output.best_case.total_complexity}")
-                print(f"   Peor caso: {output.worst_case.total_complexity}")
-                print(f"   Caso promedio: {output.average_case.total_complexity}")
-            
+                                    print(f"✅ Replicando caso único en los 3 casos")
+                                
+                                # Asegurar que tenga case_type
+                                for case_type, case_name in [("best", "best"), ("worst", "worst"), ("average", "average")]:
+                                    case_copy = single_case.copy()
+                                    case_copy["case_type"] = case_type
+                                    json_data[f"{case_type}_case"] = case_copy
+                                
+                                json_data["has_multiple_cases"] = True
+                        
+                        return MultipleCasesOutput(**json_data)
+
+                raise ValueError("JSON inválido o mal formado.")
+
             return output
-        
+
         except Exception as e:
             if self.enable_verbose:
-                print(f"\n❌ ERROR: {str(e)}")
+                print(f"❌ Error crítico en ComplexityLineAgent (Multiple): {e}")
+                print(f"   Tipo de error: {type(e).__name__}")
             
-            # Fallback con análisis básico
-            default_analysis = ComplexityAnalysis(
+            dummy = ComplexityAnalysis(
                 case_type="error",
-                pseudocode_annotated=pseudocode,
-                code_explanation=f"Algoritmo: {algorithm_name}",
-                complexity_explanation=f"Error en el análisis: {str(e)}",
-                total_complexity="O(?)"
+                pseudocode_annotated=f"// Error al analizar.\\n{pseudocode}",
+                code_explanation="Error de procesamiento.",
+                complexity_explanation=str(e),
+                total_complexity="?"
             )
-            
             return MultipleCasesOutput(
                 has_multiple_cases=True,
-                best_case=default_analysis.model_copy(update={"case_type": "best"}),
-                worst_case=default_analysis.model_copy(update={"case_type": "worst"}),
-                average_case=default_analysis.model_copy(update={"case_type": "average"})
+                best_case=dummy,
+                worst_case=dummy,
+                average_case=dummy,
             )
 
 
@@ -515,35 +450,23 @@ Genera 3 análisis completos:
 # FUNCIONES DE CONVENIENCIA
 # ============================================================================
 
-
 def analyze_complexity_by_line(
     pseudocode: str,
     algorithm_name: str = "Algoritmo",
     multiple_cases: bool = False,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> Dict[str, Any]:
     """
-    Función de conveniencia para analizar complejidad línea por línea.
+    Función wrapper para análisis de complejidad línea por línea.
     
     Args:
-        pseudocode: Código a analizar
+        pseudocode: Código del algoritmo a analizar
         algorithm_name: Nombre del algoritmo
-        multiple_cases: True para analizar mejor/peor/promedio caso
-        verbose: Mostrar logs
-    
-    Returns:
-        Diccionario con el análisis completo
-    
-    Ejemplos:
-        # Caso único
-        >>> result = analyze_complexity_by_line(code, "BubbleSort")
-        >>> print(result["analysis"]["total_complexity"])
-        "O(n²)"
+        multiple_cases: Si True, analiza best/worst/average. Si False, caso único
+        verbose: Habilita logs detallados
         
-        # Múltiples casos
-        >>> result = analyze_complexity_by_line(code, "QuickSort", multiple_cases=True)
-        >>> print(result["best_case"]["total_complexity"])
-        "O(n log n)"
+    Returns:
+        Diccionario con el análisis de complejidad
     """
     agent = ComplexityLineByLineAgent(enable_verbose=verbose)
     

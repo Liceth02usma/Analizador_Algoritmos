@@ -45,7 +45,7 @@ class ControlIterative(ControlAlgorithm):
         #     structure=structure,
         #     case = "Peor"
         # )
-        #else:
+        # else:
         # self.analyze_from_parsed_tree(
         #     algorithm_name=algorithm_name,
         #     pseudocode=pseudocode,
@@ -95,7 +95,6 @@ class ControlIterative(ControlAlgorithm):
 
         flow_diagram = self.algorithm.generate_flow_diagram()
 
-
         result = {
             "algorithm": {
                 "name": self.algorithm.name,
@@ -113,7 +112,7 @@ class ControlIterative(ControlAlgorithm):
                     "best_case": None,
                     "worst_case": None,
                     "average_case": None,
-                    "dominant": None
+                    "dominant": None,
                 },
                 "space": None,
                 "reasoning": None,
@@ -121,7 +120,7 @@ class ControlIterative(ControlAlgorithm):
             "pattern": {
                 "name": "No detectado",
                 "description": "",
-                "complexity_hint": ""
+                "complexity_hint": "",
             },
             "diagrams": {
                 "flowDiagram": flow_diagram,

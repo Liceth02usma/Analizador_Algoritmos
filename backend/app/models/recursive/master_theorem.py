@@ -3,312 +3,351 @@ from pydantic import BaseModel, Field
 import re
 import math
 
+# Importación segura de SymPy
+try:
+    from sympy import symbols, limit, oo, log, sympify, zoo, Function, Symbol
+
+    SYMPY_AVAILABLE = True
+except ImportError:
+    SYMPY_AVAILABLE = False
+
 from ...external_services.Agentes.Agent import AgentBase
 from .strategy_resolve import RecurrenceStrategy
 
+
+# **********************************************
+# 1. Schema de Respuesta (Sin Notación Asintótica)
+# **********************************************
+
+
 class MasterTheoremAgentOutput(BaseModel):
     """Schema estructurado para la respuesta del agente del Teorema Maestro."""
-    
+
     a: int = Field(..., description="Parámetro 'a': número de subproblemas.")
     b: int = Field(..., description="Parámetro 'b': factor de división de n.")
     f_n: str = Field(..., description="Función de trabajo adicional f(n).")
-    log_b_a: str = Field(..., description="Valor de n^(log_b(a)).")
+    log_b_a: str = Field(..., description="Valor calculado de n^(log_b(a)).")
     comparison: str = Field(
-        ..., 
-        description="Comparación entre f(n) y n^log_b(a) (ej: 'f(n) = n es Θ(n^log₂(n))')."
+        ...,
+        description="Explicación de la comparación del límite (ej: 'f(n) crece más lento que n^E').",
     )
     case_id: str = Field(
-        ..., 
-        description="Caso del Teorema Maestro que aplica (Caso 1, Caso 2 o Caso 3)."
+        ...,
+        description="Caso del Teorema Maestro identificado (Caso 1, Caso 2 o Caso 3).",
     )
     complexity: str = Field(
-        ..., 
-        description="Complejidad final en notación Big-O (ej: 'O(n log n)')."
+        ...,
+        description="Término dominante final SIN notación O/Theta (ej: 'n log n', 'n^2'). NO escribir 'O(...)'.",
     )
     detailed_explanation: str = Field(
-        ..., 
-        description="Explicación completa del proceso paso a paso."
+        ...,
+        description="Explicación pedagógica paso a paso justificando el cálculo de SymPy.",
     )
 
 
 # **********************************************
-# 2. Analizador de Ecuaciones (Para Teorema Maestro)
+# 2. Analizador de Ecuaciones
 # **********************************************
+
 
 class MasterEquationAnalyzer:
     """
     Analiza la ecuación y extrae los parámetros a, b, f(n).
-    Identifica si es aplicable al Teorema Maestro.
     """
-    
+
     @staticmethod
     def parse_equation(equation: str) -> Dict[str, Any]:
         """Extrae a, b, y f(n) de ecuaciones de la forma T(n) = aT(n/b) + f(n)."""
         eq = equation.replace(" ", "").lower()
-        
+
         params = {
-            'original': equation,
-            'normalized': eq,
-            'a': None, 
-            'b': None, 
-            'f_n': None, 
-            'is_master_form': False, 
-            'is_trivial': False,
-            'trivial_result': None 
+            "original": equation,
+            "normalized": eq,
+            "a": None,
+            "b": None,
+            "f_n": None,
+            "is_master_form": False,
         }
-        
-        # Patrón para T(n) = aT(n/b) + f(n)
-        master_pattern = r't\(n\)=(\d*)t\(n/(\d+)\)\s*(?:\+)?\s*(.*)'
+
+        # Regex mejorado para capturar T(n) = a T(n/b) + f(n)
+        # Maneja casos donde 'a' no está presente (implícito 1)
+        master_pattern = r"t\(n\)=(\d*)t\(n/(\d+)\)\s*(?:\+)?\s*(.*)"
         master_matches = re.findall(master_pattern, eq)
-        
+
         if master_matches:
             match = master_matches[0]
             a_str, b_str, f_n_raw = match
-            
-            # a: Coeficiente de T(n/b), por defecto 1 si no está explícito
-            params['a'] = int(a_str) if a_str else 1
-            # b: Divisor de n
-            params['b'] = int(b_str)
-            # f(n): El trabajo restante. Quitar el = de T(n)= y el término de recursión
-            f_n = f_n_raw.replace('t(n)=', '').replace('+', '').strip()
-            
-            # Asegurar que f(n) no esté vacío
-            params['f_n'] = f_n if f_n else '1'
-            
-            # El Teorema Maestro requiere a >= 1, b > 1.
-            if params['a'] >= 1 and params['b'] > 1:
-                params['is_master_form'] = True
-        
-        # El Teorema Maestro no tiene casos triviales resueltos por reglas simples
-        # como en el método del árbol, todo se delega al agente/algoritmo del teorema.
-        
+
+            params["a"] = int(a_str) if a_str else 1
+            params["b"] = int(b_str)
+
+            # Limpieza de f(n)
+            f_n = f_n_raw.replace("t(n)=", "").replace("+", "").strip()
+            params["f_n"] = f_n if f_n else "0"  # f(n) no debería ser vacío
+
+            if params["a"] >= 1 and params["b"] > 1:
+                params["is_master_form"] = True
+
         return params
 
 
 # **********************************************
-# 3. Agente de Resolución Compleja (Teorema Maestro)
+# 3. Agente de Resolución (Con SymPy)
 # **********************************************
+
 
 class MasterTheoremAgent(AgentBase[MasterTheoremAgentOutput]):
     """
-    Agente especializado en resolver recurrencias usando el Teorema Maestro.
-    Se usa para ecuaciones de la forma T(n) = aT(n/b) + f(n).
+    Agente especializado en Teorema Maestro asistido por cálculo simbólico (SymPy).
     """
-    
-    def __init__(self, model_type: str = "Modelo_Codigo", enable_verbose: bool = False):
+
+    def __init__(self, model_type: str = "Gemini_Rapido", enable_verbose: bool = False):
         self.enable_verbose = enable_verbose
-        # Simulación de la inicialización de AgentBase
-        self.response_format = MasterTheoremAgentOutput
-        self.tools = []
-        self.context_schema = None
-        self.SYSTEM_PROMPT = "" 
-        super().__init__(model_type)
-    
+        super().__init__(model_type, provider="gemini")
+
     def _configure(self) -> None:
-        """Configura el agente según AgentBase."""
         self.response_format = MasterTheoremAgentOutput
         self.tools = []
         self.context_schema = None
-        
-        # Usando raw string (r"...") para evitar problemas con \
-        self.SYSTEM_PROMPT = r"""Eres un experto en Análisis de Algoritmos especializado en el **TEOREMA MAESTRO**.
 
-**OBJETIVO:** Resolver ecuaciones de recurrencia de la forma $T(n) = aT(n/b) + f(n)$ aplicando las reglas del Teorema Maestro y justificando el Caso aplicado.
+        # PROMPT ACTUALIZADO: Enfocado en interpretación y prohibiendo Big-O en salida
+        self.SYSTEM_PROMPT = """Eres un experto en Análisis de Algoritmos. Tu tarea es interpretar los cálculos matemáticos del Teorema Maestro proporcionados por SymPy y generar una explicación pedagógica.
 
----
-**REGLAS DEL TEOREMA MAESTRO (Comparar $f(n)$ con $\theta(n^{\log_b a})$):**
+**OBJETIVO:** Validar y explicar el análisis del Teorema Maestro para $T(n) = aT(n/b) + f(n)$.
 
-1.  **Caso 1:** Si $f(n) = O(n^{\log_b a - \epsilon})$ para algún $\epsilon > 0$ (es decir, $f(n)$ es polinomialmente *más pequeña*).
-    * **Resultado:** $T(n) = \Theta(n^{\log_b a})$
+**TU FUENTE DE VERDAD (SymPy):**
+Recibirás el cálculo del límite $\lim_{n \to \infty} \frac{f(n)}{n^{\log_b a}}$.
+- Si Límite = 0 $\to$ Domina $n^{\log_b a}$ (Caso 1).
+- Si Límite = Constante $\to$ Son iguales (Caso 2).
+- Si Límite = $\infty$ $\to$ Domina $f(n)$ (Caso 3).
 
-2.  **Caso 2:** Si $f(n) = \Theta(n^{\log_b a})$ (son del *mismo orden*).
-    * **Resultado:** $T(n) = \Theta(n^{\log_b a} \log n)$
+**REGLA DE ORO (FORMATO):**
+En el campo `complexity`, **NO USES NOTACIÓN ASINTÓTICA (O, Theta, Omega)**.
+- INCORRECTO: "O(n^2)", "Theta(n log n)"
+- CORRECTO: "n^2", "n log n", "n^2.58"
 
-3.  **Caso 3:** Si $f(n) = \Omega(n^{\log_b a + \epsilon})$ para algún $\epsilon > 0$ (es decir, $f(n)$ es polinomialmente *más grande*) **Y** se cumple la **condición de regularidad**: $a f(n/b) \leq c f(n)$ para alguna constante $c < 1$ y $n$ suficientemente grande.
-    * **Resultado:** $T(n) = \Theta(f(n))$
+**PROCESO DE EXPLICACIÓN:**
+1. Confirma los parámetros $a, b, f(n)$.
+2. Explica el cálculo de $E = \log_b a$ (exponente crítico).
+3. Interpreta el límite calculado por SymPy para comparar $f(n)$ vs $n^E$.
+4. Concluye con el Caso y la complejidad final (solo el término).
+"""
 
----
-**PROCESO OBLIGATORIO (5 PASOS):**
-
-**PASO 1: EXTRAER PARÁMETROS**
-Identificar $a$, $b$, y $f(n)$.
-
-**PASO 2: CALCULAR LA CLASE CRÍTICA**
-Calcular el valor de $\log_b a$. El término crítico para comparar es $n^{\log_b a}$.
-
-**PASO 3: COMPARAR $f(n)$ con $n^{\log_b a}$**
-Determinar la relación asintótica usando notaciones $O$, $\Theta$, $\Omega$.
-
-**PASO 4: IDENTIFICAR EL CASO APLICABLE**
-Seleccionar el Caso 1, 2 o 3 basado en la comparación. Si es Caso 3, verificar la Condición de Regularidad.
-
-**PASO 5: OBTENER COMPLEJIDAD FINAL**
-Aplicar la fórmula del caso seleccionado y expresar el resultado en notación $O$ (Big-O).
-
----
-**FORMATO DE SALIDA:**
-Debes responder con un objeto MasterTheoremAgentOutput que contenga todos los campos solicitados, siendo preciso en la notación matemática (ej: $\log_2 n$)."""
-    
-    def solve_complex(self, equation: str, params: Dict[str, Any]) -> MasterTheoremAgentOutput:
+    def _analyze_with_sympy(self, a: int, b: int, f_n_str: str) -> Dict[str, Any]:
         """
-        Resuelve la ecuación usando el agente del Teorema Maestro.
+        Usa SymPy para calcular el límite y determinar el caso científicamente.
+        Comparación: L = lim(n->oo) f(n) / n^(log_b a)
         """
-        if not params['is_master_form']:
-            raise ValueError("La ecuación no está en la forma T(n) = aT(n/b) + f(n) requerida por el Teorema Maestro.")
-        
-        # Preparar contexto para el agente
+        if not SYMPY_AVAILABLE:
+            return {"status": "error", "reason": "SymPy no instalado"}
+
+        try:
+            n = Symbol("n", positive=True, real=True)
+
+            # 1. Calcular exponente crítico E = log_b(a)
+            # log(a, b) en SymPy es logaritmo base b de a
+            critical_exponent = log(a, b)
+            critical_term = n**critical_exponent
+
+            # 2. Parsear f(n)
+            # Limpieza para SymPy: 'log' suele ser base e, para CS usamos base 2 o 10,
+            # pero para límites al infinito la base del logaritmo es una constante que no afecta el 0 o inf.
+            # Reemplazamos ^ por ** para sintaxis python
+            f_n_clean = f_n_str.replace("^", "**").replace("log", "log")
+            f_n_expr = sympify(f_n_clean)
+
+            # 3. Calcular Límite: Ratio = f(n) / n^E
+            ratio = f_n_expr / critical_term
+            limit_val = limit(ratio, n, oo)
+
+            # 4. Determinar Caso basado en el límite
+            case_detected = "Desconocido"
+            explanation = ""
+
+            if limit_val == 0:
+                case_detected = "Caso 1"
+                explanation = f"El límite es 0, lo que significa que el término crítico n^{critical_exponent} crece más rápido que f(n)."
+            elif limit_val == oo:  # Infinito
+                case_detected = "Caso 3"
+                explanation = f"El límite es infinito, lo que significa que f(n) crece más rápido que n^{critical_exponent}."
+                # Nota: Aquí faltaría chequear condición de regularidad, se lo dejamos al Agente explicar.
+            elif limit_val.is_constant() and limit_val != 0:
+                case_detected = "Caso 2"
+                explanation = f"El límite es una constante ({limit_val}), lo que significa que f(n) y n^{critical_exponent} crecen a la misma velocidad."
+            else:
+                # Caso logarítmico especial del Caso 2 (n^E log^k n)
+                # Si el limite es raro, SymPy podría devolver una expresión
+                case_detected = "Caso 2 (Extendido)"
+                explanation = "Comparación compleja, posible factor logarítmico extra."
+
+            return {
+                "status": "success",
+                "limit_value": str(limit_val),
+                "critical_exponent": str(
+                    critical_exponent.evalf(3)
+                ),  # Valor numérico aprox
+                "case_detected": case_detected,
+                "sympy_explanation": explanation,
+            }
+
+        except Exception as e:
+            return {"status": "error", "reason": str(e)}
+
+    def solve_complex(
+        self, equation: str, params: Dict[str, Any]
+    ) -> MasterTheoremAgentOutput:
+
+        # 1. Ejecutar Análisis Matemático (SymPy)
+        sympy_analysis = self._analyze_with_sympy(
+            params["a"], params["b"], params["f_n"]
+        )
+
+        if self.enable_verbose and sympy_analysis.get("status") == "success":
+            print(
+                f"[MasterTheoremAgent] 🧮 SymPy Límite: {sympy_analysis['limit_value']} -> {sympy_analysis['case_detected']}"
+            )
+
+        # 2. Construir Contexto Rico para el Agente
         context_info = f"""
-        INFORMACIÓN DETECTADA:
-        - Ecuación: {equation}
-        - Subproblemas (a): {params.get('a', '?')}
-        - Factor de división (b): {params.get('b', '?')}
-        - Trabajo adicional f(n): {params.get('f_n', '?')}
-        """
-        content = f"""Resuelve esta ecuación de recurrencia usando el **TEOREMA MAESTRO**:
+DATOS EXTRAÍDOS:
+- a = {params['a']}
+- b = {params['b']}
+- f(n) = {params['f_n']}
 
-            **Ecuación:** {equation}
+ANÁLISIS MATEMÁTICO (SymPy):
+- Exponente crítico (log_b a): {sympy_analysis.get('critical_exponent', '?')}
+- Límite calculado (f(n) / n^E): {sympy_analysis.get('limit_value', '?')}
+- Caso Sugerido: {sympy_analysis.get('case_detected', '?')}
+- Interpretación: {sympy_analysis.get('sympy_explanation', '')}
+"""
 
-            {context_info}
-
-            Sigue los 5 pasos obligatorios:
-            1. Extraer Parámetros (a, b, f(n)).
-            2. Calcular la Clase Crítica $n^{{\\log_b a}}$.
-            3. Comparar $f(n)$ con $n^{{\\log_b a}}$.
-            4. Identificar el Caso (1, 2, o 3).
-            5. Obtener Complejidad Final.
-
-            Responde con el objeto MasterTheoremAgentOutput completo.
-        """
+        content = f"""Analiza la recurrencia: {equation}
         
-        # SIMULACIÓN: En un entorno real, esto invocaría el LLM.
-        # Aquí se usa el método base simulado.
-        result = self.invoke_simple(content=content, thread_id=f"master_{abs(hash(equation))}")
+{context_info}
+
+Recuerda: NO uses O() en el campo 'complexity'. Solo la función."""
+
+        # 3. Invocar al LLM
+        thread_id = f"master_{abs(hash(equation))}"
+        result = self.invoke_simple(content=content, thread_id=thread_id)
         output = self.extract_response(result)
-        
+
         if output is None:
-            # En caso de que la simulación falle (o el LLM en la realidad)
-            return MasterTheoremAgentOutput.parse_obj({
-                'a': params['a'] or 0, 
-                'b': params['b'] or 0, 
-                'f_n': params['f_n'] or 'Error', 
-                'log_b_a': 'Error de cálculo', 
-                'case_id': 'No resuelto', 
-                'comparison': 'No se pudo obtener la comparación',
-                'complexity': 'O(?)', 
-                'detailed_explanation': "El agente falló al retornar el formato estructurado."
-            })
-            
+            # Fallback en caso de error grave
+            return MasterTheoremAgentOutput(
+                a=params["a"],
+                b=params["b"],
+                f_n=params["f_n"],
+                log_b_a="?",
+                comparison="Error",
+                case_id="Error",
+                complexity="Error",
+                detailed_explanation="El agente no respondió.",
+            )
+
+        # Guardrail final: Limpiar O() si el agente alucinó
+        clean_complexity = (
+            output.complexity.replace("O(", "")
+            .replace("Theta(", "")
+            .replace(")", "")
+            .strip()
+        )
+        output.complexity = clean_complexity
+
         return output
 
 
 # **********************************************
-# 4. Estrategia Principal (Implementa RecurrenceStrategy)
+# 4. Estrategia Principal
 # **********************************************
+
 
 class MasterTheoremStrategy(RecurrenceStrategy):
     """
-    Estrategia híbrida para resolver recurrencias usando el Teorema Maestro.
+    Estrategia híbrida para resolver recurrencias usando el Teorema Maestro + SymPy.
     """
-    
+
     def __init__(self, enable_verbose: bool = False):
         super().__init__()
         self.name = "Teorema Maestro"
-        self.description = (
-            "Resuelve recurrencias de la forma T(n) = aT(n/b) + f(n) "
-            "comparando f(n) con el término crítico n^(log_b(a))."
-        )
+        self.description = "Resuelve T(n) = aT(n/b) + f(n) usando límites con SymPy."
         self.enable_verbose = enable_verbose
         self.agent: Optional[MasterTheoremAgent] = None
-    
+
     def _get_agent(self) -> MasterTheoremAgent:
-        """Lazy loading del agente."""
         if self.agent is None:
             if self.enable_verbose:
                 print("[MasterTheoremStrategy] Inicializando agente...")
             self.agent = MasterTheoremAgent(
-                model_type="Modelo_Codigo",
-                enable_verbose=self.enable_verbose
+                model_type="Gemini_Rapido", enable_verbose=self.enable_verbose
             )
         return self.agent
-    
+
     def solve(self, recurrenceEquation: str) -> Dict[str, Any]:
-        """
-        Resuelve la ecuación de recurrencia usando el Teorema Maestro.
-        """
         try:
+            if self.enable_verbose:
+                print(f"\n[MasterTheoremStrategy] Analizando: {recurrenceEquation}")
+
             params = MasterEquationAnalyzer.parse_equation(recurrenceEquation)
-            
-            if not params['is_master_form']:
+
+            if not params["is_master_form"]:
                 raise ValueError(
-                    "La ecuación no sigue el formato $T(n) = aT(n/b) + f(n)$ con $a \\geq 1$ y $b > 1$, "
-                    "por lo que el Teorema Maestro no es aplicable."
+                    "La ecuación no sigue el formato T(n) = aT(n/b) + f(n) requerido."
                 )
 
-            # Usar agente para el proceso de resolución (no hay casos triviales con reglas simples)
             agent = self._get_agent()
             agent_output = agent.solve_complex(recurrenceEquation, params)
-            
-            # Formatear resultado
+
+            # Construir respuesta final
+            # Nota: 'complexity' aquí viene SIN O(). Si el frontend necesita O(),
+            # se puede agregar en la visualización, pero cumplimos el requisito de "no dar la respuesta en ninguna cota"
+            # en el campo raw.
+
             result = {
-                'complexity': agent_output.complexity,
-                'steps': self._format_steps(agent_output),
-                'explanation': agent_output.detailed_explanation,
-                'applicable': True,
-                'method': self.name,
-                'a': agent_output.a,
-                'b': agent_output.b,
-                'f_n': agent_output.f_n,
-                'log_b_a': agent_output.log_b_a,
-                'case': agent_output.case_id
+                "complexity": agent_output.complexity,  # Solo "n^2"
+                "steps": self._format_steps(agent_output),
+                "explanation": agent_output.detailed_explanation,
+                "applicable": True,
+                "method": self.name,
+                "case": agent_output.case_id,
+                # Metadata útil
+                "a": agent_output.a,
+                "b": agent_output.b,
+                "log_b_a": agent_output.log_b_a,
             }
-            
+
             return result
-            
+
         except ValueError as e:
             return {
-                'complexity': 'O(?)',
-                'steps': [str(e)],
-                'explanation': f"El Teorema Maestro no pudo aplicarse. Razón: {str(e)}",
-                'applicable': False,
-                'method': self.name
+                "complexity": "N/A",
+                "steps": [],
+                "explanation": f"No aplicable: {str(e)}",
+                "applicable": False,
+                "method": self.name,
             }
         except Exception as e:
             return {
-                'complexity': 'O(?)',
-                'steps': [f"Error interno: {str(e)}"],
-                'explanation': f"Error inesperado durante la resolución: {str(e)}",
-                'applicable': False,
-                'method': self.name
+                "complexity": "Error",
+                "steps": [],
+                "explanation": f"Error interno: {str(e)}",
+                "applicable": False,
+                "method": self.name,
             }
-    
-    def _format_steps(self, agent_output: MasterTheoremAgentOutput) -> List[str]:
-        """Formatea la salida del agente en pasos legibles."""
+
+    def _format_steps(self, out: MasterTheoremAgentOutput) -> List[str]:
         steps = []
-        
-        # Paso 1: Parámetros
-        steps.append("**Paso 1 - Extraer Parámetros:**")
-        steps.append(f"  a = {agent_output.a}")
-        steps.append(f"  b = {agent_output.b}")
-        steps.append(f"  f(n) = {agent_output.f_n}")
+        steps.append("**Paso 1 - Parámetros:**")
+        steps.append(f" a = {out.a}, b = {out.b}")
+        steps.append(f" f(n) = {out.f_n}")
         steps.append("")
-        
-        # Paso 2: Clase Crítica
-        steps.append(r"**Paso 2 - Clase Crítica $\mathbf{n^{\log_b a}}$:**")
-        steps.append(f"   $n^{{\\log_{agent_output.b} {agent_output.a}}} = {agent_output.log_b_a}$")
+        steps.append(f"**Paso 2 - Exponente Crítico:**")
+        steps.append(f" log_{out.b}({out.a}) ≈ {out.log_b_a}")
         steps.append("")
-        
-        # Paso 3: Comparación
-        steps.append(r"**Paso 3 - Comparar $\mathbf{f(n)}$ con $\mathbf{n^{\log_b a}}$:**")
-        steps.append(f"   Comparación: {agent_output.comparison}")
+        steps.append("**Paso 3 - Análisis de Límite (SymPy):**")
+        steps.append(f" {out.comparison}")
         steps.append("")
-        
-        # Paso 4: Caso Aplicable
-        steps.append("**Paso 4 - Identificar Caso:**")
-        steps.append(f"   Aplica el **{agent_output.case_id}** del Teorema Maestro.")
-        steps.append("")
-        
-        # Paso 5: Complejidad Final
-        steps.append("**Paso 5 - Complejidad Final:**")
-        steps.append(f"   Complejidad: {agent_output.complexity}")
-        
+        steps.append(f"**Paso 4 - Conclusión:**")
+        steps.append(f" Aplica **{out.case_id}**")
+        steps.append(f" Término dominante: {out.complexity}")  # Sin O()
         return steps

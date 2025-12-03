@@ -37,12 +37,10 @@ def main():
 
     index 🡨 CALL busqueda_lineal_rec(A, x, 0, n)
     return index
-
     """
     print("📝 Pseudocódigo:")
     print(pseudocodigo)
     print()
-
 
     results = controller.analyze_from_parsed_tree("No se", pseudocodigo)
 
@@ -51,8 +49,8 @@ def main():
     print("  RESULTADOS DEL ANÁLISIS")
     print("=" * 80)
 
-    print(results)
     print(results.to_backend())
+
 
 if __name__ == "__main__":
     main()
