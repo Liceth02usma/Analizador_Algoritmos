@@ -1,82 +1,92 @@
-# app/routers/input_algorithm.py
-
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 from app.controllers.control_input import ControlInput
 from app.schemas.pseudocode_request import PseudocodeRequest
-from app.controllers.algorithm_type_controller import analyze_algorithm_type
+
+# Controladores de Análisis
+from app.controllers.algorithm_type_controller import determine_algorithm_type
 from app.controllers.algorithm_classifier_controller import classify_algorithm
-from app.parsers.parser import parser, TreeToDict
-from app.external_services.Agentes.IterativeAnalyzerAgent import IterativeAnalyzerAgent
+from app.controllers.iterative_controller import analyze_iterative
 
 router = APIRouter()
 
 @router.post("/parse")
 async def parse_code(request: PseudocodeRequest):
-    """Solo genera el AST (sin LLM)."""
-    result = ControlInput.parse_pseudocode(request.pseudocode)
-    return {"ast": result}
+    """Solo genera el AST (sin LLM). Útil para validar sintaxis en tiempo real."""
+    # Asumimos false para parseo directo, o podrías agregar el campo al request si quisieras
+    result = ControlInput.process_input(request.pseudocode, is_natural_language=False)
+    return result
 
 
 @router.post("/analyze")
-async def analyze_algorithm(payload: dict):
-    pseudocode = payload.get("pseudocode")
+async def analyze_algorithm(payload: dict = Body(...)):
+    """
+    Endpoint principal de análisis.
+    Payload: { "pseudocode": "...", "is_natural_language": true/false }
+    """
+    raw_input = payload.get("pseudocode", "")
+    is_natural = payload.get("is_natural_language", True)
 
-    # 1️⃣ Parsear pseudocódigo → obtenemos el AST (Tree)
-    tree = parser.parse(pseudocode)
-    transformer = TreeToDict()
-    ast_dict = transformer.transform(tree)
-
-
-    print("este es ast")
-    print(ast_dict)
-
-    # 2️⃣ Tipo de algoritmo (recursivo / iterativo / DP) → usa el Tree
-    algo_type_result = analyze_algorithm_type(pseudocode, tree)
-
-    # 3️⃣ Extraemos solo el tipo textual
-    algo_type_value = (
-        algo_type_result.get("detected_type")
-        if isinstance(algo_type_result, dict)
-        else algo_type_result.detected_type
-    )
-
-    # 4️⃣ Clasificación funcional / estructural → usa el dict
-    algo_class_result = classify_algorithm(pseudocode, tree, algo_type_value)
-
-    print("=== ✅ Resultado final del segundo agente ===")
-    print(algo_class_result)
-
-    if "iterativo" in algo_type_value:
-        print("⚙️ Invocando IterativeAnalyzerAgent...")
-        
-        iterative_agent = IterativeAnalyzerAgent(model_type="Modelo_Razonamiento")
-
-
-        efficiency_result = iterative_agent.analyze_iterative_algorithm(
-            pseudocode=pseudocode,
-            ast=ast_dict,
-            algorithm_name=algo_class_result.get("possible_known_algorithms", ["Algoritmo iterativo"])[0],
-            functional_class=algo_class_result.get("functional_class", None),
-            structural_pattern=algo_class_result.get("structural_pattern", "iteración simple"),
-            additional_info="Análisis automático desde backend"
-        )
-
-        # 🔥 Pydantic v2 → convertir a dict
-        efficiency_result = efficiency_result.model_dump()
-        print("=== 🤖 Resultado del análisis de eficiencia iterativa ===")
-        print(efficiency_result)
-            
-    elif "recursivo" in algo_type_value or "dinámica" in algo_type_value:
-        print("⚙️ (Pendiente) Invocar agente para recursivos o programación dinámica")
-        # Aquí luego invocaremos RecursiveOrDPAnalyzerAgent
-        efficiency_result = {"message": "Agente de análisis recursivo/DP aún no implementado."}
-    else:
-        print("⚠️ Tipo de algoritmo no reconocido para análisis de eficiencia.")
+    # 1️⃣ FASE DE PRE-PROCESAMIENTO (Traducción + Parsing)
+    # ControlInput se encarga de llamar al LLM si es necesario y luego a Lark
+    processed_input = ControlInput.process_input(raw_input, is_natural_language=is_natural)
     
-    # 5️⃣ Retornar todo al frontend
+    if "error" in processed_input:
+        return processed_input # Retornamos el error al frontend (400 o 422 implícito)
+
+    # Obtenemos los datos limpios y validados
+    valid_pseudocode = processed_input["pseudocode"]
+    valid_ast = processed_input["ast"]
+
+    print("✅ AST generado correctamente. Iniciando análisis de complejidad...")
+
+    # 2️⃣ FASE DE IDENTIFICACIÓN (Tipo de Algoritmo)
+    # Usamos el AST validado, no parseamos de nuevo
+    # Nota: analyze_algorithm_type puede necesitar el 'tree' objeto de Lark o el dict.
+    # Si tus funciones viejas requieren el objeto Tree crudo, tendrías que ajustar ControlInput,
+    # pero como usamos TreeToDict, asumimos que trabajan con diccionarios.
+    
+    algo_type_result = determine_algorithm_type(valid_ast, valid_pseudocode)
+
+    # Extraemos el tipo (ej: "iterativo", "recursivo")
+    algo_type_value = algo_type_result.get("detected_type", "desconocido")
+
+    # 3️⃣ FASE DE CLASIFICACIÓN (Nombre del Algoritmo)
+    algo_class_result = classify_algorithm(valid_pseudocode, valid_ast, algo_type_value)
+    
+    # Obtenemos el nombre más probable o genérico
+    algorithm_name = algo_class_result.get("possible_known_algorithms", ["Algoritmo Desconocido"])[0]
+
+    print(f"=== Algoritmo identificado: {algorithm_name} ({algo_type_value}) ===")
+
+    final_analysis = {}
+
+    # 4️⃣ ENRUTAMIENTO POR TIPO (Iterativo vs Recursivo)
+    if "iterativo" in algo_type_value.lower():
+        print("⚙️ Invocando Pipeline Iterativo...")
+        
+        final_analysis = analyze_iterative(
+            pseudocode=valid_pseudocode, # Usamos el código limpio/traducido
+            ast=valid_ast,
+            algorithm_name=algorithm_name
+        )
+        
+    elif "recursivo" in algo_type_value.lower() or "dinámica" in algo_type_value.lower():
+        print("⚙️ (Pendiente) Invocando Pipeline Recursivo...")
+        final_analysis = {"message": "El análisis de algoritmos recursivos está en desarrollo."}
+    
+    else:
+        print("⚠️ Tipo de algoritmo no reconocido.")
+        final_analysis = {"error": f"No se pudo determinar si es iterativo o recursivo. Tipo detectado: {algo_type_value}"}
+
+    # 5️⃣ RETORNO AL FRONTEND
     return {
-        "ast": ast_dict,
-        "algorithm_type": algo_type_result,
-        "algorithm_classification": algo_class_result,
-        "efficiency_analysis": efficiency_result
+        "input_metadata": {
+            "source_type": processed_input["source_type"],
+            "final_pseudocode": valid_pseudocode # Devolvemos el código generado para que el usuario lo vea
+        },
+        "classification": {
+            "type": algo_type_value,
+            "name": algorithm_name
+        },
+        "analysis": final_analysis
     }

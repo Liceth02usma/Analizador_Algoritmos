@@ -130,6 +130,17 @@ Reglas:
 - Si busca mínimo/máximo global → "optimización"
 - Si toma decisiones parciales → "greedy" o "backtracking"
 - Si tiene un patrón claro (ej. quicksort, mergesort) identifícalo como posible nombre conocido.
+- tu salida debe ser:
+
+{
+  "functional_class": "string",
+  "structural_pattern": "string",
+  "confidence_level": 0.0,
+  "justification": "string",
+  "key_features": ["string", "..."],
+  "possible_known_algorithms": ["string", "..."]
+}
+- Devuelve únicamente ese JSON (nada más).
 
 Incluye:
 - Clasificación funcional y estructural

@@ -23,7 +23,8 @@ start: stmt+
 // -------------------
 // Asignaciones y llamadas
 // -------------------
-assign: NAME "🡨" expr
+lvalue: NAME | NAME "[" expr "]" | NAME "." NAME
+assign: lvalue "🡨" expr
 call_stmt: "CALL" NAME "(" [args] ")"
 return_stmt: "return" expr
 args: expr ("," expr)*
