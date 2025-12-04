@@ -11,7 +11,40 @@ export default function HomePage() {
   const [output, setOutput] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [classification, setClassification] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationMessage, setTranslationMessage] = useState("");
 
+  const handleTranslate = async () => {
+    if (!pseudocode.trim()) {
+      setTranslationMessage("❌ El input no puede estar vacío");
+      return;
+    }
+
+    setIsTranslating(true);
+    setTranslationMessage("🔄 Traduciendo...");
+
+    try {
+      const response = await fetch("http://localhost:8000/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: pseudocode }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        // 🔹 Sobrescribir el input con el pseudocódigo generado
+        setPseudocode(data.pseudocode);
+        setTranslationMessage(`✅ ¡Traducción completada! Presiona "Comprobar Algoritmo" para continuar.`);
+      } else {
+        setTranslationMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error al traducir:", error);
+      setTranslationMessage("❌ Error al conectarse con el servidor");
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   const handleRun = async () => {
     try {
@@ -57,6 +90,20 @@ export default function HomePage() {
           </h2>
 
           <InputAlgorithm value={pseudocode} onChange={setPseudocode} />
+
+          <button
+            onClick={handleTranslate}
+            disabled={isTranslating}
+            className="mt-2 bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-lg transition self-center disabled:opacity-50"
+          >
+            {isTranslating ? "🔄 Traduciendo..." : "🌐 Traducir desde Lenguaje Natural"}
+          </button>
+
+          {translationMessage && (
+            <div className="text-sm text-center py-2 px-3 bg-gray-700 rounded">
+              {translationMessage}
+            </div>
+          )}
 
           <button
             onClick={handleRun}
