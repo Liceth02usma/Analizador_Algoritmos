@@ -244,7 +244,8 @@ class Recursive(Algorithm):
                 single_equation=recurrence_result.recurrence_equation
             )
 
-        mermaid_code = generate_tree_visualization(tree_sketches)
+        # generate_tree_visualization ahora retorna Dict[str, str]
+        tree_diagrams = generate_tree_visualization(tree_sketches)
 
         # =====================================================================
         # 6. REPLICAR CASO ÚNICO EN MEJOR, PEOR Y PROMEDIO (si aplica)
@@ -277,9 +278,8 @@ class Recursive(Algorithm):
                 ]
 
         # Construir diagrams que incluya árboles de recursión + árboles del método
-        diagrams = {
-            "recursion_trees": mermaid_code,
-        }
+        # tree_diagrams ya es un Dict[str, str] con claves 'tree_method_{case_type}'
+        diagrams = tree_diagrams.copy() if isinstance(tree_diagrams, dict) else {}
 
         # Agregar árboles del método (si se usó TreeMethod)
         for result in analysis_results:

@@ -2,7 +2,7 @@ from typing import List, Dict, Union
 # Asumo que importas los modelos desde tu archivo de esquemas/modelos
 from ..models.recursive.tree import RecurrenceTreeResponse, TreeNode 
 
-def generate_recurrence_tree_mermaid(response: 'RecurrenceTreeResponse') -> str:
+def generate_recurrence_tree_mermaid(response: 'RecurrenceTreeResponse') -> Dict[str, str]:
     """
     Genera código Mermaid para visualizar uno o múltiples árboles de recursión
     basado en la respuesta del RecurrenceTreeAgent (tree.py).
@@ -14,20 +14,22 @@ def generate_recurrence_tree_mermaid(response: 'RecurrenceTreeResponse') -> str:
         response (RecurrenceTreeResponse): Objeto de respuesta que contiene la lista de árboles.
 
     Returns:
-        str: Código en formato Mermaid (graph TD).
+        Dict[str, str]: Diccionario con claves 'tree_method_{case_type}' y valores con código Mermaid.
+                       Ejemplo: {'tree_method_best_case': 'graph TD...', 'tree_method_worst_case': '...'}
     """
     if not response.trees:
-        return ""
+        return {}
 
-    mermaid_lines = ["graph TD"]
+    result = {}
     
-    # Estilos básicos para mejorar la legibilidad
-    mermaid_lines.append("    %% Estilos")
-    mermaid_lines.append("    classDef root fill:#f9f,stroke:#333,stroke-width:2px;")
-    mermaid_lines.append("    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;")
-    mermaid_lines.append("    classDef node fill:#fff,stroke:#333,stroke-width:1px;")
-
     for tree_idx, tree in enumerate(response.trees):
+        # Inicializar líneas de Mermaid para este árbol individual
+        mermaid_lines = ["graph TD"]
+        mermaid_lines.append("    %% Estilos")
+        mermaid_lines.append("    classDef root fill:#f9f,stroke:#333,stroke-width:2px;")
+        mermaid_lines.append("    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;")
+        mermaid_lines.append("    classDef node fill:#fff,stroke:#333,stroke-width:1px;")
+        
         # Crear un subgrafo para cada caso (Best, Worst, Average, Single)
         # Limpiamos caracteres que puedan romper mermaid en el título
         safe_title = f"{tree.case_type.upper()}: {tree.recurrence_equation}".replace('"', "'")
@@ -85,8 +87,15 @@ def generate_recurrence_tree_mermaid(response: 'RecurrenceTreeResponse') -> str:
                             child_cursor += 1
 
         mermaid_lines.append("    end") # Fin del subgraph
+        
+        # Generar clave basada en el case_type
+        case_type = tree.case_type.lower()
+        key = f"tree_method_{case_type}"
+        
+        # Guardar el código Mermaid en el diccionario
+        result[key] = "\n".join(mermaid_lines)
 
-    return "\n".join(mermaid_lines)
+    return result
 
 
 def generate_tree_method_diagram(result: Dict[str, any]) -> str:
@@ -169,30 +178,35 @@ def generate_tree_method_diagram(result: Dict[str, any]) -> str:
     return "\n".join(mermaid_lines)
 
 
-def generate_tree_visualization(data: Union['RecurrenceTreeResponse', Dict[str, any]]) -> str:
+def generate_tree_visualization(data: Union['RecurrenceTreeResponse', Dict[str, any]]) -> Union[Dict[str, str], str]:
     """
     Función unificada que genera visualización Mermaid para AMBOS tipos de árboles.
     
     Detecta automáticamente el tipo de entrada y usa el generador apropiado:
     - Si es RecurrenceTreeResponse (del agente tree.py) → usa generate_recurrence_tree_mermaid()
+      Retorna Dict[str, str] con claves 'tree_method_{case_type}'
     - Si es Dict (de TreeMethodStrategy) → usa generate_tree_method_diagram()
+      Retorna str con código Mermaid
     
     Args:
         data: Puede ser RecurrenceTreeResponse o Dict[str, Any]
         
     Returns:
-        str: Código Mermaid para visualización
+        Union[Dict[str, str], str]: Diccionario con diagramas separados por caso (RecurrenceTreeResponse)
+                                     o string único (TreeMethodStrategy)
         
     Ejemplo de uso:
-        # Con RecurrenceTreeAgent
+        # Con RecurrenceTreeAgent (retorna Dict)
         agent = RecurrenceTreeAgent()
         response = agent.generate_tree_sketches(single_equation="T(n) = 2T(n/2) + n")
-        mermaid = generate_tree_visualization(response)
+        diagrams = generate_tree_visualization(response)
+        # diagrams = {'tree_method_single': 'graph TD...'}
         
-        # Con TreeMethodStrategy  
+        # Con TreeMethodStrategy (retorna str)
         strategy = TreeMethodStrategy()
         result = strategy.solve("T(n) = 2T(n/2) + n")
         mermaid = generate_tree_visualization(result)
+        # mermaid = 'graph TD...'
     """
     # Detectar el tipo de entrada
     if isinstance(data, dict):

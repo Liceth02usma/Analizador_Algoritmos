@@ -183,9 +183,6 @@ Para actualizar las dependencias:
 
 # tasks
 
-
-# Acoplar con el agente que saca la complejidad a partir de la ecuacion resuelta
-
 # Realizar el front end para ambos tipos de analisis
 
 # Hacer el agente total que me entregue toda la informacion del analisis

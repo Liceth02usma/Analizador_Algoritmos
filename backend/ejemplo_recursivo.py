@@ -50,6 +50,7 @@ def main():
     print("=" * 80)
 
     print(results.to_backend())
+    filepath = results.save_to_json("estructura_frontend.json")
 
 
 if __name__ == "__main__":

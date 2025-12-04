@@ -181,8 +181,8 @@ FIN FUNCION""",
     @staticmethod
     def get_mock_analysis() -> Solution:
         """
-        Mock generado a partir de los logs de ejecución de Búsqueda Lineal Recursiva.
-        Se ha corregido manualmente el error de JSON del agente de complejidad.
+        Mock actualizado con la estructura EXACTA que retorna recursive.py.
+        Basado en estructura_frontend.json generado por ejemplo_recursivo.py
         """
         return Solution(
             type="Recursivo",
@@ -255,41 +255,61 @@ FIN FUNCION""",
 
             # 4. Ecuaciones Matemáticas (Extraídas de RecurrenceAnalysis)
             equation=[
-                "T(n) = 1",                     # Mejor caso
-                "T(n) = T(n-1) + 1",            # Peor caso
-                "T(n) = T(n-1) + 1/2"           # Promedio (Simplificado)
+                "T(n) = 1, T(1) = 1",
+                "T(n) = T(n-1) + 1, T(1) = 1",
+                "T(n) = T(n-1) + 1/2"
             ],
 
             # 5. Métodos de Solución Usados
             method_solution=[
-                "none",                         # Constante no requiere método
-                "equation_characteristics",     # Ecuación Característica
-                "intelligent_substitution"      # Sustitución Inteligente
+                "none",
+                "equation_characteristics",
+                "intelligent_substitution"
             ],
 
             # 6. Resultados Matemáticos
             solution_equation=["1", "n", "O(n)"],
 
-            # 7. Detalles Paso a Paso (Simplificados de tus logs)
+            # 7. Detalles Paso a Paso (Estructura COMPLETA como en JSON)
             explain_solution_steps=[
                 {
                     "case_type": "best_case",
-                    "equation": "T(n) = 1",
+                    "equation": "T(n) = 1, T(1) = 1",
+                    "original_equation": "T(n) = 1, T(1) = 1",
+                    "simplification": None,
                     "method": "none",
-                    "complexity": "O(1)",
-                    "explanation": "La expresión es constante, no depende de n.",
+                    "method_enum": "none",
+                    "complexity": "1",
                     "steps": [
-                        "Expresión: T(n) = 1",
+                        "Expresión: T(n) = 1, T(1) = 1",
                         "Término dominante: Constante",
                         "Simplificación: 1"
-                    ]
+                    ],
+                    "explanation": "La expresión es constante, no depende de n.",
+                    "details": {
+                        "complexity": "1",
+                        "steps": [
+                            "Expresión: T(n) = 1, T(1) = 1",
+                            "Término dominante: Constante",
+                            "Simplificación: 1"
+                        ],
+                        "explanation": "La expresión es constante, no depende de n.",
+                        "applicable": True,
+                        "method": "Análisis Directo",
+                        "expression_type": "Constante",
+                        "dominant_term": "1"
+                    },
+                    "classification_confidence": 1.0,
+                    "classification_reasoning": "La ecuación T(n) = 1 no contiene ninguna llamada recursiva T(...). Por lo tanto, no es una recurrencia y se clasifica como NONE."
                 },
                 {
                     "case_type": "worst_case",
-                    "equation": "T(n) = T(n-1) + 1",
+                    "equation": "T(n) = T(n-1) + 1, T(1) = 1",
+                    "original_equation": "T(n) = T(n-1) + 1, T(1) = 1",
+                    "simplification": None,
                     "method": "equation_characteristics",
-                    "complexity": "O(n)",
-                    "explanation": "Recurrencia lineal no homogénea de orden 1.",
+                    "method_enum": "equation_characteristics",
+                    "complexity": "n",
                     "steps": [
                         "1. Identificar forma: T(n) - T(n-1) = 1",
                         "2. Ecuación característica: r - 1 = 0 -> r = 1",
@@ -297,39 +317,83 @@ FIN FUNCION""",
                         "4. Solución particular (por colisión con r=1): T_p(n) = An",
                         "5. Resolver A: An - A(n-1) = 1 -> A = 1",
                         "6. Solución general: T(n) = C + n",
-                        "7. Condición inicial T(0)=1 -> C=1. Final: T(n) = n + 1"
-                    ]
+                        "7. Condición inicial T(1)=1 -> C=0. Final: T(n) = n"
+                    ],
+                    "explanation": "Recurrencia lineal no homogénea de orden 1.",
+                    "details": {
+                        "complexity": "n",
+                        "steps": [
+                            "**Solución Exacta (SymPy):** n",
+                            "**Crecimiento asintótico:** n"
+                        ],
+                        "explanation": "1. **Identificación de la Recurrencia:** La recurrencia dada es T(n) = T(n-1) + 1. Es una recurrencia lineal no homogénea de primer orden.",
+                        "applicable": True,
+                        "method": "Ecuación Característica",
+                        "final_solution": "n"
+                    },
+                    "classification_confidence": 0.9,
+                    "classification_reasoning": "Recurrencia lineal de orden superior. Términos: T(n-1). Trabajo adicional: =+1,=1. La ecuación característica es ideal para resolver este tipo de recurrencia."
                 },
                 {
                     "case_type": "average_case",
                     "equation": "T(n) = T(n-1) + 1/2",
+                    "original_equation": "T(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1",
+                    "simplification": {
+                        "original": "T(n) = (1/(n+1)) × Σ[i=0 to n] T(i), donde T(i) = T(i-1) + 1, T(0) = 1",
+                        "simplified": "T(n) = T(n-1) + 1/2",
+                        "steps": [
+                            "Paso 1: Resolvemos T_int. Dada T(i) = T(i-1) + 1 con T(0)=1, la forma cerrada es T_int(i) = i + 1.",
+                            "Paso 2: Evaluamos S(n) = sum[i=0 to n] T_int(i) = sum[i=0 to n] (i + 1).",
+                            "Paso 3: Obtenemos la forma explícita de T(n). T(n) = (1/(n+1)) * S(n) = (n+2)/2.",
+                            "Paso 4: Derivamos la recurrencia final g'(n) = T(n) - T(n-1) = 1/2."
+                        ],
+                        "explicit_form": "(n+2)/2",
+                        "summation_resolved": "(n+1)(n+2)/2",
+                        "confidence": 1.0,
+                        "pattern_type": "linear"
+                    },
                     "method": "intelligent_substitution",
+                    "method_enum": "intelligent_substitution",
                     "complexity": "O(n)",
-                    "explanation": "Sustitución iterativa revela patrón aritmético.",
                     "steps": [
-                        "1. Expandir: T(n) = T(n-1) + 0.5",
-                        "2. Sustituir: T(n) = (T(n-2) + 0.5) + 0.5 = T(n-2) + 2(0.5)",
-                        "3. Patrón k-ésimo: T(n) = T(n-k) + k(0.5)",
-                        "4. Caso base k=n: T(n) = T(0) + 0.5n",
+                        "1. Expandir: T(n) = T(n-1) + 1/2",
+                        "2. Sustituir: T(n) = T(n-2) + 2 * (1/2)",
+                        "3. Patrón k-ésimo: T(n) = T(n-k) + k * (1/2)",
+                        "4. Caso base k=n-1: T(n) = T(1) + (n-1)/2",
                         "5. Complejidad: O(n)"
-                    ]
+                    ],
+                    "explanation": "Sustitución iterativa revela patrón aritmético.",
+                    "details": {
+                        "complexity": "O(n)",
+                        "applicable": True,
+                        "method": "Sustitución Inteligente",
+                        "closed_form": "T(n) = T(1) + (n-1)/2",
+                        "pattern": "T(n-k) + k * (1/2)"
+                    },
+                    "classification_confidence": 0.9,
+                    "classification_reasoning": "Recurrencia lineal con UN solo término recursivo T(n-1). Trabajo adicional: =+1/2. La sustitución inteligente permite expandir iterativamente la recurrencia."
                 }
             ],
 
-            # 8. Diagramas (Mermaid reconstruido de tus logs)
+            # 8. Diagramas (Mermaid con claves separadas por caso)
             diagrams={
-                "recursion_trees": """graph TD
+                "tree_method_best_case": """graph TD
         %% Estilos
         classDef root fill:#f9f,stroke:#333,stroke-width:2px;
         classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;
         classDef node fill:#fff,stroke:#333,stroke-width:1px;
 
-        subgraph cluster_0 ["BEST: T(n) = 1"]
+        subgraph cluster_0 ["BEST: T(n) = 1, T(1) = 1"]
             direction TB
             T0_L0_P0("T(n)"):::root
-        end
+        end""",
+                "tree_method_worst_case": """graph TD
+        %% Estilos
+        classDef root fill:#f9f,stroke:#333,stroke-width:2px;
+        classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;
+        classDef node fill:#fff,stroke:#333,stroke-width:1px;
 
-        subgraph cluster_1 ["WORST: T(n) = T(n-1) + 1"]
+        subgraph cluster_1 ["WORST: T(n) = T(n-1) + 1, T(1) = 1"]
             direction TB
             T1_L0_P0("T(n)"):::root
             T1_L1_P0("T(n-1)"):::node
@@ -338,7 +402,12 @@ FIN FUNCION""",
             T1_L1_P0 --> T1_L2_P0
             T1_L3_P0("T(n-3)"):::leaf
             T1_L2_P0 --> T1_L3_P0
-        end
+        end""",
+                "tree_method_average_case": """graph TD
+        %% Estilos
+        classDef root fill:#f9f,stroke:#333,stroke-width:2px;
+        classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;
+        classDef node fill:#fff,stroke:#333,stroke-width:1px;
 
         subgraph cluster_2 ["AVERAGE: T(n) = T(n-1) + 1/2"]
             direction TB
@@ -355,6 +424,29 @@ FIN FUNCION""",
             # 9. Metadatos extra
             extra={
                 "has_multiple_cases": True,
+                "analysis_details": [
+                    {
+                        "case_type": "best_case",
+                        "equation": "T(n) = 1, T(1) = 1",
+                        "method": "none",
+                        "complexity": "1",
+                        "classification_confidence": 1.0
+                    },
+                    {
+                        "case_type": "worst_case",
+                        "equation": "T(n) = T(n-1) + 1, T(1) = 1",
+                        "method": "equation_characteristics",
+                        "complexity": "n",
+                        "classification_confidence": 0.9
+                    },
+                    {
+                        "case_type": "average_case",
+                        "equation": "T(n) = T(n-1) + 1/2",
+                        "method": "intelligent_substitution",
+                        "complexity": "O(n)",
+                        "classification_confidence": 0.9
+                    }
+                ],
                 "was_replicated": False
             }
         )

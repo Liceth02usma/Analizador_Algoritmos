@@ -1,5 +1,8 @@
 from pydantic import BaseModel, field_validator
 from typing import List, Dict, Any, Optional, Union
+import json
+from pathlib import Path
+from datetime import datetime
 
 
 class Solution(BaseModel):
@@ -47,6 +50,53 @@ class Solution(BaseModel):
         simplemente devuelve la estructura cruda.
         """
         return self.model_dump()
+
+    def save_to_json(self, filename: Optional[str] = None, output_dir: Optional[str] = None) -> str:
+        """
+        Guarda el objeto Solution en un archivo JSON.
+        
+        Args:
+            filename: Nombre del archivo (opcional). Si no se proporciona, se genera automáticamente.
+            output_dir: Directorio donde guardar el archivo (opcional). Por defecto usa './output'.
+        
+        Returns:
+            str: Ruta completa del archivo guardado.
+        
+        Example:
+            solution = Solution(type="Recursivo", ...)
+            filepath = solution.save_to_json()
+            # O con nombre personalizado:
+            filepath = solution.save_to_json("mi_analisis.json", "./resultados")
+        """
+        # Crear directorio de salida si no existe
+        if output_dir is None:
+            output_dir = "./output"
+        
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        
+        # Generar nombre de archivo si no se proporciona
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            algorithm_name = self.algorithm_name or "algorithm"
+            # Sanitizar nombre de algoritmo para uso en archivos
+            safe_name = "".join(c if c.isalnum() else "_" for c in algorithm_name)
+            filename = f"{safe_name}_{timestamp}.json"
+        
+        # Asegurar que el nombre tenga extensión .json
+        if not filename.endswith('.json'):
+            filename += '.json'
+        
+        # Ruta completa del archivo
+        filepath = output_path / filename
+        
+        # Convertir el modelo a diccionario usando mode='json' para serializar Enums
+        data = self.model_dump(mode='json')
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        return str(filepath.absolute())
 
     def __str__(self) -> str:
         """Reporte técnico bonito con soporte para múltiples casos."""

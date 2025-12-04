@@ -13,7 +13,7 @@ router = APIRouter(prefix="/recursive", tags=["Recursive"])
 def generate_Analysis(data: AnalysisRecursive):
     control_input = ControlInput()
     return control_input.get_mock_analysis()
-    #return ControlRecursive().analyze_from_parsed_tree("No se", data.pseudocode)
+    # return ControlRecursive().analyze_from_parsed_tree("No se", data.pseudocode)
     # return ControlRecursive().analyze_from_parsed_tree(
     #     data.algorithm_name,
     #     data.pseudocode

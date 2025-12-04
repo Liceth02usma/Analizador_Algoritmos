@@ -28,33 +28,44 @@ export default function ComplexitySummary({ equation, method, complexity, hasMul
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {["best_case", "worst_case", "average_case"].map((caseType, index) => {
           const caseLabels = {
-            best_case: { label: "Mejor Caso", color: "green", borderColor: "border-green-500" },
-            worst_case: { label: "Peor Caso", color: "red", borderColor: "border-red-500" },
-            average_case: { label: "Caso Promedio", color: "yellow", borderColor: "border-yellow-500" },
+            best_case: { label: "Mejor Caso", icon: "🟢", color: "green", borderColor: "border-green-500" },
+            worst_case: { label: "Peor Caso", icon: "🔴", color: "red", borderColor: "border-red-500" },
+            average_case: { label: "Caso Promedio", icon: "🟡", color: "yellow", borderColor: "border-yellow-500" },
           };
           const caseInfo = caseLabels[caseType];
+
+          // Format method name for better display
+          const formatMethod = (m) => {
+            if (!m) return "N/A";
+            return m.replace(/_/g, ' ')
+              .split(' ')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+          };
 
           return (
             <div
               key={caseType}
               className={`bg-gray-700 p-5 rounded-lg border-t-4 ${caseInfo.borderColor}`}
             >
-              <h4 className="text-lg font-bold text-gray-200 mb-3">{caseInfo.label}</h4>
-              <div className="space-y-2">
+              <h4 className="text-lg font-bold text-gray-200 mb-3">
+                {caseInfo.icon} {caseInfo.label}
+              </h4>
+              <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-400">Ecuación:</p>
-                  <p className="text-green-400 font-mono text-sm">
+                  <p className="text-xs text-gray-400 mb-1">Ecuación:</p>
+                  <p className="text-green-400 font-mono text-sm break-words">
                     {equations[index] || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Método:</p>
+                  <p className="text-xs text-gray-400 mb-1">Método:</p>
                   <p className="text-blue-400 text-sm">
-                    {methods[index] || "N/A"}
+                    {formatMethod(methods[index])}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Complejidad:</p>
+                  <p className="text-xs text-gray-400 mb-1">Complejidad:</p>
                   <p className={`text-${caseInfo.color}-400 font-bold text-2xl`}>
                     {complexities[index] || "N/A"}
                   </p>

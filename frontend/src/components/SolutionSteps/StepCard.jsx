@@ -12,6 +12,28 @@ export default function StepCard({ step, index }) {
         <MethodBadge method={step.method} />
       </div>
 
+      {/* Ecuación Original */}
+      {step.original_equation && step.original_equation !== step.equation && (
+        <div className="bg-blue-900/20 border border-blue-700 p-3 rounded">
+          <p className="text-xs text-blue-300 mb-1 font-semibold">📝 Ecuación Original:</p>
+          <p className="text-blue-200 font-mono text-sm">{step.original_equation}</p>
+        </div>
+      )}
+
+      {/* Simplificación */}
+      {step.simplification && (
+        <div className="bg-green-900/20 border border-green-700 p-3 rounded space-y-2">
+          <p className="text-xs text-green-300 font-semibold mb-2">🔄 Simplificación:</p>
+          <div className="text-xs space-y-1">
+            <p className="text-gray-400">Original: <span className="text-gray-200 font-mono">{step.simplification.original}</span></p>
+            <p className="text-gray-400">Simplificada: <span className="text-green-400 font-mono font-semibold">{step.simplification.simplified}</span></p>
+            {step.simplification.explicit_form && (
+              <p className="text-gray-400">Forma Explícita: <span className="text-green-400 font-mono">{step.simplification.explicit_form}</span></p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="bg-gray-800 p-3 rounded">
         <p className="text-sm text-gray-400 mb-1">Ecuación:</p>
         <p className="text-green-400 font-mono">{step.equation}</p>
@@ -55,13 +77,38 @@ export default function StepCard({ step, index }) {
       {step.details && Object.keys(step.details).length > 0 && (
         <div className="bg-gray-800 p-4 rounded">
           <p className="text-sm font-semibold text-gray-300 mb-2">🔍 Detalles Técnicos:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(step.details).map(([key, value]) => (
-              <div key={key} className="text-sm">
-                <span className="text-gray-400">{key.replace(/_/g, ' ')}:</span>
-                <span className="text-green-400 ml-2 font-mono">{String(value)}</span>
-              </div>
-            ))}
+          <div className="space-y-2">
+            {Object.entries(step.details).map(([key, value]) => {
+              // Skip if it's steps or explanation (already shown)
+              if (key === 'steps' || key === 'explanation') return null;
+              
+              return (
+                <div key={key} className="bg-gray-900 p-2 rounded text-sm">
+                  <span className="text-gray-400 capitalize block mb-1 text-xs">
+                    {key.replace(/_/g, ' ')}:
+                  </span>
+                  {Array.isArray(value) ? (
+                    <div className="space-y-1">
+                      {value.map((item, idx) => (
+                        <p key={idx} className="text-gray-200 text-xs pl-2">• {item}</p>
+                      ))}
+                    </div>
+                  ) : typeof value === "boolean" ? (
+                    <span className={`font-semibold ${
+                      value ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {value ? '✓ Sí' : '✗ No'}
+                    </span>
+                  ) : typeof value === "object" && value !== null ? (
+                    <pre className="text-gray-200 text-xs font-mono whitespace-pre-wrap">
+                      {JSON.stringify(value, null, 2)}
+                    </pre>
+                  ) : (
+                    <span className="text-green-400 font-mono">{String(value)}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
