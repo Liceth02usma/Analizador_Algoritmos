@@ -93,8 +93,49 @@ class AgentBase(ABC, Generic[T]):
         }
 
         if context:
-            return self.agent.invoke(invoke_params, config=config, context=context)
-        return self.agent.invoke(invoke_params, config=config)
+            result = self.agent.invoke(invoke_params, config=config, context=context)
+        else:
+            result = self.agent.invoke(invoke_params, config=config)
+        
+        # 📊 LOG DE TOKENS
+        self._log_token_usage(result)
+        
+        return result
+    
+    def _log_token_usage(self, result: Dict[str, Any]):
+        """Extrae e imprime información de tokens de la respuesta."""
+        try:
+            if not isinstance(result, dict) or "messages" not in result:
+                return
+            
+            messages = result.get("messages", [])
+            if not isinstance(messages, list) or len(messages) < 2:
+                return
+            
+            # El AIMessage con tokens está típicamente en messages[-2]
+            # (antes del ToolMessage final)
+            ai_message = None
+            for msg in reversed(messages):
+                if hasattr(msg, "usage_metadata") and msg.usage_metadata:
+                    ai_message = msg
+                    break
+            
+            if not ai_message:
+                return
+            
+            usage = ai_message.usage_metadata
+            input_tokens = usage.get("input_tokens", 0)
+            output_tokens = usage.get("output_tokens", 0)
+            total_tokens = input_tokens + output_tokens
+            
+            print(f"\n📊 [TOKENS] {self.__class__.__name__}:")
+            print(f"   ├─ Input:  {input_tokens:,} tokens")
+            print(f"   ├─ Output: {output_tokens:,} tokens")
+            print(f"   └─ Total:  {total_tokens:,} tokens")
+        
+        except Exception as e:
+            # Fallar silenciosamente si hay problemas
+            print(f"⚠️ Error al extraer uso de tokens: {e}")
 
     def invoke_simple(
         self,

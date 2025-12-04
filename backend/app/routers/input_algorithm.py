@@ -3,9 +3,9 @@ from app.controllers.control_input import ControlInput
 from app.schemas.pseudocode_request import PseudocodeRequest
 
 # Controladores de Análisis
-from app.controllers.algorithm_type_controller import determine_algorithm_type
 from app.controllers.algorithm_classifier_controller import classify_algorithm
 from app.controllers.iterative_controller import analyze_iterative
+from app.controllers.algorithm_type_controller import AlgorithmClassifier
 
 router = APIRouter()
 
@@ -76,11 +76,14 @@ async def analyze_algorithm(payload: dict = Body(...)):
 
     print("✅ AST generado correctamente. Iniciando análisis de complejidad...")
 
+    classifier = AlgorithmClassifier()
+    result = classifier.classify(valid_ast)
+
     # 2️⃣ FASE DE IDENTIFICACIÓN (Tipo de Algoritmo)
-    algo_type_result = determine_algorithm_type(valid_ast, valid_pseudocode)
+    #algo_type_result = determine_algorithm_type(valid_ast, valid_pseudocode)
 
     # Extraemos el tipo (ej: "iterativo", "recursivo")
-    algo_type_value = algo_type_result.get("detected_type", "desconocido")
+    algo_type_value = result.get("algorithm_type", "desconocido")
 
     # 3️⃣ FASE DE CLASIFICACIÓN (Nombre del Algoritmo)
     algo_class_result = classify_algorithm(valid_pseudocode, valid_ast, algo_type_value)

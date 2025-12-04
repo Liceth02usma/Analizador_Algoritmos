@@ -46,6 +46,7 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
         )
 
         print(f"✅ Matemáticas completadas para {len(math_response.solved_cases)} casos.")
+        print(math_response)
 
         # ====================================================================
         # PASO 3: CLASIFICACIÓN ASINTÓTICA
@@ -141,7 +142,7 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
         solutions_list = []
         explain_steps_list = []
 
-        for case in merged_cases:
+        for idx, case in enumerate(merged_cases):
             c_name = case["case_name"]
             name_lower = c_name.lower()
             
@@ -157,13 +158,42 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
             equations_list.append(f"{c_name}: {case['raw_summation_str']}")
             solutions_list.append(f"{c_name}: T(n) = {case['simplified_complexity']}")
             
-            # Pasos de explicación
-            explain_steps_list.append(f"**{c_name}**: {case['math_steps']}")
+            # Pasos de explicación (para UI simple)
+            solved_case = math_response.solved_cases[idx] if idx < len(math_response.solved_cases) else None
+            
+            if solved_case:
+                explain_steps_list.append(
+                    f"**{c_name}**: {solved_case.final_summary if hasattr(solved_case, 'final_summary') else case['math_steps']}"
+                )
+            else:
+                explain_steps_list.append(f"**{c_name}**: {case['math_steps']}")
 
         # Agregar explicación general de notación
         asymptotic_dict["explanation"] = asymptotic_response.final_conclusion if asymptotic_response else ""
 
-        # 2. Instanciar el modelo Solution
+        # 2. Enriquecer merged_cases con datos pedagógicos del agente híbrido
+        for idx, merged_case in enumerate(merged_cases):
+            if idx < len(math_response.solved_cases):
+                solved_case = math_response.solved_cases[idx]
+                
+                # Agregar explicaciones detalladas
+                merged_case["properties_explanation"] = solved_case.properties_explanation if hasattr(solved_case, 'properties_explanation') else ""
+                
+                # Convertir resolution_steps a formato serializable
+                merged_case["resolution_steps"] = [
+                    {
+                        "step_number": step.step_number,
+                        "title": step.title,
+                        "explanation": step.explanation,
+                        "mathematical_expression": step.mathematical_expression,
+                        "property_or_formula": step.property_or_formula
+                    }
+                    for step in solved_case.resolution_steps
+                ] if hasattr(solved_case, 'resolution_steps') else []
+                
+                merged_case["final_summary"] = solved_case.final_summary if hasattr(solved_case, 'final_summary') else ""
+
+        # 3. Instanciar el modelo Solution
         solution = Solution(
             type="iterativo",
             algorithm_name=algorithm_name,
@@ -181,7 +211,7 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
             method_solution="Método de Conteo de Pasos + Sumatorias",
             solution_equation=solutions_list,
             
-            # Pasos de solución
+            # Pasos de solución (resumen para UI simple)
             explain_solution_steps=explain_steps_list,
             
             # Notación Asintótica
@@ -196,7 +226,8 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
             # Aquí va todo lo que no cabe en los campos estándar
             extra={
                 "is_case_dependent": not is_single_general_case,
-                "cases": merged_cases, # <--- ESTO ES LO QUE USA TU CASE SELECTOR
+                "cases": merged_cases,  # Ahora incluye properties_explanation, resolution_steps, final_summary
+                "hybrid_solver_summary": math_response.general_summary,
                 "project_metadata": {
                     "diagrams_generated": len(diagram_response.diagrams),
                     "agent_model": MODEL_PROFILE,

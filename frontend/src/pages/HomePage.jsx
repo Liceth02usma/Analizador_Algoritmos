@@ -31,6 +31,8 @@ export default function HomePage() {
       });
       const data = await response.json();
 
+      console.log("🌐 Respuesta de traducción:", pseudocode);
+
       if (data.success) {
         // 🔹 Sobrescribir el input con el pseudocódigo generado
         setPseudocode(data.pseudocode);
