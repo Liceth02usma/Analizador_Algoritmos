@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "lucide-react": "^0.555.0",
+    "mermaid": "^11.12.2"
+  }
+}
