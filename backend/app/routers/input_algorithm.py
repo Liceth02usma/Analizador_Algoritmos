@@ -9,6 +9,41 @@ from app.controllers.iterative_controller import analyze_iterative
 
 router = APIRouter()
 
+@router.post("/translate")
+async def translate_input(payload: dict = Body(...)):
+    """
+    Traduce lenguaje natural a pseudocódigo usando el agente.
+    Retorna el pseudocódigo generado para que sobrescriba el input.
+    """
+    from app.external_services.Agentes.NaturalLanguageToPseudocodeAgent import NaturalLanguageToPseudocodeAgent
+    
+    user_input = payload.get("text", "")
+    
+    if not user_input.strip():
+        return {"error": "El input no puede estar vacío"}
+    
+    try:
+        translator = NaturalLanguageToPseudocodeAgent(model_type="Gemini_Rapido")
+        result = translator.translate(user_input)
+        
+        if not result.was_successful:
+            return {
+                "error": result.error_message or "No se pudo traducir el input",
+                "success": False
+            }
+        
+        return {
+            "success": True,
+            "pseudocode": result.pseudocode,
+            "original_input": user_input
+        }
+    except Exception as e:
+        return {
+            "error": f"Error al traducir: {str(e)}",
+            "success": False
+        }
+
+
 @router.post("/parse")
 async def parse_code(request: PseudocodeRequest):
     """Solo genera el AST (sin LLM). Útil para validar sintaxis en tiempo real."""
@@ -21,17 +56,19 @@ async def parse_code(request: PseudocodeRequest):
 async def analyze_algorithm(payload: dict = Body(...)):
     """
     Endpoint principal de análisis.
-    Payload: { "pseudocode": "...", "is_natural_language": true/false }
+    Payload: { "pseudocode": "..." }
+    
+    IMPORTANTE: El pseudocódigo ya debe estar en formato válido (traducido o ingresado manualmente).
+    NO intenta traducir nuevamente (eso se hace en /translate).
     """
     raw_input = payload.get("pseudocode", "")
-    is_natural = payload.get("is_natural_language", False)
 
-    # 1️⃣ FASE DE PRE-PROCESAMIENTO (Traducción + Parsing)
-    # ControlInput se encarga de llamar al LLM si es necesario y luego a Lark
-    processed_input = ControlInput.process_input(raw_input, is_natural_language=is_natural)
+    # 1️⃣ FASE DE PRE-PROCESAMIENTO (Solo Parsing, SIN traducción)
+    # is_natural_language=False para evitar traducción duplicada
+    processed_input = ControlInput.process_input(raw_input, is_natural_language=False)
     
     if "error" in processed_input:
-        return processed_input # Retornamos el error al frontend (400 o 422 implícito)
+        return processed_input # Retornamos el error al frontend
 
     # Obtenemos los datos limpios y validados
     valid_pseudocode = processed_input["pseudocode"]
@@ -40,11 +77,6 @@ async def analyze_algorithm(payload: dict = Body(...)):
     print("✅ AST generado correctamente. Iniciando análisis de complejidad...")
 
     # 2️⃣ FASE DE IDENTIFICACIÓN (Tipo de Algoritmo)
-    # Usamos el AST validado, no parseamos de nuevo
-    # Nota: analyze_algorithm_type puede necesitar el 'tree' objeto de Lark o el dict.
-    # Si tus funciones viejas requieren el objeto Tree crudo, tendrías que ajustar ControlInput,
-    # pero como usamos TreeToDict, asumimos que trabajan con diccionarios.
-    
     algo_type_result = determine_algorithm_type(valid_ast, valid_pseudocode)
 
     # Extraemos el tipo (ej: "iterativo", "recursivo")
@@ -65,7 +97,7 @@ async def analyze_algorithm(payload: dict = Body(...)):
         print("⚙️ Invocando Pipeline Iterativo...")
         
         final_analysis = analyze_iterative(
-            pseudocode=valid_pseudocode, # Usamos el código limpio/traducido
+            pseudocode=valid_pseudocode,
             ast=valid_ast,
             algorithm_name=algorithm_name
         )
@@ -82,7 +114,7 @@ async def analyze_algorithm(payload: dict = Body(...)):
     return {
         "input_metadata": {
             "source_type": processed_input["source_type"],
-            "final_pseudocode": valid_pseudocode # Devolvemos el código generado para que el usuario lo vea
+            "final_pseudocode": valid_pseudocode
         },
         "classification": {
             "type": algo_type_value,
