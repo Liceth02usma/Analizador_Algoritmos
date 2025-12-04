@@ -9,12 +9,16 @@ export default function AnalysisSteps({ pseudocode }) {
   const [error, setError] = useState(null);
 
   const handleAnalysis = useCallback(async () => {
+    // Extract actual pseudocode by removing timestamp if present
+    const cleanPseudocode = pseudocode.includes("___") 
+      ? pseudocode.substring(0, pseudocode.lastIndexOf("___"))
+      : pseudocode;
+
     try {
       setLoading(true);
       setError(null);
 
-      //const result = await analyzeRecursive(algorithmName || "Mi Algoritmo", pseudocode);
-      const result = await analyzeIterative(pseudocode);
+      const result = await analyzeIterative(cleanPseudocode);
 
       console.log("[AnalysisSteps] Analysis result:", result);
       
@@ -32,7 +36,12 @@ export default function AnalysisSteps({ pseudocode }) {
   }, [pseudocode]);
 
   useEffect(() => {
-    if (!pseudocode || pseudocode.trim() === "") {
+    // Extract clean pseudocode
+    const cleanPseudocode = pseudocode.includes("___") 
+      ? pseudocode.substring(0, pseudocode.lastIndexOf("___"))
+      : pseudocode;
+
+    if (!cleanPseudocode || cleanPseudocode.trim() === "") {
       setAnalysis(null);
       setError(null);
       setLoading(false);

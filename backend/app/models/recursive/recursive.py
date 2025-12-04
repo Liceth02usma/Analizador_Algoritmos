@@ -13,6 +13,7 @@ from .tree_method import TreeMethodStrategy
 from ..solution import Solution
 from .complexity_line_agent import ComplexityLineByLineAgent
 from .equation_simplification import simplify_recurrence_equation
+from .case_detection_agent import CaseDetectionAgent
 from ...utils.helpers import generate_tree_visualization, generate_tree_method_diagram
 from ...external_services.Agentes.ComplexityAnalysisService import (
     ComplexityAnalysisService,
@@ -66,6 +67,7 @@ class Recursive(Algorithm):
         find_recursive_calls(self.structure)
 
         self.recursive_calls = len(self.recursive_call_nodes)
+        print(self.recursive_calls, "Llamadas recursivas encontradas")
 
     def get_analysis_recurrence(self) -> RecurrenceOutput:
         """
@@ -75,6 +77,21 @@ class Recursive(Algorithm):
             RecurrenceOutput: Objeto con la ecuación de recurrencia y caso de análisis.
                             En caso de error, retorna ecuación indicando el fallo.
         """
+        # =====================================================================
+        # 0. DETECTAR SI EL ALGORITMO TIENE MÚLTIPLES CASOS O ES CASO GENERAL
+        # =====================================================================
+        case_detection_agent = CaseDetectionAgent(
+            model_type="Gemini_Rapido",
+            provider="gemini"
+        )
+        
+        self.type_case = case_detection_agent.detect_cases(
+            pseudocode=self.pseudocode,
+            ast_structure=self.structure,
+            algorithm_name=self.name,
+            thread_id=f"case_detection_{self.name}"
+        )
+        
         # =====================================================================
         # 1. OBTENER ECUACIONES DE RECURRENCIA
         # =====================================================================

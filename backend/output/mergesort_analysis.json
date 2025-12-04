@@ -1,0 +1,63 @@
+{
+  "type": "recursive",
+  "code_explain": "Merge Sort es un algoritmo de ordenamiento eficiente y de propósito general. Funciona dividiendo repetidamente la lista no ordenada en sublistas hasta que cada sublista contenga un solo elemento, y luego fusiona esas sublistas de manera que la nueva lista resultante esté ordenada.",
+  "complexity_line_to_line": [
+    {
+      "line": 3,
+      "code": "if (inicio < fin) then",
+      "complexity": "c1 * 1",
+      "explanation": "Una comparación para determinar si el segmento del array tiene más de un elemento. Es el caso base de la recursión. Su costo es constante."
+    },
+    {
+      "line": 4,
+      "code": "medio ← (inicio + fin) / 2",
+      "complexity": "c2 * 1",
+      "explanation": "Cálculo del punto medio del segmento. Implica una suma y una división, operaciones de costo constante."
+    },
+    {
+      "line": 5,
+      "code": "mergeSort(arr, inicio, medio)",
+      "complexity": "T(n/2)",
+      "explanation": "Primera llamada recursiva. Se aplica el mismo algoritmo a la primera mitad del array, que tiene un tamaño de aproximadamente n/2."
+    },
+    {
+      "line": 6,
+      "code": "mergeSort(arr, medio + 1, fin)",
+      "complexity": "T(n/2)",
+      "explanation": "Segunda llamada recursiva. Se aplica el mismo algoritmo a la segunda mitad del array, también de tamaño n/2."
+    },
+    {
+      "line": 7,
+      "code": "merge(arr, inicio, medio, fin)",
+      "complexity": "c3 * n",
+      "explanation": "Función de mezcla. Combina las dos mitades ordenadas en un solo array ordenado. Este proceso requiere recorrer todos los 'n' elementos del segmento, por lo que su costo es lineal."
+    }
+  ],
+  "explain_complexity": "**Algoritmo**: Merge Sort\n**Categoría**: Divide y Conquista\n**Tipo**: Recursivo\n\n**Ecuación**: T(n) = 2T(n/2) + O(n) para n > 1, con el caso base T(1) = O(1)\n**Método de resolución**: Teorema Maestro\n**Complejidad final**: O(n log n)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(n log n)\n- Peor caso (O): O(n log n)\n- Caso promedio (Θ): Θ(n log n)",
+  "asymptotic_notation": {
+    "best": "Ω(n log n)",
+    "worst": "O(n log n)",
+    "average": "Θ(n log n)",
+    "explanation": "Ω (Omega) representa la cota inferior del tiempo de ejecución, es decir, el mejor escenario posible. O (Big-O) representa la cota superior, el peor escenario posible. Θ (Theta) representa la cota ajustada, lo que significa que el rendimiento del algoritmo es el mismo tanto en el mejor como en el peor de los casos, describiendo así el caso promedio. En Merge Sort, los tres casos son iguales porque la división y la fusión siempre se realizan de la misma manera, independientemente del orden inicial de los datos."
+  },
+  "algorithm_name": "Merge Sort",
+  "algorithm_category": "Divide y Conquista",
+  "equation": "T(n) = 2T(n/2) + O(n) para n > 1, con el caso base T(1) = O(1)",
+  "method_solution": "Teorema Maestro",
+  "solution_equation": "O(n log n)",
+  "explain_solution_steps": [
+    "La ecuación de recurrencia para Merge Sort es: T(n) = 2T(n/2) + cn",
+    "Esta ecuación se ajusta a la forma del Teorema Maestro: T(n) = aT(n/b) + f(n)",
+    "Identificamos los parámetros: a = 2 (número de subproblemas), b = 2 (factor por el que se reduce el tamaño del problema), f(n) = cn (costo del trabajo fuera de las llamadas recursivas, en este caso, la fusión).",
+    "Calculamos el valor crítico: n^(log_b a) = n^(log_2 2) = n^1 = n.",
+    "Comparamos f(n) con n^(log_b a). En este caso, f(n) = cn, que es Θ(n).",
+    "Esto corresponde al Caso 2 del Teorema Maestro, donde f(n) = Θ(n^(log_b a)).",
+    "Según el Caso 2, la solución a la recurrencia es T(n) = Θ(n^(log_b a) * log n).",
+    "Sustituyendo nuestros valores: T(n) = Θ(n^1 * log n) = Θ(n log n)."
+  ],
+  "diagrams": null,
+  "extra": {
+    "pseudocode": "\nmergeSort(arr, inicio, fin)\nbegin\n    if (inicio < fin) then\n        medio ← (inicio + fin) / 2\n        mergeSort(arr, inicio, medio)\n        mergeSort(arr, medio + 1, fin)\n        merge(arr, inicio, medio, fin)\n    end\nend\n",
+    "analysis_complete": true
+  }
+}

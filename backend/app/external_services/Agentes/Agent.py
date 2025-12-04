@@ -32,6 +32,8 @@ class AgentBase(ABC, Generic[T]):
         # (esto mantiene compatibilidad con llamadas previas que sólo pasan model_type).
         factory = LLM_Factory(profile=model_type, **factory_options)
 
+        # Guardar el model_type para uso en subclases
+        self.model_type = model_type
         # Exponer .model (legacy) como antes
         self.model = factory.model
 

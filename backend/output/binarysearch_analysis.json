@@ -1,0 +1,81 @@
+{
+  "type": "recursive",
+  "code_explain": "Busca eficientemente un elemento 'objetivo' dentro de un arreglo 'arr' previamente ordenado. Lo hace dividiendo repetidamente el intervalo de búsqueda por la mitad hasta encontrar el elemento o determinar que no existe.",
+  "complexity_line_to_line": [
+    {
+      "line": 3,
+      "code": "if (inicio > fin) then",
+      "complexity": "c1 * 1",
+      "explanation": "Una comparación, operación de tiempo constante."
+    },
+    {
+      "line": 4,
+      "code": "return -1",
+      "complexity": "c2 * 1",
+      "explanation": "Caso base, retorno de un valor, tiempo constante."
+    },
+    {
+      "line": 7,
+      "code": "medio ← (inicio + fin) / 2",
+      "complexity": "c3 * 1",
+      "explanation": "Suma, división y asignación. Operaciones aritméticas de tiempo constante."
+    },
+    {
+      "line": 9,
+      "code": "if (arr[medio] = objetivo) then",
+      "complexity": "c4 * 1",
+      "explanation": "Acceso a un índice del arreglo y una comparación, tiempo constante."
+    },
+    {
+      "line": 10,
+      "code": "return medio",
+      "complexity": "c5 * 1",
+      "explanation": "Mejor caso, retorno de un valor, tiempo constante."
+    },
+    {
+      "line": 12,
+      "code": "if (arr[medio] > objetivo) then",
+      "complexity": "c6 * 1",
+      "explanation": "Acceso a un índice del arreglo y una comparación, tiempo constante."
+    },
+    {
+      "line": 13,
+      "code": "return binarySearch(arr, objetivo, inicio, medio - 1)",
+      "complexity": "T(n/2)",
+      "explanation": "Llamada recursiva con la mitad izquierda del arreglo. El tamaño del problema se reduce a la mitad."
+    },
+    {
+      "line": 15,
+      "code": "return binarySearch(arr, objetivo, medio + 1, fin)",
+      "complexity": "T(n/2)",
+      "explanation": "Llamada recursiva con la mitad derecha del arreglo. El tamaño del problema también se reduce a la mitad."
+    }
+  ],
+  "explain_complexity": "**Algoritmo**: Búsqueda Binaria (Binary Search)\n**Categoría**: Divide y Conquista\n**Tipo**: Recursivo\n\n**Ecuación**: Ecuación de Recurrencia: T(n) = T(n/2) + c, con Caso Base: T(1) = c'\n**Método de resolución**: Teorema Maestro (o Método de Sustitución/Expansión)\n**Complejidad final**: O(log n)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(1)\n- Peor caso (O): O(log n)\n- Caso promedio (Θ): Θ(log n)",
+  "asymptotic_notation": {
+    "best": "Ω(1)",
+    "worst": "O(log n)",
+    "average": "Θ(log n)",
+    "explanation": "Ω (Omega) representa la cota inferior o el mejor caso posible. Para la búsqueda binaria, es Ω(1), que ocurre cuando el elemento buscado es el del medio en la primera comparación. O (Big-O) representa la cota superior o el peor caso. Es O(log n), que ocurre cuando el elemento no se encuentra o es el último en ser comparado, requiriendo la máxima cantidad de divisiones del arreglo. Θ (Theta) representa la cota ajustada o el caso promedio. Para este algoritmo, el caso promedio es Θ(log n) porque, en promedio, se necesitarán varias divisiones para encontrar el elemento, lo que sigue una escala logarítmica."
+  },
+  "algorithm_name": "Búsqueda Binaria (Binary Search)",
+  "algorithm_category": "Divide y Conquista",
+  "equation": "Ecuación de Recurrencia: T(n) = T(n/2) + c, con Caso Base: T(1) = c'",
+  "method_solution": "Teorema Maestro (o Método de Sustitución/Expansión)",
+  "solution_equation": "O(log n)",
+  "explain_solution_steps": [
+    "1. La ecuación de recurrencia es T(n) = T(n/2) + c, donde 'c' agrupa todas las operaciones de costo constante (c1 a c6).",
+    "2. Se aplica el Teorema Maestro: T(n) = aT(n/b) + f(n). Aquí, a=1, b=2, y f(n) = c = O(n^0).",
+    "3. Calculamos el valor crítico: log_b(a) = log_2(1) = 0.",
+    "4. Comparamos f(n) con n^(log_b(a)). En este caso, comparamos n^0 con n^0.",
+    "5. Como f(n) = c * n^0 = Θ(n^(log_b(a))), estamos en el Caso 2 del Teorema Maestro.",
+    "6. La solución para el Caso 2 es T(n) = Θ(n^(log_b(a)) * log n).",
+    "7. Sustituyendo los valores: T(n) = Θ(n^0 * log n) = Θ(log n).",
+    "8. Por lo tanto, la complejidad del algoritmo es logarítmica."
+  ],
+  "diagrams": null,
+  "extra": {
+    "pseudocode": "\nbinarySearch(arr, objetivo, inicio, fin)\nbegin\n    if (inicio > fin) then\n        return -1\n    end\n    \n    medio ← (inicio + fin) / 2\n    \n    if (arr[medio] = objetivo) then\n        return medio\n    else\n        if (arr[medio] > objetivo) then\n            return binarySearch(arr, objetivo, inicio, medio - 1)\n        else\n            return binarySearch(arr, objetivo, medio + 1, fin)\n        end\n    end\nend\n",
+    "analysis_complete": true
+  }
+}

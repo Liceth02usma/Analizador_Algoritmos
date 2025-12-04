@@ -49,7 +49,7 @@ def determine_algorithm_type(ast: dict, pseudocode: str) -> dict:
                 has_loops = True
             
             # 3. Detectar Recursión (Llamada a sí mismo)
-            if node.get("type") == "call":
+            if node.get("type") == "call" or node.get("type") == "CALL":
                 if func_name and node.get("name") == func_name:
                     has_recursion = True
             

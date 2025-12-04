@@ -6,13 +6,14 @@ const API_URL = import.meta.env.API_URL || "http://localhost:8000";
  * @param {string} pseudocode - El pseudocódigo a analizar
  * @returns {Promise<Object>} - Objeto con el análisis completo o error
  */
-export const analyzeIterative = async (algorithmName, pseudocode) => {
+export const analyzeIterative = async (pseudocode) => {
   try {
+    console.log("analyzeIterative called with:", { pseudocode });
     const response = await fetch(`${API_URL}/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        pseudocode 
+      body: JSON.stringify({
+        pseudocode,
       }),
     });
 

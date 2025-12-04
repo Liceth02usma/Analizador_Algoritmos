@@ -46,6 +46,7 @@ class Algorithm(ABC):
                 self.structure = transformed
 
             self.tokens = self._extract_tokens_from_tree(self.structure)
+            print(self.structure, "Estructura del algoritmo")
 
         except Exception as e:
 

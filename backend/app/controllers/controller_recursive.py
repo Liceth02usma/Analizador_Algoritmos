@@ -83,11 +83,12 @@ class ControlRecursive(ControlAlgorithm):
     ) -> Dict[str, Any]:
 
         # 1. Crear instancia del modelo Recursive
-        self.algorithm = Recursive(algorithm_name, pseudocode, False)
+        self.algorithm = Recursive(algorithm_name, pseudocode, True)
 
         # 2. Parsear si es necesario
-        self.algorithm.preprocess_code()
-
+        if not parsed_tree:
+            self.algorithm.preprocess_code()
+        
         # 4. Extraer relación de recurrencia
         # 5. Detectar casos base y llamadas recursivas
         self.detect_base_cases()

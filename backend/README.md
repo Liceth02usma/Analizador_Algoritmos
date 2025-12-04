@@ -185,15 +185,9 @@ Para actualizar las dependencias:
 
 # tasks
 
+
+
 # Mejorar el front end para que represente ambos analisis    (Preliminarmente)
-# - Preguntar por el caso promedio
 
-# Garantizar el flujo correcto entre iterative y recursive (preguntar porque al mandarle un codigo recursivo)
-
-# Hacer el agente total que me entregue toda la informacion del analisis
-#      - Comparacion de ambos analisis y arrojar comparacion entre ambas soluciones
-
-
-# Cambiar el modelo haber si mejora la velocidad
 
 # Implementar lo de sql lite

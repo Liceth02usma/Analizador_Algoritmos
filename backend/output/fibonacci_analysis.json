@@ -1,0 +1,61 @@
+{
+  "type": "recursive",
+  "code_explain": "Este algoritmo calcula el n-ésimo término de la sucesión de Fibonacci. La sucesión se define como F(n) = F(n-1) + F(n-2), con los casos base F(0) = 0 y F(1) = 1.",
+  "complexity_line_to_line": [
+    {
+      "line": 1,
+      "code": "fibonacci(n)",
+      "complexity": "T(n)",
+      "explanation": "Costo total de la función para una entrada n."
+    },
+    {
+      "line": 3,
+      "code": "if (n <= 1) then",
+      "complexity": "c1 * 1",
+      "explanation": "Una operación de comparación, costo constante."
+    },
+    {
+      "line": 4,
+      "code": "return n",
+      "complexity": "c2 * 1",
+      "explanation": "Una operación de retorno, costo constante. Este es el caso base."
+    },
+    {
+      "line": 5,
+      "code": "else",
+      "complexity": "0",
+      "explanation": "Estructura de control, sin costo computacional."
+    },
+    {
+      "line": 6,
+      "code": "return fibonacci(n-1) + fibonacci(n-2)",
+      "complexity": "T(n-1) + T(n-2) + c3",
+      "explanation": "Dos llamadas recursivas a la función con argumentos n-1 y n-2, más una operación de suma (costo constante c3)."
+    }
+  ],
+  "explain_complexity": "**Algoritmo**: Sucesión de Fibonacci (Implementación Recursiva)\n**Categoría**: Recursión Simple\n**Tipo**: Recursivo\n\n**Ecuación**: T(n) = T(n-1) + T(n-2) + c para n > 1, con casos base T(1) = c y T(0) = c\n**Método de resolución**: Árbol de Recursión y Cota Asintótica (Lower/Upper Bound)\n**Complejidad final**: O(φ^n)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(φ^n) ≈ Ω(1.618^n)\n- Peor caso (O): O(φ^n) ≈ O(1.618^n)\n- Caso promedio (Θ): Θ(φ^n) ≈ Θ(1.618^n)",
+  "asymptotic_notation": {
+    "best": "Ω(φ^n) ≈ Ω(1.618^n)",
+    "worst": "O(φ^n) ≈ O(1.618^n)",
+    "average": "Θ(φ^n) ≈ Θ(1.618^n)",
+    "explanation": "Las notaciones asintóticas describen el comportamiento del algoritmo para entradas grandes. Para este algoritmo, el mejor, peor y promedio caso coinciden porque la estructura de las llamadas recursivas es la misma para un 'n' dado.\n- **Ω (Omega)**: Es la cota inferior. El tiempo de ejecución nunca será más rápido que Ω(φ^n).\n- **O (Big-O)**: Es la cota superior. El tiempo de ejecución nunca será más lento que O(φ^n).\n- **Θ (Theta)**: Es la cota ajustada. Dado que las cotas superior e inferior coinciden, podemos decir que el tiempo de ejecución es precisamente Θ(φ^n). El crecimiento es exponencial, ligado a la razón áurea (φ)."
+  },
+  "algorithm_name": "Sucesión de Fibonacci (Implementación Recursiva)",
+  "algorithm_category": "Recursión Simple",
+  "equation": "T(n) = T(n-1) + T(n-2) + c para n > 1, con casos base T(1) = c y T(0) = c",
+  "method_solution": "Árbol de Recursión y Cota Asintótica (Lower/Upper Bound)",
+  "solution_equation": "O(φ^n)",
+  "explain_solution_steps": [
+    "La ecuación de recurrencia es T(n) = T(n-1) + T(n-2) + c. El Teorema Maestro no es aplicable aquí. Usaremos el método del árbol de recursión para visualizar y acotar la complejidad.",
+    "1. **Visualización del Árbol**: El nodo raíz es T(n), que tiene dos hijos: T(n-1) y T(n-2). A su vez, T(n-1) tiene hijos T(n-2) y T(n-3), y así sucesivamente. El árbol se expande hasta llegar a los casos base T(1) y T(0).",
+    "2. **Estableciendo una Cota Inferior (Lower Bound)**: Podemos observar que T(n) > 2T(n-2). Si expandimos esto, obtenemos: T(n) > 2 * (2T(n-4)) = 4T(n-4) > 8T(n-6) > ... > 2^(k) * T(n-2k). La recursión se detiene cuando n-2k ≈ 0, es decir, k ≈ n/2. Por lo tanto, T(n) > 2^(n/2) * T(0) = c * (√2)^n ≈ c * (1.414)^n. Esto nos da una cota inferior exponencial: T(n) = Ω((√2)^n).",
+    "3. **Estableciendo una Cota Superior (Upper Bound)**: De manera similar, T(n) < 2T(n-1). Expandiendo esto: T(n) < 2 * (2T(n-2)) = 4T(n-2) < 8T(n-3) < ... < 2^(k) * T(n-k). La recursión se detiene cuando n-k ≈ 1, es decir, k ≈ n-1. Por lo tanto, T(n) < 2^(n-1) * T(1) = c * 2^(n-1). Esto nos da una cota superior exponencial: T(n) = O(2^n).",
+    "4. **Solución Exacta (Forma Cerrada)**: La solución a la recurrencia F(n) = F(n-1) + F(n-2) está directamente relacionada con la razón áurea, φ = (1 + √5) / 2 ≈ 1.618. El número de nodos en el árbol de recursión es proporcional al valor del n-ésimo número de Fibonacci. La forma cerrada para la sucesión de Fibonacci es F(n) ≈ φ^n / √5.",
+    "5. **Conclusión**: Dado que cada llamada en el árbol realiza una cantidad constante de trabajo, el tiempo de ejecución total es proporcional al número de llamadas (nodos en el árbol). Por lo tanto, la complejidad es T(n) = Θ(φ^n). Esto se encuentra entre las cotas inferior y superior que calculamos anteriormente (1.414^n < 1.618^n < 2^n)."
+  ],
+  "diagrams": null,
+  "extra": {
+    "pseudocode": "\nfibonacci(n)\nbegin\n    if (n <= 1) then\n        return n\n    else\n        return fibonacci(n-1) + fibonacci(n-2)\n    end\nend\n",
+    "analysis_complete": true
+  }
+}
