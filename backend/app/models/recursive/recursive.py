@@ -14,7 +14,7 @@ from ..solution import Solution
 from .complexity_line_agent import ComplexityLineByLineAgent
 from .equation_simplification import simplify_recurrence_equation
 from ...utils.helpers import generate_tree_visualization, generate_tree_method_diagram
-from ...external_services.Agentes.ComplexityAnalysisAgent import (
+from ...external_services.Agentes.ComplexityAnalysisService import (
     ComplexityAnalysisService,
 )
 
@@ -277,6 +277,18 @@ class Recursive(Algorithm):
                     equation_display,
                 ]
 
+            # Replicar árboles de recursión para los 3 casos
+            if tree_diagrams:
+                # Si hay un árbol general/single, replicarlo para los 3 casos
+                general_tree = tree_diagrams.get("tree_method_single") or tree_diagrams.get("single")
+                if general_tree:
+                    tree_diagrams["tree_method_best_case"] = general_tree
+                    tree_diagrams["tree_method_worst_case"] = general_tree
+                    tree_diagrams["tree_method_average_case"] = general_tree
+                    # Eliminar el árbol general si existe
+                    tree_diagrams.pop("tree_method_single", None)
+                    tree_diagrams.pop("single", None)
+
         # Construir diagrams que incluya árboles de recursión + árboles del método
         # tree_diagrams ya es un Dict[str, str] con claves 'tree_method_{case_type}'
         diagrams = tree_diagrams.copy() if isinstance(tree_diagrams, dict) else {}
@@ -316,6 +328,7 @@ class Recursive(Algorithm):
 
         try:
             if self.type_case and recurrence_result.has_multiple_cases:
+                # Casos múltiples: análisis separado para mejor/peor/promedio
                 complexity_analysis = complexity_agent.analyze_multiple_cases(
                     pseudocode=self.pseudocode, algorithm_name=self.name
                 )
@@ -332,15 +345,32 @@ class Recursive(Algorithm):
                     f"Caso promedio: {complexity_analysis.average_case.complexity_explanation}"
                 )
             else:
+                # Caso único/general - analizar una vez
                 complexity_analysis = complexity_agent.analyze_single_case(
                     pseudocode=self.pseudocode, algorithm_name=self.name
                 )
 
                 code_explain = complexity_analysis.analysis.code_explanation
-                complexity_line_to_line = (
-                    complexity_analysis.analysis.pseudocode_annotated
-                )
-                explain_complexity = complexity_analysis.analysis.complexity_explanation
+                
+                # Si se replicó el caso general, replicar también el análisis línea por línea
+                if not has_multiple and len(analysis_results) == 3:
+                    # Replicar el análisis para los 3 casos
+                    annotated = complexity_analysis.analysis.pseudocode_annotated
+                    complexity_line_to_line = (
+                        f"=== MEJOR CASO ===\n{annotated}\n\n"
+                        f"=== PEOR CASO ===\n{annotated}\n\n"
+                        f"=== CASO PROMEDIO ===\n{annotated}"
+                    )
+                    explain_complexity = (
+                        f"Mejor caso: {complexity_analysis.analysis.complexity_explanation}\n\n"
+                        f"Peor caso: {complexity_analysis.analysis.complexity_explanation}\n\n"
+                        f"Caso promedio: {complexity_analysis.analysis.complexity_explanation}"
+                    )
+                else:
+                    complexity_line_to_line = (
+                        complexity_analysis.analysis.pseudocode_annotated
+                    )
+                    explain_complexity = complexity_analysis.analysis.complexity_explanation
 
         except Exception:
             code_explain = f"Algoritmo: {self.name}"

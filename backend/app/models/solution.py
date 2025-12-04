@@ -14,10 +14,10 @@ class Solution(BaseModel):
     explain_complexity: Optional[str] = None
     asymptotic_notation: Optional[Dict[str, str]] = None
     # {
-    #   "best": "Ω(1)",
-    #   "worst": "O(n²)",
-    #   "average": "Θ(n log n)",
-    #   "explanation": "..."
+    #    "best": "Ω(1)",
+    #    "worst": "O(n²)",
+    #    "average": "Θ(n log n)",
+    #    "explanation": "..."
     # }
     algorithm_name: Optional[str] = None  # "Merge Sort", "Binary Search", etc.
     algorithm_category: Optional[str] = (

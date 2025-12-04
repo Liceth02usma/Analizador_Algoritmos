@@ -1,0 +1,310 @@
+{
+  "input_metadata": {
+    "source_type": "rag_retrieval (ChromaDB)",
+    "final_pseudocode": "bubble_sort(A, n)\nbegin\n    swapped 🡨 T\n    i 🡨 0\n    while (swapped = T) do\n    begin\n        swapped 🡨 F\n        for j 🡨 0 to n - 2 - i do\n        begin\n            if (A[j] > A[j+1]) then\n            begin\n                temp 🡨 A[j]\n                A[j] 🡨 A[j+1]\n                A[j+1] 🡨 temp\n                swapped 🡨 T\n            end\n        end\n        i 🡨 i + 1\n    end\n    return A\nend"
+  },
+  "classification": {
+    "type": "iterativo",
+    "name": "Bubble Sort"
+  },
+  "analysis": {
+    "type": "iterativo",
+    "code_explain": "Bubble Sort es un algoritmo de ordenamiento simple que repetidamente recorre la lista, compara elementos adyacentes y los intercambia si están en el orden incorrecto. La pasada a través de la lista se repite hasta que no se necesiten más intercambios, lo que indica que la lista está ordenada. Su eficiencia varía significativamente entre el mejor y el peor caso.",
+    "complexity_line_to_line": [
+      {
+        "line": 3,
+        "cost_constant": "c1",
+        "execution_count": "1",
+        "total_cost_expression": "c1"
+      },
+      {
+        "line": 4,
+        "cost_constant": "c2",
+        "execution_count": "1",
+        "total_cost_expression": "c2"
+      },
+      {
+        "line": 5,
+        "cost_constant": "c3",
+        "execution_count": "n+1",
+        "total_cost_expression": "(n+1)*c3"
+      },
+      {
+        "line": 7,
+        "cost_constant": "c4",
+        "execution_count": "n",
+        "total_cost_expression": "n*c4"
+      },
+      {
+        "line": 8,
+        "cost_constant": "c5",
+        "execution_count": "SUM(i=0, n-1) [n-i]",
+        "total_cost_expression": "(n*(n+1)/2)*c5"
+      },
+      {
+        "line": 10,
+        "cost_constant": "c6",
+        "execution_count": "SUM(i=0, n-1) [n-1-i]",
+        "total_cost_expression": "(n*(n-1)/2)*c6"
+      },
+      {
+        "line": 11,
+        "cost_constant": "c_if_body",
+        "execution_count": "SUM(i=0, n-1) [n-1-i]",
+        "total_cost_expression": "(n*(n-1)/2)*c_if_body"
+      },
+      {
+        "line": 12,
+        "cost_constant": "c7",
+        "execution_count": "SUM(i=0, n-1) [n-1-i]",
+        "total_cost_expression": "(n*(n-1)/2)*c7"
+      },
+      {
+        "line": 13,
+        "cost_constant": "c8",
+        "execution_count": "SUM(i=0, n-1) [n-1-i]",
+        "total_cost_expression": "(n*(n-1)/2)*c8"
+      },
+      {
+        "line": 14,
+        "cost_constant": "c9",
+        "execution_count": "SUM(i=0, n-1) [n-1-i]",
+        "total_cost_expression": "(n*(n-1)/2)*c9"
+      },
+      {
+        "line": 15,
+        "cost_constant": "c10",
+        "execution_count": "SUM(i=0, n-1) [n-1-i]",
+        "total_cost_expression": "(n*(n-1)/2)*c10"
+      },
+      {
+        "line": 18,
+        "cost_constant": "c11",
+        "execution_count": "n",
+        "total_cost_expression": "n*c11"
+      },
+      {
+        "line": 20,
+        "cost_constant": "c12",
+        "execution_count": "1",
+        "total_cost_expression": "c12"
+      }
+    ],
+    "explain_complexity": "El caso 'Mejor' para Bubble Sort resulta en una función de eficiencia lineal, mientras que el caso 'Peor' resulta en una función de eficiencia cuadrática. Esto indica que el rendimiento del algoritmo es significativamente peor en el peor de los casos debido a las operaciones adicionales de intercambio y comparación.",
+    "asymptotic_notation": {
+      "best": "Ω(n)",
+      "worst": "O(n^2)",
+      "explanation": "El algoritmo Bubble Sort tiene una complejidad de tiempo de Ω(n) en el mejor caso y O(n^2) en el peor caso."
+    },
+    "algorithm_name": "Bubble Sort",
+    "algorithm_category": "Iterativo / Bucle",
+    "equation": [
+      "Mejor: c1 + c2 + 2*c3 + c4 + n*c5 + (n-1)*c6 + c11 + c12",
+      "Peor: c1 + c2 + (n+1)*c3 + n*c4 + (n*(n+1)/2)*c5 + (n*(n-1)/2)*c6 + (n*(n-1)/2)*(c7+c8+c9+c10) + n*c11 + c12"
+    ],
+    "method_solution": "Método de Conteo de Pasos + Sumatorias",
+    "solution_equation": [
+      "Mejor: T(n) = (c5 + c6)n + (c1 + c2 + 2*c3 + c4 - c6 + c11 + c12)",
+      "Peor: T(n) = (0.5 * (c5 + c6 + c7 + c8 + c9 + c10))n^2 + (c3 + c4 + 0.5*c5 - 0.5*c6 - 0.5*(c7+c8+c9+c10) + c11)n + (c1 + c2 + c3 + c12)"
+    ],
+    "explain_solution_steps": [
+      "**Mejor**: c1 + c2 + 2*c3 + c4 + n*c5 + n*c6 - c6 + c11 + c12",
+      "**Peor**: c1 + c2 + n*c3 + c3 + n*c4 + (0.5*c5)n^2 + (0.5*c5)n + (0.5*c6)n^2 - (0.5*c6)n + (0.5*(c7+c8+c9+c10))n^2 - (0.5*(c7+c8+c9+c10))n + n*c11 + c12"
+    ],
+    "diagrams": {
+      "main_flowchart": "graph TD\n    Start((Inicio)) --> InitVars[swapped = T, i = 0]\n    InitVars --> WhileCond{swapped = T?}\n    WhileCond -- Sí --> ResetSwapped[swapped = F]\n    ResetSwapped --> ForLoopInit[j = 0]\n    ForLoopInit --> ForLoopCond{j < n - 1 - i?}\n    ForLoopCond -- Sí --> IfCond{A[j] > A[j+1]?}\n    IfCond -- Sí (Peor Caso) --> Swap[temp = A[j], A[j] = A[j+1], A[j+1] = temp]\n    Swap --> SetSwappedT[swapped = T]\n    SetSwappedT --> IncJ[j = j + 1]\n    IfCond -- No --> IncJ\n    IncJ --> ForLoopCond\n    ForLoopCond -- No --> IncI[i = i + 1]\n    IncI --> WhileCond\n    WhileCond -- No --> ReturnA[Return A]\n    ReturnA --> End((Fin))\n\n    Note right of WhileCond: El bucle 'while' se repite n veces.\n    Note right of ForLoopCond: El bucle 'for' se repite (n-1-i) veces en cada pasada.\n    Note right of IfCond: La condición A[j] > A[j+1] es casi siempre verdadera, forzando muchos intercambios."
+    },
+    "extra": {
+      "is_case_dependent": true,
+      "cases": [
+        {
+          "case_name": "Mejor",
+          "condition": "El arreglo ya está ordenado.",
+          "line_analysis": [
+            {
+              "line": 3,
+              "cost_constant": "c1",
+              "execution_count": "1",
+              "total_cost_expression": "c1"
+            },
+            {
+              "line": 4,
+              "cost_constant": "c2",
+              "execution_count": "1",
+              "total_cost_expression": "c2"
+            },
+            {
+              "line": 5,
+              "cost_constant": "c3",
+              "execution_count": "2",
+              "total_cost_expression": "2*c3"
+            },
+            {
+              "line": 7,
+              "cost_constant": "c4",
+              "execution_count": "1",
+              "total_cost_expression": "c4"
+            },
+            {
+              "line": 8,
+              "cost_constant": "c5",
+              "execution_count": "n",
+              "total_cost_expression": "n*c5"
+            },
+            {
+              "line": 10,
+              "cost_constant": "c6",
+              "execution_count": "n-1",
+              "total_cost_expression": "(n-1)*c6"
+            },
+            {
+              "line": 11,
+              "cost_constant": "c_if_body",
+              "execution_count": "0",
+              "total_cost_expression": "0"
+            },
+            {
+              "line": 12,
+              "cost_constant": "c7",
+              "execution_count": "0",
+              "total_cost_expression": "0"
+            },
+            {
+              "line": 13,
+              "cost_constant": "c8",
+              "execution_count": "0",
+              "total_cost_expression": "0"
+            },
+            {
+              "line": 14,
+              "cost_constant": "c9",
+              "execution_count": "0",
+              "total_cost_expression": "0"
+            },
+            {
+              "line": 15,
+              "cost_constant": "c10",
+              "execution_count": "0",
+              "total_cost_expression": "0"
+            },
+            {
+              "line": 18,
+              "cost_constant": "c11",
+              "execution_count": "1",
+              "total_cost_expression": "c11"
+            },
+            {
+              "line": 20,
+              "cost_constant": "c12",
+              "execution_count": "1",
+              "total_cost_expression": "c12"
+            }
+          ],
+          "raw_summation_str": "c1 + c2 + 2*c3 + c4 + n*c5 + (n-1)*c6 + c11 + c12",
+          "math_steps": "c1 + c2 + 2*c3 + c4 + n*c5 + n*c6 - c6 + c11 + c12",
+          "simplified_complexity": "(c5 + c6)n + (c1 + c2 + 2*c3 + c4 - c6 + c11 + c12)",
+          "complexity_class": "n",
+          "notation_type": "Ω",
+          "big_o": "Ω(n)",
+          "trace_diagram": "graph TD\n    Start((Inicio)) --> InitVars[swapped = T, i = 0]\n    InitVars --> WhileCond{swapped = T?}\n    WhileCond -- Sí --> ResetSwapped[swapped = F]\n    ResetSwapped --> ForLoopInit[j = 0]\n    ForLoopInit --> ForLoopCond{j < n - 1 - i?}\n    ForLoopCond -- Sí --> IfCond{A[j] > A[j+1]?}\n    IfCond -- No (Mejor Caso) --> IncJ[j = j + 1]\n    IncJ --> ForLoopCond\n    ForLoopCond -- No --> IncI[i = i + 1]\n    IncI --> WhileCond\n    WhileCond -- No --> ReturnA[Return A]\n    ReturnA --> End((Fin))\n\n    Note right of ForLoopCond: El bucle for se ejecuta n-1 veces en la primera pasada.\n    Note right of IfCond: La condición A[j] > A[j+1] siempre es falsa.\n    Note right of WhileCond: 'swapped' permanece F, el bucle 'while' termina después de la primera iteración."
+        },
+        {
+          "case_name": "Peor",
+          "condition": "El arreglo está ordenado en orden inverso.",
+          "line_analysis": [
+            {
+              "line": 3,
+              "cost_constant": "c1",
+              "execution_count": "1",
+              "total_cost_expression": "c1"
+            },
+            {
+              "line": 4,
+              "cost_constant": "c2",
+              "execution_count": "1",
+              "total_cost_expression": "c2"
+            },
+            {
+              "line": 5,
+              "cost_constant": "c3",
+              "execution_count": "n+1",
+              "total_cost_expression": "(n+1)*c3"
+            },
+            {
+              "line": 7,
+              "cost_constant": "c4",
+              "execution_count": "n",
+              "total_cost_expression": "n*c4"
+            },
+            {
+              "line": 8,
+              "cost_constant": "c5",
+              "execution_count": "SUM(i=0, n-1) [n-i]",
+              "total_cost_expression": "(n*(n+1)/2)*c5"
+            },
+            {
+              "line": 10,
+              "cost_constant": "c6",
+              "execution_count": "SUM(i=0, n-1) [n-1-i]",
+              "total_cost_expression": "(n*(n-1)/2)*c6"
+            },
+            {
+              "line": 11,
+              "cost_constant": "c_if_body",
+              "execution_count": "SUM(i=0, n-1) [n-1-i]",
+              "total_cost_expression": "(n*(n-1)/2)*c_if_body"
+            },
+            {
+              "line": 12,
+              "cost_constant": "c7",
+              "execution_count": "SUM(i=0, n-1) [n-1-i]",
+              "total_cost_expression": "(n*(n-1)/2)*c7"
+            },
+            {
+              "line": 13,
+              "cost_constant": "c8",
+              "execution_count": "SUM(i=0, n-1) [n-1-i]",
+              "total_cost_expression": "(n*(n-1)/2)*c8"
+            },
+            {
+              "line": 14,
+              "cost_constant": "c9",
+              "execution_count": "SUM(i=0, n-1) [n-1-i]",
+              "total_cost_expression": "(n*(n-1)/2)*c9"
+            },
+            {
+              "line": 15,
+              "cost_constant": "c10",
+              "execution_count": "SUM(i=0, n-1) [n-1-i]",
+              "total_cost_expression": "(n*(n-1)/2)*c10"
+            },
+            {
+              "line": 18,
+              "cost_constant": "c11",
+              "execution_count": "n",
+              "total_cost_expression": "n*c11"
+            },
+            {
+              "line": 20,
+              "cost_constant": "c12",
+              "execution_count": "1",
+              "total_cost_expression": "c12"
+            }
+          ],
+          "raw_summation_str": "c1 + c2 + (n+1)*c3 + n*c4 + (n*(n+1)/2)*c5 + (n*(n-1)/2)*c6 + (n*(n-1)/2)*(c7+c8+c9+c10) + n*c11 + c12",
+          "math_steps": "c1 + c2 + n*c3 + c3 + n*c4 + (0.5*c5)n^2 + (0.5*c5)n + (0.5*c6)n^2 - (0.5*c6)n + (0.5*(c7+c8+c9+c10))n^2 - (0.5*(c7+c8+c9+c10))n + n*c11 + c12",
+          "simplified_complexity": "(0.5 * (c5 + c6 + c7 + c8 + c9 + c10))n^2 + (c3 + c4 + 0.5*c5 - 0.5*c6 - 0.5*(c7+c8+c9+c10) + c11)n + (c1 + c2 + c3 + c12)",
+          "complexity_class": "n^2",
+          "notation_type": "O",
+          "big_o": "O(n^2)",
+          "trace_diagram": "graph TD\n    Start((Inicio)) --> InitVars[swapped = T, i = 0]\n    InitVars --> WhileCond{swapped = T?}\n    WhileCond -- Sí --> ResetSwapped[swapped = F]\n    ResetSwapped --> ForLoopInit[j = 0]\n    ForLoopInit --> ForLoopCond{j < n - 1 - i?}\n    ForLoopCond -- Sí --> IfCond{A[j] > A[j+1]?}\n    IfCond -- Sí (Peor Caso) --> Swap[temp = A[j], A[j] = A[j+1], A[j+1] = temp]\n    Swap --> SetSwappedT[swapped = T]\n    SetSwappedT --> IncJ[j = j + 1]\n    IfCond -- No --> IncJ\n    IncJ --> ForLoopCond\n    ForLoopCond -- No --> IncI[i = i + 1]\n    IncI --> WhileCond\n    WhileCond -- No --> ReturnA[Return A]\n    ReturnA --> End((Fin))\n\n    Note right of WhileCond: El bucle 'while' se repite n veces.\n    Note right of ForLoopCond: El bucle 'for' se repite (n-1-i) veces en cada pasada.\n    Note right of IfCond: La condición A[j] > A[j+1] es casi siempre verdadera, forzando muchos intercambios."
+        }
+      ],
+      "project_metadata": {
+        "diagrams_generated": 2,
+        "agent_model": "Gemini_Rapido",
+        "optimization": "Full analysis"
+      }
+    }
+  }
+}
