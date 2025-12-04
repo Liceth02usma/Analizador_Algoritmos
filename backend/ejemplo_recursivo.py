@@ -16,27 +16,19 @@ def main():
 
     # Pseudocódigo de Fibonacci (sintaxis del proyecto)
     pseudocodigo = """
-    busqueda_lineal_rec(A, x, i, n)
+    fibonacci(n)
     begin
-        if (i = n) then
-            begin
-                return -1
-            end
+        if (n <= 1) then
+        begin
+            return n
+        end
         else
-            begin
-                if (A[i] = x) then
-                    begin
-                        return i
-                    end
-                else
-                    begin
-                        return CALL busqueda_lineal_rec(A, x, i + 1, n)
-                    end
-            end
+        begin
+            CALL fibonacci(n-1)
+            CALL fibonacci(n-2)
+            return fib1 + fib2
+        end
     end
-
-    index 🡨 CALL busqueda_lineal_rec(A, x, 0, n)
-    return index
     """
     print("📝 Pseudocódigo:")
     print(pseudocodigo)
@@ -50,7 +42,7 @@ def main():
     print("=" * 80)
 
     print(results.to_backend())
-    filepath = results.save_to_json("estructura_frontend.json")
+    filepath = results.save_to_json("estructura_frontend_general.json")
 
 
 if __name__ == "__main__":
