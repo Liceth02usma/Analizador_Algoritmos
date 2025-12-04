@@ -15,9 +15,11 @@ export default function AnalysisSteps({ pseudocode }) {
 
       //const result = await analyzeRecursive(algorithmName || "Mi Algoritmo", pseudocode);
       const result = await analyzeIterative(pseudocode);
+
+      console.log("[AnalysisSteps] Analysis result:", result);
       
       if (result.success) {
-        // Extraer el análisis del wrapper
+        // Extraer el análisis del wrapper  
         setAnalysis(result.data.analysis || result.data);
       } else {
         setError(result.error || "Error al analizar el algoritmo");

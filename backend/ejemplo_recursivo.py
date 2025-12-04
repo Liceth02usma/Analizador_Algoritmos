@@ -16,19 +16,41 @@ def main():
 
     # Pseudocódigo de Fibonacci (sintaxis del proyecto)
     pseudocodigo = """
-    fibonacci(n)
+quicksort(A, low, high)
+begin
+    if (low < high) then
     begin
-        if (n <= 1) then
+        p 🡨 CALL partition(A, low, high)
+        CALL quicksort(A, low, p - 1)
+        CALL quicksort(A, p + 1, high)
+    end
+    return A
+end
+
+partition(A, low, high)
+begin
+    pivot 🡨 A[high]
+    i 🡨 low - 1
+
+    for j 🡨 low to high - 1 do
+    begin
+        if (A[j] <= pivot) then
         begin
-            return n
-        end
-        else
-        begin
-            CALL fibonacci(n-1)
-            CALL fibonacci(n-2)
-            return fib1 + fib2
+            i 🡨 i + 1
+            temp 🡨 A[i]
+            A[i] 🡨 A[j]
+            A[j] 🡨 temp
         end
     end
+
+    temp 🡨 A[i+1]
+    A[i+1] 🡨 A[high]
+    A[high] 🡨 temp
+
+    return i + 1
+end
+
+
     """
     print("📝 Pseudocódigo:")
     print(pseudocodigo)
