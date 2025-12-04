@@ -193,7 +193,41 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
                 
                 merged_case["final_summary"] = solved_case.final_summary if hasattr(solved_case, 'final_summary') else ""
 
-        # 3. Instanciar el modelo Solution
+        # 3. Construir complexity_line_to_line como string con anotaciones de costos
+        complexity_line_to_line_str = ""
+        
+        # Dividir el pseudocódigo en líneas
+        pseudocode_lines = pseudocode.split("\n")
+        
+        for merged_case in merged_cases:
+            case_name = merged_case["case_name"]
+            line_analysis = merged_case.get("line_analysis", [])
+            
+            # Crear un mapeo de número de línea a costo
+            line_cost_map = {}
+            for line_item in line_analysis:
+                line_num = line_item.get("line")
+                total_cost = line_item.get("total_cost_expression", "")
+                if line_num is not None:
+                    line_cost_map[line_num] = total_cost
+            
+            # Encabezado del caso
+            complexity_line_to_line_str += f"=== {case_name.upper()} ===\n"
+            
+            # Agregar pseudocódigo con anotaciones de costos
+            for idx, code_line in enumerate(pseudocode_lines, start=1):
+                complexity_line_to_line_str += f"{code_line}"
+                
+                # Agregar costo si existe para esta línea
+                if idx in line_cost_map:
+                    total_cost = line_cost_map[idx]
+                    complexity_line_to_line_str += f" // Costo: {total_cost}"
+                
+                complexity_line_to_line_str += "\n"
+            
+            complexity_line_to_line_str += "\n"
+
+        # 4. Instanciar el modelo Solution
         solution = Solution(
             type="iterativo",
             algorithm_name=algorithm_name,
@@ -203,8 +237,8 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
             code_explain=structural_response.general_explanation,
             explain_complexity=math_response.general_summary,
             
-            # Detalle línea a línea (Usamos el Peor caso como representativo principal)
-            complexity_line_to_line=merged_cases[-1]["line_analysis"] if merged_cases else [],
+            # Detalle línea a línea (String formateado con anotaciones de costos)
+            complexity_line_to_line=complexity_line_to_line_str,
             
             # Matemáticas
             equation=equations_list,
