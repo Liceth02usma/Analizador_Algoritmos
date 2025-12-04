@@ -24,7 +24,7 @@ async def analyze_algorithm(payload: dict = Body(...)):
     Payload: { "pseudocode": "...", "is_natural_language": true/false }
     """
     raw_input = payload.get("pseudocode", "")
-    is_natural = payload.get("is_natural_language", True)
+    is_natural = payload.get("is_natural_language", False)
 
     # 1️⃣ FASE DE PRE-PROCESAMIENTO (Traducción + Parsing)
     # ControlInput se encarga de llamar al LLM si es necesario y luego a Lark

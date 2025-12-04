@@ -4,9 +4,10 @@ from app.models.solution import Solution
 
 # Importación de los 4 Agentes Especialistas
 from app.external_services.Agentes.IterativeAnalyzerAgent import IterativeAnalyzerAgent
-from app.external_services.Agentes.SummationSolverAgent import SummationSolverAgent
+#from app.external_services.Agentes.SummationSolverAgent import SummationSolverAgent
 from app.external_services.Agentes.ComplexityAnalysisAgent import ComplexityAnalysisAgent
 from app.external_services.Agentes.TraceDiagramAgent import TraceDiagramAgent
+from app.external_services.Agentes.summation_solver_agent import HybridSummationSolverAgent
 
 def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str = "Algoritmo Iterativo") -> Dict[str, Any]:
     """
@@ -15,13 +16,14 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
     
     # Perfil rápido para velocidad
     MODEL_PROFILE = "Gemini_Rapido" 
+    MODEL_PROFILE2 = "Gemini_Ultra"
 
     try:
         # ====================================================================
         # PASO 1: ANÁLISIS ESTRUCTURAL
         # ====================================================================
         print(f"=== 🤖 1. Analizando Estructura ({algorithm_name})... ===")
-        analyzer_agent = IterativeAnalyzerAgent(model_type=MODEL_PROFILE)
+        analyzer_agent = IterativeAnalyzerAgent(model_type=MODEL_PROFILE2)
         structural_response = analyzer_agent.analyze_algorithm(
             pseudocode=pseudocode, ast=ast, algorithm_name=algorithm_name
         )
@@ -38,10 +40,12 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
             for c in structural_response.cases
         ]
 
-        solver_agent = SummationSolverAgent(model_type=MODEL_PROFILE)
+        solver_agent = HybridSummationSolverAgent(model_type=MODEL_PROFILE)
         math_response = solver_agent.solve_summations(
             algorithm_name=algorithm_name, cases_data=cases_for_solver
         )
+
+        print(f"✅ Matemáticas completadas para {len(math_response.solved_cases)} casos.")
 
         # ====================================================================
         # PASO 3: CLASIFICACIÓN ASINTÓTICA
@@ -105,7 +109,7 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
                 "condition": struct_case.condition,
                 "line_analysis": [line.model_dump() for line in struct_case.line_analysis],
                 "raw_summation_str": struct_case.solver_friendly_summation,
-                "math_steps": solved_match.expanded_expression if solved_match else "",
+                "math_steps": solved_match.simplified_efficiency_function if solved_match else "",
                 "simplified_complexity": solved_match.simplified_efficiency_function if solved_match else "N/A",
                 "complexity_class": asymp_match.complexity_class if asymp_match else "Unknown",
                 "notation_type": notation_type,
@@ -167,7 +171,7 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
             
             # Explicación General
             code_explain=structural_response.general_explanation,
-            explain_complexity=math_response.final_summary,
+            explain_complexity=math_response.general_summary,
             
             # Detalle línea a línea (Usamos el Peor caso como representativo principal)
             complexity_line_to_line=merged_cases[-1]["line_analysis"] if merged_cases else [],
