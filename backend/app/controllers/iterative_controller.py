@@ -1,4 +1,5 @@
 from typing import Dict, Any, List
+import time
 # Importamos el modelo Solution
 from app.models.solution import Solution
 
@@ -17,6 +18,13 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
     # Perfil rápido para velocidad
     MODEL_PROFILE = "Gemini_Rapido" 
     MODEL_PROFILE2 = "Gemini_Ultra"
+    
+    # ⏱️ Iniciar tracking de tiempo total
+    start_time = time.time()
+    
+    # 📊 Tracking de tokens acumulados
+    total_tokens = {"input": 0, "output": 0, "total": 0}
+    agent_token_usage = {}  # Desglose por agente
 
     try:
         # ====================================================================
@@ -27,6 +35,16 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
         structural_response = analyzer_agent.analyze_algorithm(
             pseudocode=pseudocode, ast=ast, algorithm_name=algorithm_name
         )
+        
+        # 📊 Capturar tokens del agente estructural
+        agent_token_usage["IterativeAnalyzerAgent"] = {
+            "input": analyzer_agent._last_input_tokens,
+            "output": analyzer_agent._last_output_tokens,
+            "total": analyzer_agent._last_total_tokens
+        }
+        total_tokens["input"] += analyzer_agent._last_input_tokens
+        total_tokens["output"] += analyzer_agent._last_output_tokens
+        total_tokens["total"] += analyzer_agent._last_total_tokens
         
         if not structural_response.cases:
             return {"error": "El agente no detectó casos de análisis. Intente de nuevo."}
@@ -44,6 +62,16 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
         math_response = solver_agent.solve_summations(
             algorithm_name=algorithm_name, cases_data=cases_for_solver
         )
+        
+        # 📊 Capturar tokens del solver
+        agent_token_usage["HybridSummationSolverAgent"] = {
+            "input": solver_agent._last_input_tokens,
+            "output": solver_agent._last_output_tokens,
+            "total": solver_agent._last_total_tokens
+        }
+        total_tokens["input"] += solver_agent._last_input_tokens
+        total_tokens["output"] += solver_agent._last_output_tokens
+        total_tokens["total"] += solver_agent._last_total_tokens
 
         print(f"✅ Matemáticas completadas para {len(math_response.solved_cases)} casos.")
         print(math_response)
@@ -61,6 +89,16 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
         asymptotic_response = complexity_agent.determine_complexity(
             algorithm_name=algorithm_name, cases_data=cases_for_complexity
         )
+        
+        # 📊 Capturar tokens del agente de complejidad
+        agent_token_usage["ComplexityAnalysisAgent"] = {
+            "input": complexity_agent._last_input_tokens,
+            "output": complexity_agent._last_output_tokens,
+            "total": complexity_agent._last_total_tokens
+        }
+        total_tokens["input"] += complexity_agent._last_input_tokens
+        total_tokens["output"] += complexity_agent._last_output_tokens
+        total_tokens["total"] += complexity_agent._last_total_tokens
 
         # ====================================================================
         # PASO 4: GENERACIÓN DE DIAGRAMAS
@@ -72,6 +110,16 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
         diagram_response = diagram_agent.generate_diagrams(
             pseudocode=pseudocode, algorithm_name=algorithm_name, cases_summary=summary_text
         )
+        
+        # 📊 Capturar tokens del agente de diagramas
+        agent_token_usage["TraceDiagramAgent"] = {
+            "input": diagram_agent._last_input_tokens,
+            "output": diagram_agent._last_output_tokens,
+            "total": diagram_agent._last_total_tokens
+        }
+        total_tokens["input"] += diagram_agent._last_input_tokens
+        total_tokens["output"] += diagram_agent._last_output_tokens
+        total_tokens["total"] += diagram_agent._last_total_tokens
 
         # ====================================================================
         # PASO 5: FUSIÓN INTELIGENTE (MERGE & CLONE)
@@ -192,6 +240,12 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
                 ] if hasattr(solved_case, 'resolution_steps') else []
                 
                 merged_case["final_summary"] = solved_case.final_summary if hasattr(solved_case, 'final_summary') else ""
+        
+        # ⏱️ Calcular tiempo total de ejecución
+        execution_time = time.time() - start_time
+        
+        print(f"\n⏱️ Tiempo total de ejecución: {execution_time:.2f}s")
+        print(f"📊 Tokens totales consumidos: {total_tokens['total']:,}")
 
         # 3. Construir complexity_line_to_line como string con anotaciones de costos
         complexity_line_to_line_str = ""
@@ -265,7 +319,10 @@ def analyze_iterative(pseudocode: str, ast: Dict[str, Any], algorithm_name: str 
                 "project_metadata": {
                     "diagrams_generated": len(diagram_response.diagrams),
                     "agent_model": MODEL_PROFILE,
-                    "optimization": "Cases replicated" if is_single_general_case else "Full analysis"
+                    "optimization": "Cases replicated" if is_single_general_case else "Full analysis",
+                    "execution_time": execution_time,
+                    "token_usage": agent_token_usage,
+                    "total_tokens": total_tokens
                 }
             }
         )
