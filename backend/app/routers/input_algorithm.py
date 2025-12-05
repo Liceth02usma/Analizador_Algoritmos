@@ -91,6 +91,8 @@ async def analyze_algorithm(payload: dict = Body(...)):
     # Extraemos el tipo (ej: "iterativo", "recursivo")
     algo_type_value = result.get("algorithm_type", "desconocido")
 
+    print(f"=== Tipo de Algoritmo detectado: {algo_type_value} ===")
+
     # 3️⃣ FASE DE CLASIFICACIÓN (Nombre del Algoritmo)
     algo_class_result = classify_algorithm(valid_pseudocode, valid_ast, algo_type_value)
 
@@ -106,29 +108,26 @@ async def analyze_algorithm(payload: dict = Body(...)):
     # 4️⃣ ENRUTAMIENTO POR TIPO (Iterativo vs Recursivo)
     if "iterativo" in algo_type_value.lower():
         print("⚙️ Invocando Pipeline Iterativo...")
-        final_analysis = analyze_iterative(
-            pseudocode=valid_pseudocode,
-            ast=valid_ast,
-            algorithm_name=algorithm_name,
-        )
         # final_analysis = analyze_iterative(
-        #     pseudocode=valid_pseudocode,  # Usamos el código limpio/traducido
+        #     pseudocode=valid_pseudocode,
         #     ast=valid_ast,
         #     algorithm_name=algorithm_name,
         # )
+        final_analysis = analyze_iterative(
+            pseudocode=valid_pseudocode,  # Usamos el código limpio/traducido
+            ast=valid_ast,
+            algorithm_name=algorithm_name,
+        )
 
     elif (
         "recursivo" in algo_type_value.lower() or "dinámica" in algo_type_value.lower()
     ):
         print("⚙️ (Pendiente) Invocando Pipeline Recursivo...")
-        final_analysis = {
-            "error": "Análisis recursivo aún no implementado."
-        }
-        # final_analysis = ControlRecursive().analyze_from_parsed_tree(
-        #     algorithm_name=algorithm_name,
-        #     pseudocode=valid_pseudocode,
-        #     parsed_tree=valid_ast,
-        # )
+        final_analysis = ControlRecursive().analyze_from_parsed_tree(
+            algorithm_name=algorithm_name,
+            pseudocode=valid_pseudocode,
+            parsed_tree=valid_ast,
+        )
 
     else:
         print("⚠️ Tipo de algoritmo no reconocido.")
@@ -145,7 +144,7 @@ async def analyze_algorithm(payload: dict = Body(...)):
         "classification": {"type": algo_type_value, "name": algorithm_name},
         "analysis": final_analysis,
     }
-    analisis = save_analysis_to_json(analisis_data, "data_iterative2.json")
+    analisis = save_analysis_to_json(analisis_data, "data_iterative45.json")
     print(analisis, "ANALISIS GUARDADO")
     return analisis_data
 

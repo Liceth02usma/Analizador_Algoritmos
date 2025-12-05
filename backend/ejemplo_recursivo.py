@@ -16,26 +16,21 @@ def main():
 
     # Pseudocódigo de Fibonacci (sintaxis del proyecto)
     pseudocodigo = """
-        fibonacci(n)
-        begin
-            if (n <= 1) then
-            begin
-                return n
-            end
-            else
-            begin
-                CALL fibonacci(n-1)
-                CALL fibonacci(n-2)
-                return fib1 + fib2
-            end
-        end
-
+quicksort(arr, low, high)
+begin
+    if (low < high) then
+    begin
+        pi 🡨 CALL partition(arr, low, high)
+        CALL quicksort(arr, low, pi - 1)
+        CALL quicksort(arr, pi + 1, high)
+    end
+end 
     """
     print("📝 Pseudocódigo:")
     print(pseudocodigo)
     print()
 
-    results = controller.analyze_from_parsed_tree("No se", pseudocodigo)
+    results = controller.analyze_from_parsed_tree("quicksort", pseudocodigo)
 
     # Mostrar resultados
     print("\n" + "=" * 80)

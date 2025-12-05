@@ -77,6 +77,11 @@ class AlgorithmClassifier:
         
         self.reset()
         
+        # DEBUG: Imprimir tipo de AST para diagnóstico
+        print(f"🔍 [DEBUG] Tipo de AST recibido: {type(ast)}")
+        if hasattr(ast, 'data'):
+            print(f"🔍 [DEBUG] AST es un Tree de Lark con data: {ast.data}")
+        
         # PASO 1: Registrar todos los procedimientos
         self._register_procedures(ast)
         
@@ -91,7 +96,20 @@ class AlgorithmClassifier:
     
     def _register_procedures(self, node: Any):
         """Registra todos los nombres de funciones/procedimientos"""
-        if isinstance(node, dict):
+        # Soporte para Lark Tree
+        if hasattr(node, 'data') and hasattr(node, 'children'):
+            if node.data == "procedure_def":
+                # Buscar el nombre en los children
+                for child in node.children:
+                    if hasattr(child, 'type') and child.type == 'IDENTIFIER':
+                        self.procedure_names.add(str(child))
+                        break
+            
+            # Continuar recursivamente
+            for child in node.children:
+                self._register_procedures(child)
+        
+        elif isinstance(node, dict):
             if node.get("type") == "procedure_def":
                 proc_name = node.get("name")
                 if proc_name:
@@ -106,7 +124,53 @@ class AlgorithmClassifier:
     
     def _analyze_recursion(self, node: Any, parent_proc: Optional[str] = None):
         """Analiza el AST buscando llamadas recursivas"""
-        if isinstance(node, dict):
+        # Soporte para Lark Tree
+        if hasattr(node, 'data') and hasattr(node, 'children'):
+            node_type = node.data
+            
+            # Cambiar contexto si entramos a un procedimiento
+            if node_type == "procedure_def":
+                # Buscar el nombre en los children
+                proc_name = None
+                for child in node.children:
+                    if hasattr(child, 'type') and child.type == 'IDENTIFIER':
+                        proc_name = str(child)
+                        break
+                
+                if proc_name:
+                    self.current_procedure = proc_name
+                    parent_proc = proc_name
+                    
+                    if proc_name not in self.call_graph:
+                        self.call_graph[proc_name] = []
+            
+            # Detectar llamadas a funciones (buscar "call" en el data)
+            if "call" in node_type.lower():
+                # Buscar el nombre de la función llamada
+                called_func = None
+                for child in node.children:
+                    if hasattr(child, 'type') and child.type == 'IDENTIFIER':
+                        called_func = str(child)
+                        break
+                
+                if called_func:
+                    # RECURSIÓN DIRECTA: función se llama a sí misma
+                    if parent_proc and called_func == parent_proc:
+                        self.has_recursion = True
+                        self.recursive_procedures.add(parent_proc)
+                        print(f"🔴 [DEBUG] Recursión directa detectada: {parent_proc} llama a {called_func}")
+                    
+                    # Registrar en grafo para detectar recursión indirecta
+                    if parent_proc:
+                        if parent_proc not in self.call_graph:
+                            self.call_graph[parent_proc] = []
+                        self.call_graph[parent_proc].append(called_func)
+            
+            # Continuar recursivamente
+            for child in node.children:
+                self._analyze_recursion(child, parent_proc)
+        
+        elif isinstance(node, dict):
             node_type = node.get("type")
             
             # Cambiar contexto si entramos a un procedimiento

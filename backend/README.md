@@ -191,3 +191,9 @@ Para actualizar las dependencias:
 
 
 # Implementar lo de sql lite
+
+# Mejorar el agente de complexity line to line
+
+
+
+# Quitar el apartado de arbol de recursion para iterativos

@@ -25,4 +25,4 @@ app.include_router(input_algorithm.router)
 
 @app.get("/")
 def root():
-    return {"message": "API del Analizador de Complejidades lista 🚀"}
+    return {"message": "API del Analizador de Complejidades lista"}

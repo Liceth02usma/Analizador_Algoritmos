@@ -2,6 +2,7 @@ import React from "react";
 import CodeViewer from "../CodeViewer";
 import { CaseSelector } from "../CaseAnalysis";
 import { ComplexitySummary } from "../ResultsSummary";
+import { normalizeAnalysisData, getDiagrams, getAnnotatedCode } from "../../utils/dataNormalizer";
 
 export default function AnalysisFlow({ analysis }) {
   if (!analysis) {
@@ -11,6 +12,46 @@ export default function AnalysisFlow({ analysis }) {
       </div>
     );
   }
+
+  // Si el análisis contiene un error, mostrarlo
+  if (analysis.error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 p-8">
+        <div className="max-w-2xl w-full bg-red-900/20 border border-red-700 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="text-red-500 text-4xl">⚠️</div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-red-400 mb-2">Error en el Análisis</h3>
+              <p className="text-red-300 mb-4">{analysis.error}</p>
+              {analysis.details && (
+                <details className="bg-red-950/50 rounded p-4">
+                  <summary className="cursor-pointer text-red-400 font-semibold mb-2">
+                    Ver detalles técnicos
+                  </summary>
+                  <pre className="text-red-200 text-sm whitespace-pre-wrap font-mono mt-2">
+                    {analysis.details}
+                  </pre>
+                </details>
+              )}
+              <div className="mt-4 text-gray-400 text-sm">
+                <p className="font-semibold mb-2">Sugerencias:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Verifica que el pseudocódigo siga la sintaxis correcta</li>
+                  <li>Asegúrate de usar palabras clave válidas (begin, end, if, while, for, etc.)</li>
+                  <li>Usa el botón "Traducir" si escribiste en lenguaje natural</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Normalizar los datos para soportar ambos formatos
+  const normalizedData = normalizeAnalysisData(analysis);
+  const diagrams = getDiagrams(analysis, normalizedData);
+  const annotatedCode = getAnnotatedCode(analysis, normalizedData);
 
   const {
     code_explain,
@@ -23,15 +64,15 @@ export default function AnalysisFlow({ analysis }) {
     method_solution,
     solution_equation,
     explain_solution_steps,
-    diagrams,
     extra,
-  } = analysis;
+    type,
+    hasMultipleCases,
+  } = normalizedData;
 
-  // Detectar múltiples casos
-  const hasMultipleCases = 
-    extra?.has_multiple_cases || 
-    (Array.isArray(equation) && equation.length > 1) ||
-    false;
+  // Título dinámico según el tipo
+  const algorithmTypeLabel = type === 'iterativo' ? 'Iterativo' : 
+                             type === 'recursivo' ? 'Recursivo' : 
+                             algorithm_category || 'Algoritmo';
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
@@ -39,9 +80,9 @@ export default function AnalysisFlow({ analysis }) {
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-purple-400">
-            Análisis de Algoritmo Recursivo
+            Análisis de Algoritmo {algorithmTypeLabel}
           </h1>
-          {algorithm_name && (
+          {algorithm_name && algorithm_name !== "No se" && (
             <p className="text-xl text-gray-300">{algorithm_name}</p>
           )}
           {algorithm_category && (
@@ -83,7 +124,7 @@ export default function AnalysisFlow({ analysis }) {
 
         {/* 1. Mostrar el código */}
         <CodeViewer
-          code={complexity_line_to_line}
+          code={annotatedCode || complexity_line_to_line}
           explanation={code_explain}
           complexity={explain_complexity}
         />

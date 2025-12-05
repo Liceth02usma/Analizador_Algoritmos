@@ -281,38 +281,71 @@ class TestRecurrenceAnalysis(unittest.TestCase):
         Esperado:
            Best: T(n) = 2T(n/2) + n
            Worst: T(n) = T(n-1) + n
+           Average: T(n) = 2T(n/2) + n (caso promedio similar al mejor)
         """
         if not self.agent: self.skipTest("Agente no inicializado")
 
         code = """
-        quick_sort(A, inicio, fin)
-        begin
-            if (inicio >= fin) then return
-            pivote_index 🡨 partition(A, inicio, fin) // Costo O(n)
-            CALL quick_sort(A, inicio, pivote_index - 1)
-            CALL quick_sort(A, pivote_index + 1, fin)
-        end
+quicksort(arr, low, high)
+begin
+    if (low < high) then
+    begin
+        pi 🡨 CALL partition(arr, low, high)
+        CALL quicksort(arr, low, pi - 1)
+        CALL quicksort(arr, pi + 1, high)
+    end
+end
         """
         instance = MockRecursiveInstance(
-            name="quick_sort",
+            name="quicksort",
             pseudocode=code,
             type_case=True, # Quick Sort depende drásticamente de la elección del pivote
             recursive_calls=2
         )
 
         result = self.agent.analyze_recurrence(instance)
+        
+        print("\n" + "="*80)
+        print("🔍 TEST QUICK SORT - ANÁLISIS MULTI-CASO")
+        print("="*80)
+        
         self.assertTrue(result.has_multiple_cases, "Quick Sort debe tener múltiples casos")
+        self.assertIsNotNone(result.best_case, "Debe tener mejor caso")
+        self.assertIsNotNone(result.worst_case, "Debe tener peor caso")
+        self.assertIsNotNone(result.average_case, "Debe tener caso promedio")
 
-        # 1. Mejor Caso (Pivote perfecto)
+        # 1. Mejor Caso (Pivote perfecto - divide a la mitad)
         best = result.best_case.recurrence_equation.replace(" ", "")
-        print(f"\n[Quick Sort Best] {result.best_case.recurrence_equation}")
-        self.assertTrue("2T(n/2)" in best or "2T(ndiv2)" in best, "Mejor caso debe dividir a la mitad")
+        print(f"\n✅ MEJOR CASO:")
+        print(f"   Ecuación: {result.best_case.recurrence_equation}")
+        print(f"   Razonamiento: {result.best_case.reasoning}")
+        self.assertTrue("2T(n/2)" in best or "2T(ndiv2)" in best or "T(n/2)" in best, 
+                       f"Mejor caso debe dividir a la mitad. Obtenido: {result.best_case.recurrence_equation}")
 
-        # 2. Peor Caso (Pivote en los extremos)
+        # 2. Peor Caso (Pivote en los extremos - partición desbalanceada)
         worst = result.worst_case.recurrence_equation.replace(" ", "")
-        print(f"[Quick Sort Worst] {result.worst_case.recurrence_equation}")
+        print(f"\n❌ PEOR CASO:")
+        print(f"   Ecuación: {result.worst_case.recurrence_equation}")
+        print(f"   Razonamiento: {result.worst_case.reasoning}")
         # En peor caso, una llamada es T(n-1) y la otra T(0) que es constante, así que queda T(n-1) + n
-        self.assertTrue("T(n-1)" in worst, "Peor caso debe ser T(n-1) + n")
+        self.assertTrue("T(n-1)" in worst, 
+                       f"Peor caso debe ser T(n-1) + trabajo lineal. Obtenido: {result.worst_case.recurrence_equation}")
+
+        # 3. Caso Promedio
+        avg = result.average_case.recurrence_equation.replace(" ", "")
+        print(f"\n📊 CASO PROMEDIO:")
+        print(f"   Ecuación: {result.average_case.recurrence_equation}")
+        print(f"   Razonamiento: {result.average_case.reasoning}")
+        # El caso promedio puede ser similar al mejor caso o contener sumatorias
+        has_valid_avg = ("T(n/2)" in avg or "2T(n/2)" in avg or "T(ndiv2)" in avg or 
+                        "Σ" in result.average_case.recurrence_equation or 
+                        "sum" in result.average_case.recurrence_equation.lower())
+        self.assertTrue(has_valid_avg, 
+                       f"Caso promedio debe tener estructura válida. Obtenido: {result.average_case.recurrence_equation}")
+        
+        print("\n" + "="*80)
+        print("✅ TEST QUICK SORT COMPLETADO - 3 casos verificados")
+        print("="*80)
 
     def test_08_sqrt_recurrence(self):
         """

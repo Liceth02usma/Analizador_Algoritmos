@@ -84,14 +84,14 @@ class Recursive(Algorithm):
             model_type="Gemini_Rapido",
             provider="gemini"
         )
-        
+        print("Detectando tipo de caso del algoritmo recursivo...")
         self.type_case = case_detection_agent.detect_cases(
             pseudocode=self.pseudocode,
             ast_structure=self.structure,
             algorithm_name=self.name,
             thread_id=f"case_detection_{self.name}"
         )
-        
+        print(self.type_case, "Tipo de caso detectado (True = múltiples casos)")
         # =====================================================================
         # 1. OBTENER ECUACIONES DE RECURRENCIA
         # =====================================================================
