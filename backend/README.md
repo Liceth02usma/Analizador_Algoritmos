@@ -53,6 +53,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+python backend/app/external_services/Agentes/AlgorithmClassifierAgent.py
+
 El servidor estará disponible en:
 - **API**: http://127.0.0.1:8000
 - **Swagger UI**: http://127.0.0.1:8000/docs
@@ -181,3 +183,17 @@ Para actualizar las dependencias:
 ---
 
 
+# tasks
+
+
+
+# Mejorar el front end para que represente ambos analisis    (Preliminarmente)
+
+
+# Implementar lo de sql lite
+
+# Mejorar el agente de complexity line to line
+
+
+
+# Quitar el apartado de arbol de recursion para iterativos

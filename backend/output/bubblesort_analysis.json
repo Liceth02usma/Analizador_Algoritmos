@@ -1,0 +1,99 @@
+{
+  "type": "iterative",
+  "code_explain": "El algoritmo Bubble Sort (Ordenamiento de burbuja) es un algoritmo de ordenamiento simple que funciona revisando repetidamente una lista de elementos, comparando cada par de elementos adyacentes y cambiándolos de posición si están en el orden incorrecto. Este proceso se repite hasta que no se necesiten más intercambios, lo que indica que la lista está ordenada.",
+  "complexity_line_to_line": [
+    {
+      "line": 1,
+      "code": "bubbleSort(arr, n)",
+      "complexity": "c0 * 1",
+      "explanation": "Definición de la función, costo constante."
+    },
+    {
+      "line": 2,
+      "code": "begin",
+      "complexity": "0",
+      "explanation": "Inicio de bloque, sin costo computacional."
+    },
+    {
+      "line": 3,
+      "code": "for i = 0 to n-1 do",
+      "complexity": "c1 * n",
+      "explanation": "Bucle externo que se ejecuta n veces."
+    },
+    {
+      "line": 4,
+      "code": "for j = 0 to n-i-1 do",
+      "complexity": "c2 * Σ(i=0 to n-1) (n-i)",
+      "explanation": "Bucle interno. El número de iteraciones depende de 'i'. Suma n + (n-1) + ... + 1."
+    },
+    {
+      "line": 5,
+      "code": "if arr[j] > arr[j+1] then",
+      "complexity": "c3 * Σ(i=0 to n-1) (n-i)",
+      "explanation": "Comparación. Se ejecuta en cada iteración del bucle interno."
+    },
+    {
+      "line": 6,
+      "code": "swap(arr[j], arr[j+1])",
+      "complexity": "c4 * Σ(i=0 to n-1) (n-i) (peor caso)",
+      "explanation": "Intercambio. En el peor caso, se ejecuta en cada iteración del bucle interno."
+    },
+    {
+      "line": 7,
+      "code": "end",
+      "complexity": "0",
+      "explanation": "Fin de bloque if, sin costo."
+    },
+    {
+      "line": 8,
+      "code": "end",
+      "complexity": "0",
+      "explanation": "Fin de bloque for, sin costo."
+    },
+    {
+      "line": 9,
+      "code": "end",
+      "complexity": "0",
+      "explanation": "Fin de bloque for, sin costo."
+    },
+    {
+      "line": 10,
+      "code": "end",
+      "complexity": "0",
+      "explanation": "Fin de la función, sin costo."
+    }
+  ],
+  "explain_complexity": "**Algoritmo**: Bubble Sort\n**Categoría**: Ordenamiento\n**Tipo**: Iterativo\n\n**Ecuación**: T(n) = Σ(i=0 to n-1) Σ(j=0 to n-i-1) (c1 + c2)\n**Método de resolución**: Análisis de Sumatorias\n**Complejidad final**: O(n²)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(n²)\n- Peor caso (O): O(n²)\n- Caso promedio (Θ): Θ(n²)",
+  "asymptotic_notation": {
+    "best": "Ω(n²)",
+    "worst": "O(n²)",
+    "average": "Θ(n²)",
+    "explanation": "Ω (Omega) representa la cota inferior del tiempo de ejecución de un algoritmo, describiendo el mejor escenario posible. O (Big-O) representa la cota superior, describiendo el peor escenario posible. Θ (Theta) representa la cota ajustada, lo que significa que el tiempo de ejecución del algoritmo crece a la misma tasa tanto en el mejor como en el peor de los casos (cuando Ω y O coinciden). Para este algoritmo, los bucles se ejecutan el mismo número de veces independientemente del orden de los datos, por lo que las tres cotas son cuadráticas."
+  },
+  "algorithm_name": "Bubble Sort",
+  "algorithm_category": "Ordenamiento",
+  "equation": "T(n) = Σ(i=0 to n-1) Σ(j=0 to n-i-1) (c1 + c2)",
+  "method_solution": "Análisis de Sumatorias",
+  "solution_equation": "O(n²)",
+  "explain_solution_steps": [
+    "El tiempo de ejecución T(n) está dominado por los bucles anidados. Las operaciones dentro del bucle interno (comparación e intercambio) tienen un costo constante, que podemos agrupar en una constante 'c'.",
+    "La ecuación de complejidad se expresa como una doble sumatoria: T(n) = Σ(i=0 to n-1) Σ(j=0 to n-i-1) c",
+    "Paso 1: Resolver la sumatoria interna. La variable de suma es 'j', y 'c' es una constante. La suma va de 0 a n-i-1, lo que da (n-i-1 - 0 + 1) = (n-i) iteraciones.",
+    "Σ(j=0 to n-i-1) c = c * (n-i)",
+    "Paso 2: Sustituir el resultado en la sumatoria externa.",
+    "T(n) = Σ(i=0 to n-1) c * (n-i)",
+    "Paso 3: Expandir la sumatoria. Cuando i=0, el término es c*n. Cuando i=1, es c*(n-1), y así sucesivamente hasta i=n-1, donde el término es c*1.",
+    "T(n) = c * (n + (n-1) + (n-2) + ... + 1)",
+    "Paso 4: Aplicar la fórmula de la suma de una serie aritmética. La suma de los primeros k enteros es k(k+1)/2. En este caso, k=n.",
+    "T(n) = c * [n * (n+1) / 2]",
+    "Paso 5: Simplificar la expresión polinómica.",
+    "T(n) = c * (n² + n) / 2 = (c/2)n² + (c/2)n",
+    "Paso 6: Determinar el orden de crecimiento. En el análisis asintótico, nos quedamos con el término de mayor grado e ignoramos las constantes. El término dominante es n².",
+    "T(n) ∈ O(n²)"
+  ],
+  "diagrams": null,
+  "extra": {
+    "pseudocode": "\nbubbleSort(arr, n)\nbegin\n    for i = 0 to n-1 do\n        for j = 0 to n-i-1 do\n            if arr[j] > arr[j+1] then\n                swap(arr[j], arr[j+1])\n            end\n        end\n    end\nend\n",
+    "analysis_complete": true
+  }
+}

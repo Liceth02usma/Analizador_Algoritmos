@@ -88,7 +88,22 @@ return index
 
 
 
-
+bubble_sort(A, n)
+begin
+    for i 🡨 0 to n - 2 do
+    begin
+        for j 🡨 0 to n - i - 2 do
+        begin
+            if (A[j] > A[j + 1]) then
+            begin
+                temp 🡨 A[j]
+                A[j] 🡨 A[j + 1]
+                A[j + 1] 🡨 temp
+            end
+        end
+    end
+    return 0
+end
 
 
 

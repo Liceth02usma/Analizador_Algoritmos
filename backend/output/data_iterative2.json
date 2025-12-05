@@ -1,0 +1,10 @@
+{
+  "input_metadata": {
+    "source_type": "strict_code",
+    "final_pseudocode": "bubble_sort(A, n)\nbegin\n    swapped 🡨 T\n    i 🡨 0\n    while (swapped = T) do\n    begin\n        swapped 🡨 F\n        for j 🡨 0 to n - 2 - i do\n        begin\n            if (A[j] > A[j+1]) then\n            begin\n                temp 🡨 A[j]\n                A[j] 🡨 A[j+1]\n                A[j+1] 🡨 temp\n                swapped 🡨 T\n            end\n        end\n        i 🡨 i + 1\n    end\n    return A\nend"
+  },
+  "classification": {
+    "type": "iterativo",
+    "name": "Bubble Sort"
+  },
+  "analysis": 

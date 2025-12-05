@@ -21,7 +21,7 @@ class Algorithm(ABC):
         self.parsed_tree: Optional[LarkTree] = None
         self.complexity = None
         self._parser = None
-        self.type_case = "MEJOR CASO"
+        self.type_case = True
 
     def preprocess_code(self) -> None:
         """
@@ -46,6 +46,7 @@ class Algorithm(ABC):
                 self.structure = transformed
 
             self.tokens = self._extract_tokens_from_tree(self.structure)
+            print(self.structure, "Estructura del algoritmo")
 
         except Exception as e:
 
@@ -165,4 +166,3 @@ class Algorithm(ABC):
             return current_depth
 
         return calculate_depth(self.structure)
-

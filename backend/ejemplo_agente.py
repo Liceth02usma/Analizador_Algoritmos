@@ -254,9 +254,7 @@ Requisitos:
 
         # Invocar el agente usando el método helper de la clase base
         result = self.invoke_simple(
-            content=content,
-            thread_id=thread_id,
-            context=context.model_dump()
+            content=content, thread_id=thread_id, context=context.model_dump()
         )
 
         # Extraer y validar la respuesta estructurada
@@ -272,7 +270,7 @@ Requisitos:
         self,
         algorithm_names: List[str],
         array_size: int = 7,
-        thread_id: str = "comparison_thread"
+        thread_id: str = "comparison_thread",
     ) -> List[BestCaseResponse]:
         """
         Compara múltiples algoritmos analizando sus mejores casos.
@@ -291,7 +289,7 @@ Requisitos:
                 response = self.analyze_algorithm(
                     algorithm_name=algo_name,
                     array_size=array_size,
-                    thread_id=f"{thread_id}_{algo_name}"
+                    thread_id=f"{thread_id}_{algo_name}",
                 )
                 results.append(response)
             except ValueError as e:
@@ -315,9 +313,7 @@ if __name__ == "__main__":
     print("=" * 80)
 
     response = agent.analyze_algorithm(
-        algorithm_name="quicksort",
-        array_size=7,
-        thread_id="quicksort_example"
+        algorithm_name="quicksort", array_size=7, thread_id="quicksort_example"
     )
 
     print(f"\nAlgoritmo: {response.algorithm_name}")
@@ -343,7 +339,7 @@ if __name__ == "__main__":
         algorithm_name="binary_search",
         array_size=15,
         additional_info="Buscar el elemento 8 en un arreglo ordenado",
-        thread_id="binary_search_example"
+        thread_id="binary_search_example",
     )
 
     print(f"\nAlgoritmo: {response2.algorithm_name}")
@@ -366,7 +362,7 @@ if __name__ == "__main__":
     comparison_results = agent.compare_algorithms(
         algorithm_names=algorithms_to_compare,
         array_size=7,
-        thread_id="comparison_example"
+        thread_id="comparison_example",
     )
 
     print(f"\nComparación de {len(comparison_results)} algoritmos:\n")
@@ -376,4 +372,3 @@ if __name__ == "__main__":
         print(f"  - Nodos en árbol: {len(result.tree_structure)}")
         print(f"  - {result.best_case_description[:80]}...")
         print()
-

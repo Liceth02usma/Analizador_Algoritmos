@@ -263,9 +263,3 @@ class Iterative(Algorithm):
 
         if not self.structure:
             self.preprocess_code()
-
-        if not self.loop_details:
-            self.detect_loops()
-
-    def generate_flow_diagram(self):
-        pass

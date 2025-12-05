@@ -1,0 +1,10 @@
+{
+  "input_metadata": {
+    "source_type": "strict_code",
+    "final_pseudocode": "quicksort(arr, low, high)\nbegin\n    if (low < high) then\n    begin\n        pi 🡨 CALL partition(arr, low, high)\n        CALL quicksort(arr, low, pi - 1)\n        CALL quicksort(arr, pi + 1, high)\n    end\nend"
+  },
+  "classification": {
+    "type": "recursivo",
+    "name": "Quicksort"
+  },
+  "analysis": 

@@ -1,7 +1,7 @@
 from app.external_services.Agentes.AlgorithmClassifierAgent import AlgorithmClassifierAgent
 from app.parsers.parser import TreeToDict
 
-agent = AlgorithmClassifierAgent(model_type="Modelo_Razonamiento")
+agent = AlgorithmClassifierAgent(model_type="Gemini_Rapido")
 
 def classify_algorithm(pseudocode: str, ast, algo_type: str):
     """
@@ -30,5 +30,3 @@ def classify_algorithm(pseudocode: str, ast, algo_type: str):
     # ✅ Ejecutar agente
     result = agent.classify_algorithm(pseudocode, ast, algo_type)
     return result.model_dump()
-
-
