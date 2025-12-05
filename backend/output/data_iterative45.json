@@ -1,10 +1,10 @@
 {
   "input_metadata": {
     "source_type": "strict_code",
-    "final_pseudocode": "quicksort(arr, low, high)\nbegin\n    if (low < high) then\n    begin\n        pi 🡨 CALL partition(arr, low, high)\n        CALL quicksort(arr, low, pi - 1)\n        CALL quicksort(arr, pi + 1, high)\n    end\nend"
+    "final_pseudocode": "factorial(n)\nbegin\n    f 🡨 1\n    for i 🡨 1 to n do\n    begin\n        f 🡨 f * i\n    end\n    return f\nend"
   },
   "classification": {
-    "type": "recursivo",
-    "name": "Quicksort"
+    "type": "iterativo",
+    "name": "Cálculo de Factorial"
   },
   "analysis": 

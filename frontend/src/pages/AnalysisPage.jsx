@@ -1,7 +1,9 @@
  import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AnalysisFlow from "../components/AnalysisFlow/AnalysisFlow";
+import ComparisonView from "../components/ComparisonView/ComparisonView";
 import { analyzeRecursive } from "../services/recursiveService";
+import comparisonService from "../services/comparisonService";
 
 export default function AnalysisPage() {
   const location = useLocation();
@@ -9,6 +11,9 @@ export default function AnalysisPage() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonData, setComparisonData] = useState(null);
+  const [comparingLoading, setComparingLoading] = useState(false);
 
   useEffect(() => {
     // Verificar si tenemos el pseudocódigo
@@ -38,6 +43,30 @@ export default function AnalysisPage() {
       setError(`Error inesperado: ${err.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCompare = async () => {
+    try {
+      setComparingLoading(true);
+      setError(null);
+
+      const { algorithmName, pseudocode } = location.state;
+      
+      console.log("🔬 Iniciando comparación...");
+      const comparisonResult = await comparisonService.compareAnalysis(
+        algorithmName,
+        pseudocode
+      );
+
+      setComparisonData(comparisonResult);
+      setShowComparison(true);
+      console.log("✅ Comparación completada", comparisonResult);
+    } catch (err) {
+      setError(err.message || "Error al comparar análisis");
+      console.error("❌ Error en comparación:", err);
+    } finally {
+      setComparingLoading(false);
     }
   };
 
@@ -73,16 +102,51 @@ export default function AnalysisPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <button
             onClick={() => navigate("/")}
             className="text-blue-400 hover:text-blue-300 transition flex items-center gap-2"
           >
             ← Volver al inicio
           </button>
+          
+          {/* Botón de Comparación */}
+          {analysis && !showComparison && (
+            <button
+              onClick={handleCompare}
+              disabled={comparingLoading}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 px-6 py-3 rounded-lg transition flex items-center gap-2"
+            >
+              {comparingLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                  Comparando...
+                </>
+              ) : (
+                <>
+                  📊 Comparar con Agente Completo
+                </>
+              )}
+            </button>
+          )}
+          
+          {/* Botón para volver al análisis */}
+          {showComparison && (
+            <button
+              onClick={() => setShowComparison(false)}
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition"
+            >
+              ← Ver Análisis Especializado
+            </button>
+          )}
         </div>
         
-        <AnalysisFlow analysis={analysis} />
+        {/* Mostrar comparación o análisis */}
+        {showComparison ? (
+          <ComparisonView comparisonData={comparisonData} />
+        ) : (
+          <AnalysisFlow analysis={analysis} />
+        )}
       </div>
     </div>
   );

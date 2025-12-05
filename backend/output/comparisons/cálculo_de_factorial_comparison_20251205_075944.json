@@ -1,0 +1,377 @@
+{
+  "metadata": {
+    "algorithm_name": "Cálculo de Factorial",
+    "compared_at": "2025-12-05T07:59:44.964718",
+    "specialized_timestamp": "2025-12-05T07:57:54.689192"
+  },
+  "tokens_comparison": {
+    "specialized": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "complete": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "difference": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "percentage_difference": {
+      "total": 0
+    }
+  },
+  "complexity_comparison": {
+    "specialized": "N/A",
+    "complete": "N/A",
+    "match": false
+  },
+  "methods_comparison": {
+    "specialized": [
+      "Análisis especializado multi-agente"
+    ],
+    "complete": "Análisis completo sin especialización"
+  },
+  "detail_comparison": {
+    "specialized_steps": 0,
+    "complete_steps": 0,
+    "specialized_cases": 0,
+    "complete_cases": 1
+  },
+  "execution_time": {
+    "specialized": 0,
+    "complete": 22.974234580993652
+  },
+  "full_results": {
+    "specialized": {
+      "type": "iterativo",
+      "code_explain": "El algoritmo factorial tiene un caso general porque su comportamiento no depende de la entrada específica.",
+      "complexity_line_to_line": "=== MEJOR ===\nfactorial(n) // Costo: 1 * 1\nbegin // Costo: 0 * 1\n    f 🡨 1 // Costo: 1 * 1\n    for i 🡨 1 to n do // Costo: 3 * (n + 1)\n    begin // Costo: 0 * n\n        f 🡨 f * i // Costo: 2 * n\n    end // Costo: 0 * n\n    return f // Costo: 1 * 1\nend // Costo: 0 * 1\n\n=== PROMEDIO ===\nfactorial(n) // Costo: 1 * 1\nbegin // Costo: 0 * 1\n    f 🡨 1 // Costo: 1 * 1\n    for i 🡨 1 to n do // Costo: 3 * (n + 1)\n    begin // Costo: 0 * n\n        f 🡨 f * i // Costo: 2 * n\n    end // Costo: 0 * n\n    return f // Costo: 1 * 1\nend // Costo: 0 * 1\n\n=== PEOR ===\nfactorial(n) // Costo: 1 * 1\nbegin // Costo: 0 * 1\n    f 🡨 1 // Costo: 1 * 1\n    for i 🡨 1 to n do // Costo: 3 * (n + 1)\n    begin // Costo: 0 * n\n        f 🡨 f * i // Costo: 2 * n\n    end // Costo: 0 * n\n    return f // Costo: 1 * 1\nend // Costo: 0 * 1\n\n",
+      "explain_complexity": "El algoritmo Cálculo de Factorial tiene una complejidad O(n) en todos los casos.",
+      "asymptotic_notation": {
+        "best": "Ω(n)",
+        "average": "Θ(n)",
+        "worst": "O(n)",
+        "explanation": "La complejidad asintótica para el Cálculo de Factorial en el caso general es Θ(n)."
+      },
+      "algorithm_name": "Cálculo de Factorial",
+      "algorithm_category": "Iterativo / Bucle",
+      "equation": [
+        "Mejor: 1 * 1 + 0 * 1 + 1 * 1 + 3 * (n + 1) + 0 * n + 2 * n + 0 * n + 1 * 1 + 0 * 1",
+        "Promedio: 1 * 1 + 0 * 1 + 1 * 1 + 3 * (n + 1) + 0 * n + 2 * n + 0 * n + 1 * 1 + 0 * 1",
+        "Peor: 1 * 1 + 0 * 1 + 1 * 1 + 3 * (n + 1) + 0 * n + 2 * n + 0 * n + 1 * 1 + 0 * 1"
+      ],
+      "method_solution": "Método de Conteo de Pasos + Sumatorias",
+      "solution_equation": [
+        "Mejor: T(n) = 5*n + 6",
+        "Promedio: T(n) = 5*n + 6",
+        "Peor: T(n) = 5*n + 6"
+      ],
+      "explain_solution_steps": [
+        "**Mejor**: La función de tiempo resultante, T(n) = 5n + 6, es una función lineal. Esto significa que el número total de operaciones que realiza el algoritmo crece directamente proporcional al tamaño de la entrada `n`. El término dominante es `5n`, ya que para valores grandes de `n`, el término constante `6` se vuelve insignificante en comparación. Por lo tanto, la complejidad del algoritmo es O(n), indicando un rendimiento eficiente que escala linealmente con el tamaño del problema.",
+        "**Promedio**: 5*n + 6",
+        "**Peor**: 5*n + 6"
+      ],
+      "diagrams": {
+        "main_flowchart": "graph TD\n    Start((Inicio)) --> InitF[\"f := 1\"]\n    InitF --> InitI[\"i := 1\"]\n    InitI --> CheckLoop{i <= n?}\n    CheckLoop -->|Sí| Multiply[\"f := f * i\"]\n    Multiply --> IncrementI[\"i := i + 1\"]\n    IncrementI --> CheckLoop\n    CheckLoop -->|No| ReturnF[\"Return f\"]\n    ReturnF --> End((Fin))"
+      },
+      "extra": {
+        "is_case_dependent": false,
+        "cases": [
+          {
+            "case_name": "Mejor",
+            "condition": "n >= 0",
+            "line_analysis": [
+              {
+                "line": 1,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 2,
+                "cost_constant": 0,
+                "execution_count": "1",
+                "total_cost_expression": "0 * 1"
+              },
+              {
+                "line": 3,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 4,
+                "cost_constant": 3,
+                "execution_count": "n + 1",
+                "total_cost_expression": "3 * (n + 1)"
+              },
+              {
+                "line": 5,
+                "cost_constant": 0,
+                "execution_count": "n",
+                "total_cost_expression": "0 * n"
+              },
+              {
+                "line": 6,
+                "cost_constant": 2,
+                "execution_count": "n",
+                "total_cost_expression": "2 * n"
+              },
+              {
+                "line": 7,
+                "cost_constant": 0,
+                "execution_count": "n",
+                "total_cost_expression": "0 * n"
+              },
+              {
+                "line": 8,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 9,
+                "cost_constant": 0,
+                "execution_count": "1",
+                "total_cost_expression": "0 * 1"
+              }
+            ],
+            "raw_summation_str": "1 * 1 + 0 * 1 + 1 * 1 + 3 * (n + 1) + 0 * n + 2 * n + 0 * n + 1 * 1 + 0 * 1",
+            "math_steps": "5*n + 6",
+            "simplified_complexity": "5*n + 6",
+            "complexity_class": "n",
+            "notation_type": "Ω",
+            "big_o": "Ω(n)",
+            "trace_diagram": "graph TD\n    Start((Inicio)) --> InitF[\"f := 1\"]\n    InitF --> InitI[\"i := 1\"]\n    InitI --> CheckLoop{i <= n?}\n    CheckLoop -->|Sí| Multiply[\"f := f * i\"]\n    Multiply --> IncrementI[\"i := i + 1\"]\n    IncrementI --> CheckLoop\n    CheckLoop -->|No| ReturnF[\"Return f\"]\n    ReturnF --> End((Fin))",
+            "properties_explanation": "En esta expresión, identificamos una serie de términos constantes y productos que involucran la variable `n`. No hay sumatorias complejas (como series aritméticas o geométricas) ni estructuras anidadas que requieran fórmulas específicas de sumatorias.\n\nLas operaciones matemáticas principales que aplicaremos son la multiplicación y la suma. Utilizaremos la propiedad distributiva para expandir los productos y luego combinaremos los términos semejantes.\n\nNuestra estrategia general será simplificar la expresión de izquierda a derecha, resolviendo primero todos los productos y luego agrupando los términos constantes y los términos que contienen `n` para obtener una función polinómica simplificada. Esto nos permitirá determinar fácilmente el término dominante y, por ende, la complejidad Big-O del algoritmo.",
+            "resolution_steps": [
+              {
+                "step_number": 1,
+                "title": "Expresión original limpia",
+                "explanation": "Este es el punto de partida de nuestro análisis. Aquí simplemente presentamos la expresión tal como fue definida inicialmente, sin ninguna modificación. Es la base sobre la cual realizaremos todas las simplificaciones posteriores.",
+                "mathematical_expression": "1*1+0*1+1*1+3*(n+1)+0*n+2*n+0*n+1*1+0*1",
+                "property_or_formula": null
+              },
+              {
+                "step_number": 2,
+                "title": "Expandir productos y simplificar",
+                "explanation": "En este paso, aplicamos las operaciones de multiplicación y suma para simplificar la expresión. Primero, resolvemos todos los productos. Por ejemplo, `1*1` se convierte en `1`, `0*1` en `0`, `3*(n+1)` en `3n + 3`, `0*n` en `0`, y `2*n` se mantiene como `2n`. Luego, sumamos todos los términos constantes y todos los términos que contienen `n` por separado. Los términos multiplicados por cero simplemente desaparecen.",
+                "mathematical_expression": "5*n + 6",
+                "property_or_formula": "Propiedad distributiva de la multiplicación sobre la suma: a*(b+c) = a*b + a*c. Simplificación de productos y sumas."
+              },
+              {
+                "step_number": 3,
+                "title": "Agrupar términos por potencias de n",
+                "explanation": "Después de expandir y simplificar, el siguiente paso es organizar la expresión en su forma polinómica estándar. Esto significa agrupar los términos que tienen la misma potencia de `n`. En este caso, ya hemos combinado los términos con `n` (5n) y los términos constantes (6), resultando en una expresión lineal clara y simplificada.",
+                "mathematical_expression": "5*n + 6",
+                "property_or_formula": "Agrupación de términos semejantes."
+              }
+            ],
+            "final_summary": "La función de tiempo resultante, T(n) = 5n + 6, es una función lineal. Esto significa que el número total de operaciones que realiza el algoritmo crece directamente proporcional al tamaño de la entrada `n`. El término dominante es `5n`, ya que para valores grandes de `n`, el término constante `6` se vuelve insignificante en comparación. Por lo tanto, la complejidad del algoritmo es O(n), indicando un rendimiento eficiente que escala linealmente con el tamaño del problema."
+          },
+          {
+            "case_name": "Promedio",
+            "condition": "n >= 0",
+            "line_analysis": [
+              {
+                "line": 1,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 2,
+                "cost_constant": 0,
+                "execution_count": "1",
+                "total_cost_expression": "0 * 1"
+              },
+              {
+                "line": 3,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 4,
+                "cost_constant": 3,
+                "execution_count": "n + 1",
+                "total_cost_expression": "3 * (n + 1)"
+              },
+              {
+                "line": 5,
+                "cost_constant": 0,
+                "execution_count": "n",
+                "total_cost_expression": "0 * n"
+              },
+              {
+                "line": 6,
+                "cost_constant": 2,
+                "execution_count": "n",
+                "total_cost_expression": "2 * n"
+              },
+              {
+                "line": 7,
+                "cost_constant": 0,
+                "execution_count": "n",
+                "total_cost_expression": "0 * n"
+              },
+              {
+                "line": 8,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 9,
+                "cost_constant": 0,
+                "execution_count": "1",
+                "total_cost_expression": "0 * 1"
+              }
+            ],
+            "raw_summation_str": "1 * 1 + 0 * 1 + 1 * 1 + 3 * (n + 1) + 0 * n + 2 * n + 0 * n + 1 * 1 + 0 * 1",
+            "math_steps": "5*n + 6",
+            "simplified_complexity": "5*n + 6",
+            "complexity_class": "n",
+            "notation_type": "Θ",
+            "big_o": "Θ(n)",
+            "trace_diagram": "graph TD\n    Start((Inicio)) --> InitF[\"f := 1\"]\n    InitF --> InitI[\"i := 1\"]\n    InitI --> CheckLoop{i <= n?}\n    CheckLoop -->|Sí| Multiply[\"f := f * i\"]\n    Multiply --> IncrementI[\"i := i + 1\"]\n    IncrementI --> CheckLoop\n    CheckLoop -->|No| ReturnF[\"Return f\"]\n    ReturnF --> End((Fin))"
+          },
+          {
+            "case_name": "Peor",
+            "condition": "n >= 0",
+            "line_analysis": [
+              {
+                "line": 1,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 2,
+                "cost_constant": 0,
+                "execution_count": "1",
+                "total_cost_expression": "0 * 1"
+              },
+              {
+                "line": 3,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 4,
+                "cost_constant": 3,
+                "execution_count": "n + 1",
+                "total_cost_expression": "3 * (n + 1)"
+              },
+              {
+                "line": 5,
+                "cost_constant": 0,
+                "execution_count": "n",
+                "total_cost_expression": "0 * n"
+              },
+              {
+                "line": 6,
+                "cost_constant": 2,
+                "execution_count": "n",
+                "total_cost_expression": "2 * n"
+              },
+              {
+                "line": 7,
+                "cost_constant": 0,
+                "execution_count": "n",
+                "total_cost_expression": "0 * n"
+              },
+              {
+                "line": 8,
+                "cost_constant": 1,
+                "execution_count": "1",
+                "total_cost_expression": "1 * 1"
+              },
+              {
+                "line": 9,
+                "cost_constant": 0,
+                "execution_count": "1",
+                "total_cost_expression": "0 * 1"
+              }
+            ],
+            "raw_summation_str": "1 * 1 + 0 * 1 + 1 * 1 + 3 * (n + 1) + 0 * n + 2 * n + 0 * n + 1 * 1 + 0 * 1",
+            "math_steps": "5*n + 6",
+            "simplified_complexity": "5*n + 6",
+            "complexity_class": "n",
+            "notation_type": "O",
+            "big_o": "O(n)",
+            "trace_diagram": "graph TD\n    Start((Inicio)) --> InitF[\"f := 1\"]\n    InitF --> InitI[\"i := 1\"]\n    InitI --> CheckLoop{i <= n?}\n    CheckLoop -->|Sí| Multiply[\"f := f * i\"]\n    Multiply --> IncrementI[\"i := i + 1\"]\n    IncrementI --> CheckLoop\n    CheckLoop -->|No| ReturnF[\"Return f\"]\n    ReturnF --> End((Fin))"
+          }
+        ],
+        "hybrid_solver_summary": "El algoritmo Cálculo de Factorial tiene una complejidad O(n) en todos los casos.",
+        "project_metadata": {
+          "diagrams_generated": 1,
+          "agent_model": "Gemini_Rapido",
+          "optimization": "Cases replicated"
+        }
+      }
+    },
+    "complete": {
+      "type": "iterative",
+      "code_explain": "Calcula el factorial de un entero no negativo 'n', que es el producto de todos los enteros positivos desde 1 hasta n.",
+      "complexity_line_to_line": [
+        {
+          "line": 1,
+          "code": "f 🡨 1",
+          "complexity": "c1 * 1",
+          "explanation": "Operación de asignación. Se ejecuta una sola vez."
+        },
+        {
+          "line": 2,
+          "code": "for i 🡨 1 to n do",
+          "complexity": "c2 * n",
+          "explanation": "El bucle se ejecuta n veces. Incluye inicialización, n+1 comparaciones y n incrementos."
+        },
+        {
+          "line": 3,
+          "code": "f 🡨 f * i",
+          "complexity": "c3 * n",
+          "explanation": "Operación de multiplicación y asignación. Se ejecuta una vez por cada iteración del bucle, es decir, n veces."
+        },
+        {
+          "line": 4,
+          "code": "return f",
+          "complexity": "c4 * 1",
+          "explanation": "Operación de retorno. Se ejecuta una sola vez."
+        }
+      ],
+      "explain_complexity": "**Algoritmo**: Factorial Iterativo\n**Categoría**: Iteración Simple\n**Tipo**: Iterativo\n\n**Ecuación**: T(n) = c1 + c4 + Σ(i=1 to n) c3\n**Método de resolución**: Análisis de Sumatorias\n**Complejidad final**: O(n)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(n)\n- Peor caso (O): O(n)\n- Caso promedio (Θ): Θ(n)",
+      "asymptotic_notation": {
+        "best": "Ω(n)",
+        "worst": "O(n)",
+        "average": "Θ(n)",
+        "explanation": "Dado que el bucle 'for' siempre se ejecuta 'n' veces independientemente del valor de entrada (siempre que n > 0), el número de operaciones es directamente proporcional a 'n'. Por lo tanto, el mejor, peor y promedio caso coinciden. Ω(n) es la cota inferior, O(n) es la cota superior, y como ambas coinciden, Θ(n) es la cota ajustada."
+      },
+      "algorithm_name": "Factorial Iterativo",
+      "algorithm_category": "Iteración Simple",
+      "equation": "T(n) = c1 + c4 + Σ(i=1 to n) c3",
+      "method_solution": "Análisis de Sumatorias",
+      "solution_equation": "O(n)",
+      "explain_solution_steps": [
+        "La complejidad total T(n) es la suma de los costos de cada línea.",
+        "T(n) = (costo línea 1) + (costo bucle) + (costo retorno)",
+        "T(n) = c1 * 1 + (Σ(i=1 to n) c3) + c4 * 1",
+        "La sumatoria Σ(i=1 to n) c3 representa la ejecución de una operación de costo constante c3, n veces.",
+        "Por definición de sumatoria de una constante, Σ(i=1 to n) c3 = c3 * n.",
+        "Sustituyendo en la ecuación: T(n) = c1 + c3*n + c4.",
+        "Agrupando constantes: T(n) = (c3) * n + (c1 + c4).",
+        "Esta es una función lineal de n, donde el término dominante es n."
+      ],
+      "diagrams": null,
+      "extra": {
+        "pseudocode": "factorial(n)\nbegin\n    f 🡨 1\n    for i 🡨 1 to n do\n    begin\n        f 🡨 f * i\n    end\n    return f\nend",
+        "analysis_complete": true
+      }
+    }
+  }
+}

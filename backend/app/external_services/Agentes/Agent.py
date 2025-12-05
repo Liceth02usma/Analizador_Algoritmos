@@ -45,6 +45,11 @@ class AgentBase(ABC, Generic[T]):
         self.context_schema: Optional[type[BaseModel]] = None
         self.response_format: Optional[type[T]] = None
         self.SYSTEM_PROMPT: str = ""
+        
+        # 📊 Atributos para tracking de tokens
+        self._last_input_tokens: int = 0
+        self._last_output_tokens: int = 0
+        self._last_total_tokens: int = 0
 
         # Hook para que la subclase configure prompt, tools y schemas
         self._configure()
@@ -127,6 +132,11 @@ class AgentBase(ABC, Generic[T]):
             input_tokens = usage.get("input_tokens", 0)
             output_tokens = usage.get("output_tokens", 0)
             total_tokens = input_tokens + output_tokens
+            
+            # 💾 Guardar tokens para acceso posterior
+            self._last_input_tokens = input_tokens
+            self._last_output_tokens = output_tokens
+            self._last_total_tokens = total_tokens
             
             print(f"\n📊 [TOKENS] {self.__class__.__name__}:")
             print(f"   ├─ Input:  {input_tokens:,} tokens")
