@@ -13,6 +13,7 @@ sys.path.insert(0, str(root_dir))
 # Cargar variables de entorno
 try:
     from dotenv import load_dotenv
+
     env_path = root_dir / ".env"
     if env_path.exists():
         load_dotenv(env_path)
@@ -25,6 +26,7 @@ from app.models.recursive.case_detection_agent import CaseDetectionAgent
 # ============================================================================
 # 🟢 CASOS BÁSICOS - Algoritmos Simples y Claros
 # ============================================================================
+
 
 def test_caso_basico_1_fibonacci():
     """
@@ -41,24 +43,22 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'fibonacci',
-        'body': [
-            {'type': 'if', 'condition': 'n <= 1'},
-            {'type': 'call', 'name': 'fibonacci'},
-            {'type': 'call', 'name': 'fibonacci'}
-        ]
+        "type": "procedure_def",
+        "name": "fibonacci",
+        "body": [
+            {"type": "if", "condition": "n <= 1"},
+            {"type": "call", "name": "fibonacci"},
+            {"type": "call", "name": "fibonacci"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
-        pseudocode=pseudocode,
-        ast_structure=ast_structure,
-        algorithm_name="Fibonacci"
+        pseudocode=pseudocode, ast_structure=ast_structure, algorithm_name="Fibonacci"
     )
-    
+
     expected = False  # Caso general
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
     print(f"{status} | Fibonacci → Múltiples casos: {result} (esperado: {expected})")
@@ -80,23 +80,21 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'factorial',
-        'body': [
-            {'type': 'if', 'condition': 'n <= 1'},
-            {'type': 'call', 'name': 'factorial'}
-        ]
+        "type": "procedure_def",
+        "name": "factorial",
+        "body": [
+            {"type": "if", "condition": "n <= 1"},
+            {"type": "call", "name": "factorial"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
-        pseudocode=pseudocode,
-        ast_structure=ast_structure,
-        algorithm_name="Factorial"
+        pseudocode=pseudocode, ast_structure=ast_structure, algorithm_name="Factorial"
     )
-    
+
     expected = False
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
     print(f"{status} | Factorial → Múltiples casos: {result} (esperado: {expected})")
@@ -121,33 +119,36 @@ begin
     hanoi(n - 1, auxiliar, destino, origen)
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'hanoi',
-        'body': [
-            {'type': 'if', 'condition': 'n = 1'},
-            {'type': 'call', 'name': 'hanoi'},
-            {'type': 'call', 'name': 'hanoi'}
-        ]
+        "type": "procedure_def",
+        "name": "hanoi",
+        "body": [
+            {"type": "if", "condition": "n = 1"},
+            {"type": "call", "name": "hanoi"},
+            {"type": "call", "name": "hanoi"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Torres de Hanoi"
+        algorithm_name="Torres de Hanoi",
     )
-    
+
     expected = False
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
-    print(f"{status} | Torres de Hanoi → Múltiples casos: {result} (esperado: {expected})")
+    print(
+        f"{status} | Torres de Hanoi → Múltiples casos: {result} (esperado: {expected})"
+    )
     return result == expected
 
 
 # ============================================================================
 # 🟡 CASOS INTERMEDIOS - Algoritmos con Condiciones Variables
 # ============================================================================
+
 
 def test_caso_intermedio_1_binary_search():
     """
@@ -173,27 +174,33 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'binarySearch',
-        'body': [
-            {'type': 'if', 'condition': 'inicio > fin', 'has_early_return': True},
-            {'type': 'if', 'condition': 'arr[medio] = objetivo', 'has_early_return': True},
-            {'type': 'call', 'name': 'binarySearch'}
-        ]
+        "type": "procedure_def",
+        "name": "binarySearch",
+        "body": [
+            {"type": "if", "condition": "inicio > fin", "has_early_return": True},
+            {
+                "type": "if",
+                "condition": "arr[medio] = objetivo",
+                "has_early_return": True,
+            },
+            {"type": "call", "name": "binarySearch"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Binary Search"
+        algorithm_name="Binary Search",
     )
-    
+
     expected = True  # Tiene múltiples casos
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
-    print(f"{status} | Binary Search → Múltiples casos: {result} (esperado: {expected})")
+    print(
+        f"{status} | Binary Search → Múltiples casos: {result} (esperado: {expected})"
+    )
     return result == expected
 
 
@@ -227,24 +234,26 @@ begin
     return i + 1
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'quickSort',
-        'body': [
-            {'type': 'assign', 'lvalue': 'pivote', 'note': 'Pivote variable según datos'},
-            {'type': 'call', 'name': 'quickSort'},
-            {'type': 'call', 'name': 'quickSort'}
-        ]
+        "type": "procedure_def",
+        "name": "quickSort",
+        "body": [
+            {
+                "type": "assign",
+                "lvalue": "pivote",
+                "note": "Pivote variable según datos",
+            },
+            {"type": "call", "name": "quickSort"},
+            {"type": "call", "name": "quickSort"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
-        pseudocode=pseudocode,
-        ast_structure=ast_structure,
-        algorithm_name="QuickSort"
+        pseudocode=pseudocode, ast_structure=ast_structure, algorithm_name="QuickSort"
     )
-    
+
     expected = True
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
     print(f"{status} | QuickSort → Múltiples casos: {result} (esperado: {expected})")
@@ -267,24 +276,26 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'mergeSort',
-        'body': [
-            {'type': 'assign', 'lvalue': 'medio', 'note': 'División siempre balanceada'},
-            {'type': 'call', 'name': 'mergeSort'},
-            {'type': 'call', 'name': 'mergeSort'}
-        ]
+        "type": "procedure_def",
+        "name": "mergeSort",
+        "body": [
+            {
+                "type": "assign",
+                "lvalue": "medio",
+                "note": "División siempre balanceada",
+            },
+            {"type": "call", "name": "mergeSort"},
+            {"type": "call", "name": "mergeSort"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
-        pseudocode=pseudocode,
-        ast_structure=ast_structure,
-        algorithm_name="MergeSort"
+        pseudocode=pseudocode, ast_structure=ast_structure, algorithm_name="MergeSort"
     )
-    
+
     expected = False
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
     print(f"{status} | MergeSort → Múltiples casos: {result} (esperado: {expected})")
@@ -294,6 +305,7 @@ end
 # ============================================================================
 # 🟠 CASOS AVANZADOS - Algoritmos con Patrones Complejos
 # ============================================================================
+
 
 def test_caso_avanzado_1_linear_search_recursivo():
     """
@@ -315,26 +327,32 @@ begin
     return linearSearchRecursive(arr, n, target, index + 1)
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'linearSearchRecursive',
-        'body': [
-            {'type': 'if', 'condition': 'arr[index] = target', 'has_early_return': True},
-            {'type': 'call', 'name': 'linearSearchRecursive'}
-        ]
+        "type": "procedure_def",
+        "name": "linearSearchRecursive",
+        "body": [
+            {
+                "type": "if",
+                "condition": "arr[index] = target",
+                "has_early_return": True,
+            },
+            {"type": "call", "name": "linearSearchRecursive"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Linear Search Recursivo"
+        algorithm_name="Linear Search Recursivo",
     )
-    
+
     expected = True
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
-    print(f"{status} | Linear Search Recursivo → Múltiples casos: {result} (esperado: {expected})")
+    print(
+        f"{status} | Linear Search Recursivo → Múltiples casos: {result} (esperado: {expected})"
+    )
     return result == expected
 
 
@@ -353,23 +371,23 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'sumaArreglo',
-        'body': [
-            {'type': 'if', 'condition': 'n = 0'},
-            {'type': 'call', 'name': 'sumaArreglo'}
-        ]
+        "type": "procedure_def",
+        "name": "sumaArreglo",
+        "body": [
+            {"type": "if", "condition": "n = 0"},
+            {"type": "call", "name": "sumaArreglo"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Suma Arreglo"
+        algorithm_name="Suma Arreglo",
     )
-    
+
     expected = False
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
     print(f"{status} | Suma Arreglo → Múltiples casos: {result} (esperado: {expected})")
@@ -397,33 +415,36 @@ begin
     return binarySearch(arr, target, i/2, min(i, n-1))
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'exponentialSearch',
-        'body': [
-            {'type': 'if', 'condition': 'arr[0] = target', 'has_early_return': True},
-            {'type': 'while', 'condition': 'i < n'},
-            {'type': 'call', 'name': 'binarySearch'}
-        ]
+        "type": "procedure_def",
+        "name": "exponentialSearch",
+        "body": [
+            {"type": "if", "condition": "arr[0] = target", "has_early_return": True},
+            {"type": "while", "condition": "i < n"},
+            {"type": "call", "name": "binarySearch"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Búsqueda Exponencial"
+        algorithm_name="Búsqueda Exponencial",
     )
-    
+
     expected = True
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
-    print(f"{status} | Búsqueda Exponencial → Múltiples casos: {result} (esperado: {expected})")
+    print(
+        f"{status} | Búsqueda Exponencial → Múltiples casos: {result} (esperado: {expected})"
+    )
     return result == expected
 
 
 # ============================================================================
 # 🔴 CASOS EXTREMOS - Edge Cases y Algoritmos Especiales
 # ============================================================================
+
 
 def test_caso_extremo_1_ackermann():
     """
@@ -442,25 +463,23 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'ackermann',
-        'body': [
-            {'type': 'if', 'condition': 'm = 0'},
-            {'type': 'if', 'condition': 'n = 0'},
-            {'type': 'call', 'name': 'ackermann'},
-            {'type': 'call', 'name': 'ackermann'}
-        ]
+        "type": "procedure_def",
+        "name": "ackermann",
+        "body": [
+            {"type": "if", "condition": "m = 0"},
+            {"type": "if", "condition": "n = 0"},
+            {"type": "call", "name": "ackermann"},
+            {"type": "call", "name": "ackermann"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
-        pseudocode=pseudocode,
-        ast_structure=ast_structure,
-        algorithm_name="Ackermann"
+        pseudocode=pseudocode, ast_structure=ast_structure, algorithm_name="Ackermann"
     )
-    
+
     expected = False
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
     print(f"{status} | Ackermann → Múltiples casos: {result} (esperado: {expected})")
@@ -499,26 +518,32 @@ begin
     return -1
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'interpolationSearch',
-        'body': [
-            {'type': 'assign', 'lvalue': 'pos', 'note': 'Posición varía según distribución'},
-            {'type': 'if', 'condition': 'arr[pos] = target', 'has_early_return': True}
-        ]
+        "type": "procedure_def",
+        "name": "interpolationSearch",
+        "body": [
+            {
+                "type": "assign",
+                "lvalue": "pos",
+                "note": "Posición varía según distribución",
+            },
+            {"type": "if", "condition": "arr[pos] = target", "has_early_return": True},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Interpolation Search"
+        algorithm_name="Interpolation Search",
     )
-    
+
     expected = True
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
-    print(f"{status} | Interpolation Search → Múltiples casos: {result} (esperado: {expected})")
+    print(
+        f"{status} | Interpolation Search → Múltiples casos: {result} (esperado: {expected})"
+    )
     return result == expected
 
 
@@ -542,27 +567,29 @@ begin
     end
 end
 """
-    
+
     ast_structure = {
-        'type': 'procedure_def',
-        'name': 'permute',
-        'body': [
-            {'type': 'if', 'condition': 'l = r'},
-            {'type': 'for', 'var': 'i'},
-            {'type': 'call', 'name': 'permute'}
-        ]
+        "type": "procedure_def",
+        "name": "permute",
+        "body": [
+            {"type": "if", "condition": "l = r"},
+            {"type": "for", "var": "i"},
+            {"type": "call", "name": "permute"},
+        ],
     }
-    
+
     agent = CaseDetectionAgent(model_type="Gemini_Rapido", provider="gemini")
     result = agent.detect_cases(
         pseudocode=pseudocode,
         ast_structure=ast_structure,
-        algorithm_name="Permutaciones"
+        algorithm_name="Permutaciones",
     )
-    
+
     expected = False
     status = "✅ CORRECTO" if result == expected else "❌ INCORRECTO"
-    print(f"{status} | Permutaciones → Múltiples casos: {result} (esperado: {expected})")
+    print(
+        f"{status} | Permutaciones → Múltiples casos: {result} (esperado: {expected})"
+    )
     return result == expected
 
 
@@ -570,14 +597,15 @@ end
 # 🎯 RUNNER DE TESTS
 # ============================================================================
 
+
 def run_all_tests():
     """Ejecuta todas las pruebas y genera reporte"""
-    
+
     print("=" * 80)
     print("🧪 SUITE DE PRUEBAS - CASE DETECTION AGENT")
     print("=" * 80)
     print()
-    
+
     tests = {
         "🟢 CASOS BÁSICOS": [
             ("Fibonacci (caso general)", test_caso_basico_1_fibonacci),
@@ -590,25 +618,34 @@ def run_all_tests():
             ("MergeSort (caso general)", test_caso_intermedio_3_mergesort),
         ],
         "🟠 CASOS AVANZADOS": [
-            ("Linear Search Recursivo (múltiples casos)", test_caso_avanzado_1_linear_search_recursivo),
+            (
+                "Linear Search Recursivo (múltiples casos)",
+                test_caso_avanzado_1_linear_search_recursivo,
+            ),
             ("Suma Arreglo (caso general)", test_caso_avanzado_2_suma_arreglo),
-            ("Búsqueda Exponencial (múltiples casos)", test_caso_avanzado_3_busqueda_exponencial),
+            (
+                "Búsqueda Exponencial (múltiples casos)",
+                test_caso_avanzado_3_busqueda_exponencial,
+            ),
         ],
         "🔴 CASOS EXTREMOS": [
             ("Ackermann (caso general)", test_caso_extremo_1_ackermann),
-            ("Interpolation Search (múltiples casos)", test_caso_extremo_2_interpolation_search),
+            (
+                "Interpolation Search (múltiples casos)",
+                test_caso_extremo_2_interpolation_search,
+            ),
             ("Permutaciones (caso general)", test_caso_extremo_3_permutaciones),
-        ]
+        ],
     }
-    
+
     total_tests = 0
     passed_tests = 0
     failed_tests = []
-    
+
     for level, test_list in tests.items():
         print(f"\n{level}")
         print("-" * 80)
-        
+
         for test_name, test_func in test_list:
             total_tests += 1
             try:
@@ -620,9 +657,9 @@ def run_all_tests():
             except Exception as e:
                 failed_tests.append(test_name)
                 print(f"💥 ERROR | {test_name}: {str(e)}")
-        
+
         print()
-    
+
     # Resumen final
     print("=" * 80)
     print("📊 RESUMEN DE RESULTADOS")
@@ -630,16 +667,16 @@ def run_all_tests():
     print(f"✅ Tests pasados: {passed_tests}/{total_tests}")
     print(f"❌ Tests fallidos: {len(failed_tests)}/{total_tests}")
     print(f"📈 Precisión: {100 * passed_tests / total_tests:.1f}%")
-    
+
     if failed_tests:
         print("\n🔍 TESTS FALLIDOS:")
         for name in failed_tests:
             print(f"   ❌ {name}")
     else:
         print("\n🎉 ¡TODOS LOS TESTS PASARON!")
-    
+
     print("=" * 80)
-    
+
     return passed_tests == total_tests
 
 

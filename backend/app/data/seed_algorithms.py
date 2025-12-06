@@ -26,7 +26,7 @@ begin
         i 🡨 i + 1
     end
     return A
-end"""
+end""",
     },
     {
         "id": "binary_search",
@@ -53,7 +53,7 @@ begin
         end
     end
     return -1
-end"""
+end""",
     },
     {
         "id": "factorial_iter",
@@ -67,6 +67,6 @@ begin
         f 🡨 f * i
     end
     return f
-end"""
-    }
+end""",
+    },
 ]

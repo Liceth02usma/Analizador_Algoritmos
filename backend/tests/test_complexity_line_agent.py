@@ -49,7 +49,9 @@ class TestComplexityLineAgentPrecision(unittest.TestCase):
             ),
         )
 
-    def create_mock_multiple_response(self, best_complexity, worst_complexity, avg_complexity):
+    def create_mock_multiple_response(
+        self, best_complexity, worst_complexity, avg_complexity
+    ):
         """Helper para crear respuestas mock de múltiples casos."""
         return MultipleCasesOutput(
             has_multiple_cases=True,
@@ -81,7 +83,7 @@ class TestComplexityLineAgentPrecision(unittest.TestCase):
         print(f"\n{'='*80}")
         print(f"🧪 TEST: {test_name}")
         print(f"{'='*80}")
-        
+
         if result.get("has_multiple_cases"):
             # Caso múltiple
             print("\n📊 ANÁLISIS DE MÚLTIPLES CASOS:")
@@ -104,7 +106,7 @@ class TestComplexityLineAgentPrecision(unittest.TestCase):
             print(analysis["complexity_explanation"])
             print(f"\n✅ COMPLEJIDAD FINAL: {analysis['total_complexity']}")
             print(f"✅ COMPLEJIDAD ESPERADA: {expected_complexity}")
-        
+
         print(f"\n{'='*80}\n")
 
     # ==========================================
@@ -124,12 +126,12 @@ function swap(a, b):
         mock_response = self.create_mock_single_response(
             annotated="function swap(a, b):\\n    temp = a            // c1\\n    a = b               // c2\\n    b = temp            // c3\\n    return a, b         // c4",
             explanation="Total = c1 + c2 + c3 + c4 = 4 constantes. Complejidad O(1).",
-            complexity="O(1)"
+            complexity="O(1)",
         )
-        
+
         result = mock_response
         self.print_analysis_results("O(1) - Swap", result.model_dump(), "O(1)")
-        
+
         # Verificaciones
         self.assertFalse(result.has_multiple_cases)
         self.assertIn("O(1)", result.analysis.total_complexity)
@@ -152,12 +154,12 @@ function sumArray(arr, n):
         mock_response = self.create_mock_single_response(
             annotated="function sumArray(arr, n):\\n    total = 0            // c1\\n    for i = 0 to n:      // c2 * (n + 1)\\n        total += arr[i]  // c3 * n\\n    return total         // c4",
             explanation="Total = c1 + c2(n+1) + c3(n) + c4 = n(c2+c3) + (c1+c2+c4). Lineal O(n).",
-            complexity="O(n)"
+            complexity="O(n)",
         )
-        
+
         result = mock_response
         self.print_analysis_results("O(n) - Suma Lineal", result.model_dump(), "O(n)")
-        
+
         # Verificaciones
         self.assertIn("O(n)", result.analysis.total_complexity)
         self.assertIn("n + 1", result.analysis.pseudocode_annotated)
@@ -174,15 +176,15 @@ function linearSearch(arr, n, target):
 """
         # Mock de la respuesta del agente
         mock_response = self.create_mock_multiple_response(
-            best_complexity="O(1)",
-            worst_complexity="O(n)",
-            avg_complexity="O(n)"
+            best_complexity="O(1)", worst_complexity="O(n)", avg_complexity="O(n)"
         )
-        
+
         result = mock_response
         result_dict = result.model_dump()
-        self.print_analysis_results("O(n) - Búsqueda Lineal (Múltiples Casos)", result_dict, "O(1)/O(n)")
-        
+        self.print_analysis_results(
+            "O(n) - Búsqueda Lineal (Múltiples Casos)", result_dict, "O(1)/O(n)"
+        )
+
         # Verificaciones
         self.assertTrue(result.has_multiple_cases)
         # Mejor caso: elemento en primera posición
@@ -201,7 +203,7 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="for i = 0 to n: // c1*(n+1)\\n    for j = 0 to n-i: // c2*n*(n+1)/2\\n        ...",
             explanation="Dos ciclos anidados resultan en O(n²)",
-            complexity="O(n²)"
+            complexity="O(n²)",
         )
         result = mock_response
         self.print_analysis_results("O(n²) - Bubble Sort", result.model_dump(), "O(n²)")
@@ -212,10 +214,12 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="Tres ciclos anidados",
             explanation="Tres ciclos anidados resultan en O(n³)",
-            complexity="O(n³)"
+            complexity="O(n³)",
         )
         result = mock_response
-        self.print_analysis_results("O(n³) - Multiplicación de Matrices", result.model_dump(), "O(n³)")
+        self.print_analysis_results(
+            "O(n³) - Multiplicación de Matrices", result.model_dump(), "O(n³)"
+        )
         self.assertTrue("n" in result.analysis.total_complexity.lower())
 
     def test_binary_search(self):
@@ -223,10 +227,12 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="while left <= right: // c1*log(n)\\n    mid = (left + right) / 2 // c2*log(n)",
             explanation="División del espacio de búsqueda a la mitad en cada iteración resulta en O(log n)",
-            complexity="O(log n)"
+            complexity="O(log n)",
         )
         result = mock_response
-        self.print_analysis_results("O(log n) - Búsqueda Binaria", result.model_dump(), "O(log n)")
+        self.print_analysis_results(
+            "O(log n) - Búsqueda Binaria", result.model_dump(), "O(log n)"
+        )
         self.assertTrue("log" in result.analysis.total_complexity.lower())
 
     def test_power_function(self):
@@ -234,10 +240,12 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="half = power(base, exp / 2) // T(n/2) + c1",
             explanation="División del exponente a la mitad resulta en O(log n)",
-            complexity="O(log n)"
+            complexity="O(log n)",
         )
         result = mock_response
-        self.print_analysis_results("O(log n) - Potencia Recursiva", result.model_dump(), "O(log n)")
+        self.print_analysis_results(
+            "O(log n) - Potencia Recursiva", result.model_dump(), "O(log n)"
+        )
         self.assertIn("T(", result.analysis.pseudocode_annotated)
 
     def test_merge_sort(self):
@@ -245,23 +253,30 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="mergeSort(left) // T(n/2)\\n    mergeSort(right) // T(n/2)\\n    merge() // c*n",
             explanation="T(n) = 2T(n/2) + n resulta en O(n log n)",
-            complexity="O(n log n)"
+            complexity="O(n log n)",
         )
         result = mock_response
-        self.print_analysis_results("O(n log n) - Merge Sort", result.model_dump(), "O(n log n)")
+        self.print_analysis_results(
+            "O(n log n) - Merge Sort", result.model_dump(), "O(n log n)"
+        )
         self.assertIn("T(", result.analysis.pseudocode_annotated)
-        self.assertTrue("log" in result.analysis.total_complexity.lower() and "n" in result.analysis.total_complexity.lower())
+        self.assertTrue(
+            "log" in result.analysis.total_complexity.lower()
+            and "n" in result.analysis.total_complexity.lower()
+        )
 
     def test_quick_sort(self):
         """Prueba quick sort con múltiples casos."""
         mock_response = self.create_mock_multiple_response(
             best_complexity="O(n log n)",
             worst_complexity="O(n²)",
-            avg_complexity="O(n log n)"
+            avg_complexity="O(n log n)",
         )
         result = mock_response
         result_dict = result.model_dump()
-        self.print_analysis_results("O(n log n) / O(n²) - Quick Sort", result_dict, "O(n log n) / O(n²)")
+        self.print_analysis_results(
+            "O(n log n) / O(n²) - Quick Sort", result_dict, "O(n log n) / O(n²)"
+        )
         self.assertTrue(result.has_multiple_cases)
         self.assertTrue("log" in result.best_case.total_complexity.lower())
         self.assertTrue("n" in result.worst_case.total_complexity.lower())
@@ -271,22 +286,29 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="return fibonacci(n-1) + fibonacci(n-2) // T(n-1) + T(n-2)",
             explanation="Dos llamadas recursivas resultan en O(2^n)",
-            complexity="O(2^n)"
+            complexity="O(2^n)",
         )
         result = mock_response
-        self.print_analysis_results("O(2^n) - Fibonacci Recursivo", result.model_dump(), "O(2^n)")
+        self.print_analysis_results(
+            "O(2^n) - Fibonacci Recursivo", result.model_dump(), "O(2^n)"
+        )
         self.assertIn("T(", result.analysis.pseudocode_annotated)
-        self.assertTrue("2^n" in result.analysis.total_complexity.lower() or "exponencial" in result.analysis.complexity_explanation.lower())
+        self.assertTrue(
+            "2^n" in result.analysis.total_complexity.lower()
+            or "exponencial" in result.analysis.complexity_explanation.lower()
+        )
 
     def test_subset_sum(self):
         """Prueba problema de subconjuntos O(2^n)."""
         mock_response = self.create_mock_single_response(
             annotated="return subsetSum(arr, n-1, sum) or subsetSum(arr, n-1, sum - arr[n-1]) // 2*T(n-1)",
             explanation="Dos llamadas recursivas exponenciales",
-            complexity="O(2^n)"
+            complexity="O(2^n)",
         )
         result = mock_response
-        self.print_analysis_results("O(2^n) - Subset Sum", result.model_dump(), "O(2^n)")
+        self.print_analysis_results(
+            "O(2^n) - Subset Sum", result.model_dump(), "O(2^n)"
+        )
         self.assertIn("T(", result.analysis.pseudocode_annotated)
 
     def test_nested_different_variables(self):
@@ -294,21 +316,30 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="for i = 0 to n: // c1*(n+1)\\n    for j = 0 to m: // c2*n*(m+1)",
             explanation="Ciclos anidados con variables independientes resultan en O(n*m)",
-            complexity="O(n*m)"
+            complexity="O(n*m)",
         )
         result = mock_response
-        self.print_analysis_results("O(n*m) - Ciclos Anidados Variables Distintas", result.model_dump(), "O(n*m)")
-        self.assertTrue("n" in result.analysis.total_complexity.lower() and "m" in result.analysis.total_complexity.lower())
+        self.print_analysis_results(
+            "O(n*m) - Ciclos Anidados Variables Distintas",
+            result.model_dump(),
+            "O(n*m)",
+        )
+        self.assertTrue(
+            "n" in result.analysis.total_complexity.lower()
+            and "m" in result.analysis.total_complexity.lower()
+        )
 
     def test_sequential_loops(self):
         """Prueba ciclos secuenciales (no anidados)."""
         mock_response = self.create_mock_single_response(
             annotated="for i: // c1*n\\n    for j: // c2*n\\n    for k: // c3*n",
             explanation="Tres ciclos secuenciales: c1*n + c2*n + c3*n = O(n)",
-            complexity="O(n)"
+            complexity="O(n)",
         )
         result = mock_response
-        self.print_analysis_results("O(n) - Ciclos Secuenciales", result.model_dump(), "O(n)")
+        self.print_analysis_results(
+            "O(n) - Ciclos Secuenciales", result.model_dump(), "O(n)"
+        )
         self.assertIn("O(n)", result.analysis.total_complexity)
 
     def test_logarithmic_divisions(self):
@@ -316,23 +347,29 @@ function linearSearch(arr, n, target):
         mock_response = self.create_mock_single_response(
             annotated="while n > 1: // c1*log(n)\\n    n = n / 2 // c2*log(n)",
             explanation="División sucesiva por 2 resulta en O(log n)",
-            complexity="O(log n)"
+            complexity="O(log n)",
         )
         result = mock_response
-        self.print_analysis_results("O(log n) - Divisiones Sucesivas", result.model_dump(), "O(log n)")
+        self.print_analysis_results(
+            "O(log n) - Divisiones Sucesivas", result.model_dump(), "O(log n)"
+        )
         self.assertTrue("log" in result.analysis.total_complexity.lower())
 
     def test_convenience_function_single(self):
         """Prueba la función de conveniencia para caso único."""
         # Esta prueba queda comentada porque requiere el agente real
         # Para ejecutarla, se necesita una API key válida de Google
-        self.skipTest("Requiere agente real con API key. Ver test_constant_complexity para ejemplo con mock.")
+        self.skipTest(
+            "Requiere agente real con API key. Ver test_constant_complexity para ejemplo con mock."
+        )
 
     def test_convenience_function_multiple(self):
         """Prueba la función de conveniencia para múltiples casos."""
         # Esta prueba queda comentada porque requiere el agente real
         # Para ejecutarla, se necesita una API key válida de Google
-        self.skipTest("Requiere agente real con API key. Ver test_linear_search para ejemplo con mock.")
+        self.skipTest(
+            "Requiere agente real con API key. Ver test_linear_search para ejemplo con mock."
+        )
 
 
 if __name__ == "__main__":

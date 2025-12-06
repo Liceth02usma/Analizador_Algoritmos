@@ -393,9 +393,7 @@ class TestComplexityAnalysisService(unittest.TestCase):
 
     def test_recursive_equation_format(self):
         """Prueba con formato de ecuación recursiva resuelta"""
-        cases_data = [
-            {"case_name": "Peor Caso", "efficiency_function": "T(n) = n + 1"}
-        ]
+        cases_data = [{"case_name": "Peor Caso", "efficiency_function": "T(n) = n + 1"}]
 
         result = self.service.determine_complexity("Recursivo Resuelto", cases_data)
 

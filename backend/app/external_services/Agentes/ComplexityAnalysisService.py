@@ -76,14 +76,16 @@ class ComplexityAnalysisService:
             if token.lower() in allowed:
                 return token
             # Preservar 'n' específicamente (caso especial)
-            if token == 'n':
+            if token == "n":
                 return token
             # Todo lo demás es una constante
             return "1"
 
         # Regex para identificar tokens de palabras (pero no dentro de operadores)
         # Usa negative lookbehind/lookahead para evitar reemplazar en medio de números
-        clean = re.sub(r"(?<![0-9])\b([a-zA-Z_][a-zA-Z0-9_]*)\b(?![0-9])", replace_token, clean)
+        clean = re.sub(
+            r"(?<![0-9])\b([a-zA-Z_][a-zA-Z0-9_]*)\b(?![0-9])", replace_token, clean
+        )
 
         # 4. Convertir sintaxis de potencia ^ a ** (Python)
         clean = clean.replace("^", "**")
@@ -96,9 +98,9 @@ class ComplexityAnalysisService:
         """
         try:
             cleaned_expr = self._clean_expression(expr_str)
-            
+
             # Crear un contexto con 'n' como símbolo para sympify
-            local_dict = {'n': self.n, 'log': log}
+            local_dict = {"n": self.n, "log": log}
             expr = sympify(cleaned_expr, locals=local_dict)
 
             # Calculamos Big-O en infinito: O(expr, (n, oo))
@@ -115,20 +117,21 @@ class ComplexityAnalysisService:
 
             # Formateo para lectura humana
             term_str = str(term)
-            
+
             # Normalizar logaritmos: log(1/n) -> log(n)
             term_str = term_str.replace("log(1/n)", "log(n)")
             term_str = term_str.replace("log(n**(-1))", "log(n)")
-            
+
             # Normalizar exponenciales: exp(n*log(2)) -> 2^n
             if "exp(n*log(" in term_str:
                 # Extraer la base: exp(n*log(2)) -> 2
                 import re
-                match = re.search(r'exp\(n\*log\((\d+)\)\)', term_str)
+
+                match = re.search(r"exp\(n\*log\((\d+)\)\)", term_str)
                 if match:
                     base = match.group(1)
                     term_str = f"{base}^n"
-            
+
             term_str = term_str.replace("**", "^")
             term_str = term_str.replace("*", "")  # Quitar * explícitos
 

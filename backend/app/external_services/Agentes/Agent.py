@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional, TypeVar, Generic
 from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
 class AgentBase(ABC, Generic[T]):
@@ -45,7 +45,7 @@ class AgentBase(ABC, Generic[T]):
         self.context_schema: Optional[type[BaseModel]] = None
         self.response_format: Optional[type[T]] = None
         self.SYSTEM_PROMPT: str = ""
-        
+
         # 📊 Atributos para tracking de tokens
         self._last_input_tokens: int = 0
         self._last_output_tokens: int = 0
@@ -80,7 +80,7 @@ class AgentBase(ABC, Generic[T]):
         self,
         messages: List[Dict[str, str]],
         config: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Invoca el agente de forma flexible.
@@ -101,22 +101,22 @@ class AgentBase(ABC, Generic[T]):
             result = self.agent.invoke(invoke_params, config=config, context=context)
         else:
             result = self.agent.invoke(invoke_params, config=config)
-        
+
         # 📊 LOG DE TOKENS
         self._log_token_usage(result)
-        
+
         return result
-    
+
     def _log_token_usage(self, result: Dict[str, Any]):
         """Extrae e imprime información de tokens de la respuesta."""
         try:
             if not isinstance(result, dict) or "messages" not in result:
                 return
-            
+
             messages = result.get("messages", [])
             if not isinstance(messages, list) or len(messages) < 2:
                 return
-            
+
             # El AIMessage con tokens está típicamente en messages[-2]
             # (antes del ToolMessage final)
             ai_message = None
@@ -124,25 +124,25 @@ class AgentBase(ABC, Generic[T]):
                 if hasattr(msg, "usage_metadata") and msg.usage_metadata:
                     ai_message = msg
                     break
-            
+
             if not ai_message:
                 return
-            
+
             usage = ai_message.usage_metadata
             input_tokens = usage.get("input_tokens", 0)
             output_tokens = usage.get("output_tokens", 0)
             total_tokens = input_tokens + output_tokens
-            
+
             # 💾 Guardar tokens para acceso posterior
             self._last_input_tokens = input_tokens
             self._last_output_tokens = output_tokens
             self._last_total_tokens = total_tokens
-            
+
             print(f"\n📊 [TOKENS] {self.__class__.__name__}:")
             print(f"   ├─ Input:  {input_tokens:,} tokens")
             print(f"   ├─ Output: {output_tokens:,} tokens")
             print(f"   └─ Total:  {total_tokens:,} tokens")
-        
+
         except Exception as e:
             # Fallar silenciosamente si hay problemas
             print(f"⚠️ Error al extraer uso de tokens: {e}")
@@ -151,7 +151,7 @@ class AgentBase(ABC, Generic[T]):
         self,
         content: str,
         thread_id: str = "default",
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Método de conveniencia para invocaciones simples de un solo mensaje.
@@ -161,61 +161,69 @@ class AgentBase(ABC, Generic[T]):
         return self.invoke(messages, config, context)
 
     def extract_response(self, result: Dict[str, Any] | Any) -> Optional[T]:
-            content = ""
+        content = ""
 
-            # CASO 1: El resultado es directamente un AIMessage (común en invoke simple)
-            if hasattr(result, 'content'):
-                content = result.content
+        # CASO 1: El resultado es directamente un AIMessage (común en invoke simple)
+        if hasattr(result, "content"):
+            content = result.content
 
-            # CASO 2: Resultado de un Agente (Dict con keys "output", "messages", etc)
-            elif isinstance(result, dict):
-                # Si LangChain ya parseó la estructura (structured_response)
-                if "structured_response" in result and isinstance(result["structured_response"], self.response_format):
-                    return result["structured_response"]
-                
-                # Buscar el último mensaje del historial
-                if "messages" in result and isinstance(result["messages"], list) and result["messages"]:
-                    last_msg = result["messages"][-1]
-                    content = last_msg.content if hasattr(last_msg, "content") else str(last_msg)
-                
-                # Buscar output directo
-                elif "output" in result:
-                    content = result["output"]
-                
-                # Buscar content en dict simple
-                elif "content" in result:
-                    content = result["content"]
+        # CASO 2: Resultado de un Agente (Dict con keys "output", "messages", etc)
+        elif isinstance(result, dict):
+            # Si LangChain ya parseó la estructura (structured_response)
+            if "structured_response" in result and isinstance(
+                result["structured_response"], self.response_format
+            ):
+                return result["structured_response"]
 
-            if not content:
-                return None
+            # Buscar el último mensaje del historial
+            if (
+                "messages" in result
+                and isinstance(result["messages"], list)
+                and result["messages"]
+            ):
+                last_msg = result["messages"][-1]
+                content = (
+                    last_msg.content if hasattr(last_msg, "content") else str(last_msg)
+                )
 
-            # CASO 3: Parsing manual del JSON (Texto a Pydantic)
-            import json
-            import re
-            
+            # Buscar output directo
+            elif "output" in result:
+                content = result["output"]
+
+            # Buscar content en dict simple
+            elif "content" in result:
+                content = result["content"]
+
+        if not content:
+            return None
+
+        # CASO 3: Parsing manual del JSON (Texto a Pydantic)
+        import json
+        import re
+
+        try:
+            text = str(content).strip()
+            # Limpieza defensiva extra por si quedaron backticks
+            if "```" in text:
+                text = re.sub(r"```[a-zA-Z]*", "", text).replace("```", "").strip()
+
+            # Intentar parsear
+            data = json.loads(text)
+            return self.response_format.model_validate(data)
+
+        except json.JSONDecodeError:
+            # Fallback: Intentar encontrar el JSON dentro del texto
             try:
-                text = str(content).strip()
-                # Limpieza defensiva extra por si quedaron backticks
-                if "```" in text:
-                    text = re.sub(r"```[a-zA-Z]*", "", text).replace("```", "").strip()
-
-                # Intentar parsear
-                data = json.loads(text)
-                return self.response_format.model_validate(data)
-
-            except json.JSONDecodeError:
-                # Fallback: Intentar encontrar el JSON dentro del texto
-                try:
-                    start = text.find('{')
-                    end = text.rfind('}')
-                    if start != -1 and end != -1:
-                        json_str = text[start:end+1]
-                        data = json.loads(json_str)
-                        return self.response_format.model_validate(data)
-                except:
-                    pass
-                print(f"⚠️ No se pudo parsear JSON del contenido: {text[:50]}...")
-                return None
-            except Exception as e:
-                print(f"⚠️ Error validando modelo Pydantic: {e}")
-                return None
+                start = text.find("{")
+                end = text.rfind("}")
+                if start != -1 and end != -1:
+                    json_str = text[start : end + 1]
+                    data = json.loads(json_str)
+                    return self.response_format.model_validate(data)
+            except:
+                pass
+            print(f"⚠️ No se pudo parsear JSON del contenido: {text[:50]}...")
+            return None
+        except Exception as e:
+            print(f"⚠️ Error validando modelo Pydantic: {e}")
+            return None

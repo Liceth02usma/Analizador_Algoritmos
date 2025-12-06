@@ -13,8 +13,10 @@ from langchain_core.tools import tool
 # 📘 SCHEMAS DE DATOS
 # ========================================================================
 
+
 class AlgorithmInput(BaseModel):
     """Contexto de entrada para el agente"""
+
     algorithm_name: Optional[str] = Field(
         default=None, description="Nombre del algoritmo (si se conoce)"
     )
@@ -29,7 +31,10 @@ class AlgorithmInput(BaseModel):
 
 class AlgorithmTypeResponse(BaseModel):
     """Salida estructurada del agente"""
-    algorithm_name: Optional[str] = Field(default=None, description="Nombre del algoritmo analizado")
+
+    algorithm_name: Optional[str] = Field(
+        default=None, description="Nombre del algoritmo analizado"
+    )
     detected_type: str = Field(
         description="Tipo de algoritmo detectado: 'recursivo', 'iterativo' o 'programación dinámica'"
     )
@@ -47,6 +52,7 @@ class AlgorithmTypeResponse(BaseModel):
 # ========================================================================
 # 🧰 HERRAMIENTAS AUXILIARES
 # ========================================================================
+
 
 @tool
 def detect_keywords(pseudocode: str) -> Dict[str, int]:
@@ -70,10 +76,13 @@ def detect_keywords(pseudocode: str) -> Dict[str, int]:
 def count_recursive_calls(pseudocode: str) -> int:
     """Cuenta cuántas veces el algoritmo se llama a sí mismo."""
     import re
+
     lines = pseudocode.splitlines()
     recursive_calls = 0
     for line in lines:
-        if re.search(r"call\s+\w+", line.lower()) or re.search(r"\breturn\s+\w+\(.*\)", line.lower()):
+        if re.search(r"call\s+\w+", line.lower()) or re.search(
+            r"\breturn\s+\w+\(.*\)", line.lower()
+        ):
             recursive_calls += 1
     return {"recursive_call_count": recursive_calls}
 
@@ -81,6 +90,7 @@ def count_recursive_calls(pseudocode: str) -> int:
 # ========================================================================
 # 🤖 AGENTE PRINCIPAL
 # ========================================================================
+
 
 class AlgorithmTypeAgent(AgentBase[AlgorithmTypeResponse]):
     """LLM que clasifica el algoritmo (iterativo, recursivo o programación dinámica)."""
@@ -148,14 +158,14 @@ Incluye una justificación técnica y los indicadores clave encontrados.
 """
 
         result = self.invoke_simple(
-            content=content,
-            thread_id=thread_id,
-            context=context.model_dump()
+            content=content, thread_id=thread_id, context=context.model_dump()
         )
 
         response = self.extract_response(result)
         if response is None:
-            raise ValueError("❌ No se obtuvo una respuesta estructurada válida del agente.")
+            raise ValueError(
+                "❌ No se obtuvo una respuesta estructurada válida del agente."
+            )
 
         return response
 
@@ -204,8 +214,9 @@ if __name__ == "__main__":
         ],
     }
 
-
-    res = agent.analyze_type(pseudocode=code, parsed_tree=fake_ast, algorithm_name="Factorial")
+    res = agent.analyze_type(
+        pseudocode=code, parsed_tree=fake_ast, algorithm_name="Factorial"
+    )
     print("🔹 Tipo detectado:", res.detected_type)
     print("🧩 Confianza:", res.confidence_level)
     print("📘 Indicadores:", res.key_indicators)

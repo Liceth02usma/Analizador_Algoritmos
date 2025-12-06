@@ -10,15 +10,8 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  Cell
 } from 'recharts';
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function ComparisonView({ comparisonData }) {
   if (!comparisonData) {
@@ -29,48 +22,38 @@ export default function ComparisonView({ comparisonData }) {
     );
   }
 
-  const { tokens_comparison, complexity_comparison, methods_comparison, detail_comparison, execution_time } = comparisonData;
+  const { 
+    tokens_comparison, 
+    execution_time,
+    complete_agent_analysis,
+    metadata
+  } = comparisonData;
 
-  // Datos para gráfica de tokens
+  // Validación de datos con fallbacks
   const tokensData = [
     {
-      name: 'Tokens de Entrada',
-      'Especializados': tokens_comparison.specialized.input,
-      'Completo': tokens_comparison.complete.input
+      name: 'Entrada',
+      'Especializados': tokens_comparison?.specialized?.input || 0,
+      'Completo': tokens_comparison?.complete?.input || 0
     },
     {
-      name: 'Tokens de Salida',
-      'Especializados': tokens_comparison.specialized.output,
-      'Completo': tokens_comparison.complete.output
+      name: 'Salida',
+      'Especializados': tokens_comparison?.specialized?.output || 0,
+      'Completo': tokens_comparison?.complete?.output || 0
     },
     {
       name: 'Total',
-      'Especializados': tokens_comparison.specialized.total,
-      'Completo': tokens_comparison.complete.total
+      'Especializados': tokens_comparison?.specialized?.total || 0,
+      'Completo': tokens_comparison?.complete?.total || 0
     }
   ];
 
-  // Datos para gráfica de tiempo
   const timeData = [
-    { name: 'Especializados', value: execution_time.specialized, fill: '#3b82f6' },
-    { name: 'Completo', value: execution_time.complete, fill: '#10b981' }
+    { name: 'Especializados', value: execution_time?.specialized || 0, fill: '#3b82f6' },
+    { name: 'Completo', value: execution_time?.complete || 0, fill: '#10b981' }
   ];
 
-  // 📊 Calcular complejidad algorítmica basada en tokens
-  const calculateComplexity = (tokens) => {
-    if (tokens < 1000) return 'O(1) - Constante';
-    if (tokens < 5000) return 'O(log n) - Logarítmica';
-    if (tokens < 15000) return 'O(n) - Lineal';
-    if (tokens < 30000) return 'O(n log n) - Lineal-Logarítmica';
-    if (tokens < 50000) return 'O(n²) - Cuadrática';
-    return 'O(n³+) - Cúbica o superior';
-  };
-
-  const specializedComplexity = calculateComplexity(tokens_comparison.specialized.total);
-  const completeComplexity = calculateComplexity(tokens_comparison.complete.total);
-
-  const tokensDifference = tokens_comparison.percentage_difference.total;
-  const complexityMatch = complexity_comparison.match;
+  const tokensDifference = tokens_comparison?.percentage_difference?.total || 0;
 
   return (
     <div className="space-y-8 bg-gray-900 text-white p-6 rounded-lg">
@@ -80,27 +63,8 @@ export default function ComparisonView({ comparisonData }) {
           📊 Comparación de Análisis
         </h2>
         <p className="text-gray-400">
-          {comparisonData.metadata.algorithm_name}
+          {comparisonData?.metadata?.algorithm_name || 'Algoritmo'}
         </p>
-      </div>
-
-      {/* Tarjeta de Complejidad Tokens */}
-      <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-        <h3 className="text-xl font-semibold mb-4 text-orange-400">
-          📊 Complejidad de Consumo de Tokens
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <p className="text-gray-400 text-sm">Agentes Especializados</p>
-            <p className="text-2xl font-bold text-blue-400">{specializedComplexity}</p>
-            <p className="text-sm text-gray-500">{tokens_comparison.specialized.total.toLocaleString()} tokens</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-gray-400 text-sm">Agente Completo</p>
-            <p className="text-2xl font-bold text-green-400">{completeComplexity}</p>
-            <p className="text-sm text-gray-500">{tokens_comparison.complete.total.toLocaleString()} tokens</p>
-          </div>
-        </div>
       </div>
 
       {/* Gráfica de Tokens */}
@@ -130,7 +94,7 @@ export default function ComparisonView({ comparisonData }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Gráfica de Tiempo de Ejecución */}
+      {/* Gráfica de Tiempo */}
       <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
         <h3 className="text-xl font-semibold mb-4">⏱️ Tiempo de Ejecución</h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -154,100 +118,145 @@ export default function ComparisonView({ comparisonData }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Métodos Utilizados */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <h3 className="text-xl font-semibold mb-4 text-blue-400">
-            🔧 Métodos Especializados
-          </h3>
-          <ul className="space-y-2">
-            {Array.isArray(methods_comparison.specialized) ? (
-              methods_comparison.specialized.map((method, idx) => (
-                <li key={idx} className="flex items-center space-x-2">
-                  <span className="text-blue-400">•</span>
-                  <span>{method}</span>
-                </li>
-              ))
-            ) : (
-              <li className="flex items-center space-x-2">
-                <span className="text-blue-400">•</span>
-                <span>{methods_comparison.specialized}</span>
-              </li>
-            )}
-          </ul>
-        </div>
+      {/* 🤖 Análisis del Agente Completo */}
+      {complete_agent_analysis && (
+        <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-700 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="text-4xl">🤖</div>
+            <div>
+              <h3 className="text-2xl font-bold text-green-400">
+                Análisis del Agente Completo
+              </h3>
+              <p className="text-gray-400 text-sm">
+                Resultado sin especialización por casos
+              </p>
+            </div>
+          </div>
 
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <h3 className="text-xl font-semibold mb-4 text-green-400">
-            🤖 Método Completo
-          </h3>
-          <p className="text-gray-300">{methods_comparison.complete}</p>
-        </div>
-      </div>
+          {/* Información General */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">Algoritmo</p>
+              <p className="text-lg font-semibold text-green-300">
+                {complete_agent_analysis.algorithm_name || 'N/A'}
+              </p>
+            </div>
 
-      {/* Métricas Detalladas */}
-      <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-        <h3 className="text-xl font-semibold mb-4">📊 Métricas Detalladas</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div className="p-4 bg-gray-700 rounded">
-            <p className="text-gray-400 text-sm">Tokens Especializados</p>
-            <p className="text-2xl font-bold text-blue-400">
-              {tokens_comparison.specialized.total.toLocaleString()}
-            </p>
-          </div>
-          <div className="p-4 bg-gray-700 rounded">
-            <p className="text-gray-400 text-sm">Tokens Completo</p>
-            <p className="text-2xl font-bold text-green-400">
-              {tokens_comparison.complete.total.toLocaleString()}
-            </p>
-          </div>
-          <div className="p-4 bg-gray-700 rounded">
-            <p className="text-gray-400 text-sm">Ahorro/Gasto</p>
-            <p className={`text-2xl font-bold ${tokensDifference < 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {Math.abs(tokens_comparison.difference.total).toLocaleString()}
-            </p>
-          </div>
-          <div className="p-4 bg-gray-700 rounded">
-            <p className="text-gray-400 text-sm">Diferencia %</p>
-            <p className={`text-2xl font-bold ${tokensDifference < 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {Math.abs(tokensDifference).toFixed(1)}%
-            </p>
-          </div>
-        </div>
-      </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">Categoría</p>
+              <p className="text-sm text-gray-300">
+                {complete_agent_analysis.algorithm_category || 'N/A'}
+              </p>
+            </div>
 
-      {/* Conclusión */}
-      <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-6 rounded-lg border border-blue-700">
-        <h3 className="text-xl font-semibold mb-3">💡 Conclusión</h3>
-        <p className="text-gray-200">
-          {tokensDifference > 0 ? (
-            <>
-              Los agentes especializados utilizan <strong>{Math.abs(tokensDifference).toFixed(1)}% más tokens</strong> que el agente completo,
-              pero proporcionan <strong>{detail_comparison.specialized_cases}x más detalle</strong> en el análisis con{' '}
-              <strong>{detail_comparison.specialized_steps} pasos de solución</strong>.
-            </>
-          ) : (
-            <>
-              Los agentes especializados son <strong>{Math.abs(tokensDifference).toFixed(1)}% más eficientes</strong> en tokens que el agente completo,
-              además de proporcionar <strong>{detail_comparison.specialized_cases}x más detalle</strong> en el análisis.
-            </>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">Tipo</p>
+              <p className="text-sm text-gray-300">
+                {complete_agent_analysis.algorithm_type === 'iterative' ? 'Iterativo' : 'Recursivo'}
+              </p>
+            </div>
+
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">Propósito</p>
+              <p className="text-xs text-gray-300">
+                {complete_agent_analysis.algorithm_purpose || 'No especificado'}
+              </p>
+            </div>
+          </div>
+
+          {/* Complejidad Final Destacada */}
+          <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-2 border-green-500 p-6 rounded-lg mb-6">
+            <h4 className="text-sm font-semibold text-green-400 mb-3">🎯 Complejidad Final del Algoritmo</h4>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-green-300 mb-2">
+                {complete_agent_analysis.final_complexity || 'N/A'}
+              </p>
+              <p className="text-sm text-gray-400">
+                Complejidad temporal determinada por el agente completo
+              </p>
+            </div>
+          </div>
+
+          {/* Notación Asintótica */}
+          <div className="bg-gray-800/50 p-6 rounded-lg mb-6">
+            <h4 className="text-lg font-semibold text-green-400 mb-4">📊 Notación Asintótica</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-gray-900/50 rounded-lg border-l-4 border-green-500">
+                <p className="text-xs text-gray-400 mb-1">Mejor Caso (Ω)</p>
+                <p className="text-xl font-bold text-green-300">
+                  {complete_agent_analysis.asymptotic_best || 'N/A'}
+                </p>
+              </div>
+
+              <div className="p-4 bg-gray-900/50 rounded-lg border-l-4 border-yellow-500">
+                <p className="text-xs text-gray-400 mb-1">Caso Promedio (Θ)</p>
+                <p className="text-xl font-bold text-yellow-300">
+                  {complete_agent_analysis.asymptotic_average || 'N/A'}
+                </p>
+              </div>
+
+              <div className="p-4 bg-gray-900/50 rounded-lg border-l-4 border-red-500">
+                <p className="text-xs text-gray-400 mb-1">Peor Caso (O)</p>
+                <p className="text-xl font-bold text-red-300">
+                  {complete_agent_analysis.asymptotic_worst || 'N/A'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Ecuación */}
+          {complete_agent_analysis.equation && complete_agent_analysis.equation !== 'No disponible' && (
+            <div className="bg-gray-800/50 p-4 rounded-lg mb-6">
+              <p className="text-xs text-gray-400 mb-2">Ecuación de Recurrencia/Sumatoria</p>
+              <div className="bg-gray-900/50 p-4 rounded border border-gray-700">
+                <code className="text-green-300 font-mono text-sm break-all">
+                  {complete_agent_analysis.equation}
+                </code>
+              </div>
+            </div>
           )}
-        </p>
-        <div className="mt-4 pt-4 border-t border-blue-700">
-          <p className="text-sm text-gray-300">
-            <strong>📊 Complejidad de Tokens:</strong>
-            <br />
-            Especializados: <span className="text-blue-300">{specializedComplexity}</span>
-            <br />
-            Completo: <span className="text-green-300">{completeComplexity}</span>
-          </p>
+
+          {/* Método de Solución */}
+          <div className="bg-gray-800/50 p-4 rounded-lg mb-6">
+            <p className="text-xs text-gray-400 mb-2">Método de Solución</p>
+            <p className="text-sm text-gray-200">
+              {complete_agent_analysis.solution_method || 'No especificado'}
+            </p>
+          </div>
+
+          {/* Pasos de Solución */}
+          {complete_agent_analysis.solution_steps && complete_agent_analysis.solution_steps.length > 0 && (
+            <div className="bg-gray-800/50 p-4 rounded-lg mb-6">
+              <p className="text-xs text-gray-400 mb-3">Pasos de Solución ({complete_agent_analysis.solution_steps.length})</p>
+              <ol className="space-y-2 max-h-64 overflow-y-auto">
+                {complete_agent_analysis.solution_steps.map((step, idx) => (
+                  <li key={idx} className="flex gap-3">
+                    <span className="text-green-400 font-bold flex-shrink-0">{idx + 1}.</span>
+                    <span className="text-gray-300 text-sm">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* Métricas de Ejecución */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">⏱️ Tiempo de Ejecución</p>
+              <p className="text-2xl font-semibold text-green-300">
+                {complete_agent_analysis.execution_time?.toFixed(3) || '0.000'}s
+              </p>
+            </div>
+
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">🎫 Tokens Utilizados</p>
+              <p className="text-2xl font-semibold text-green-300">
+                {complete_agent_analysis.tokens_used?.toLocaleString() || '0'}
+              </p>
+            </div>
+          </div>
         </div>
-        {!complexityMatch && (
-          <p className="mt-3 text-yellow-300">
-            ⚠️ Nota: Las complejidades del algoritmo difieren entre ambos métodos, revisar resultados detallados.
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

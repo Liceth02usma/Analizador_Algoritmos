@@ -92,7 +92,7 @@ class RuleBasedClassifier:
             all_recursive = re.findall(r"t\([^)]+\)", right_side)
         else:
             all_recursive = re.findall(r"t\([^)]+\)", eq)
-        
+
         pattern["has_multiple_recursive_terms"] = len(all_recursive) > 1
         pattern["has_any_recursive_call"] = len(all_recursive) > 0
 
@@ -322,9 +322,7 @@ class ClassificationAgent(AgentBase[ClassificationOutput]):
     Solo se invoca cuando las reglas heurísticas fallan.
     """
 
-    def __init__(
-        self, model_type: str = "Gemini_Rapido", enable_verbose: bool = False
-    ):
+    def __init__(self, model_type: str = "Gemini_Rapido", enable_verbose: bool = False):
         self.enable_verbose = enable_verbose
         super().__init__(model_type, provider="gemini")
 

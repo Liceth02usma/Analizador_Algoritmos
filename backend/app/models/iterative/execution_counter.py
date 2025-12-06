@@ -11,6 +11,7 @@ from typing import Any, Dict, List
 # Funciones auxiliares originales (se mantienen intactas)
 # ===============================================================
 
+
 def _is_increment(expr):
     return isinstance(expr, dict) and expr.get("op") == "+"
 
@@ -46,7 +47,7 @@ def count_iterations_for(node, case: str) -> str:
     if not isinstance(a, int) or not isinstance(b, int):
         return "n"
 
-    total = (b - a + 1)
+    total = b - a + 1
 
     if case == "best":
         return "1"
@@ -73,10 +74,14 @@ def count_iterations_while(node, case: str) -> str:
         return "1" if case == "best" else ("n/2" if case == "average" else "n")
 
     if op in (">", ">=") and _is_division(update):
-        return "1" if case == "best" else ("log2(n)/2" if case == "average" else "log2(n)")
+        return (
+            "1" if case == "best" else ("log2(n)/2" if case == "average" else "log2(n)")
+        )
 
     if op in ("<", "<=") and _is_multiplication(update):
-        return "1" if case == "best" else ("log2(n)/2" if case == "average" else "log2(n)")
+        return (
+            "1" if case == "best" else ("log2(n)/2" if case == "average" else "log2(n)")
+        )
 
     return "1" if case == "best" else ("n/2" if case == "average" else "n")
 
@@ -97,11 +102,12 @@ def get_loop_iterations(loop_node: Dict[str, Any], case: str) -> str:
             return "n"
 
     return "1"
-    
+
 
 # ===============================================================
 # NUEVA CLASE ExecutionCounter (lo que espera tu agente)
 # ===============================================================
+
 
 class ExecutionCounter:
     """
@@ -122,11 +128,7 @@ class ExecutionCounter:
             "worst":   { ... }
         }
         """
-        model = {
-            "best": {},
-            "average": {},
-            "worst": {}
-        }
+        model = {"best": {}, "average": {}, "worst": {}}
 
         # AST puede ser lista de statements (procedimiento), así que lo aplanamos
         statements = self._flatten_ast(self.ast)
@@ -136,7 +138,9 @@ class ExecutionCounter:
 
             if stmt_type in ["for", "while", "repeat"]:
                 model["best"][str(line_number)] = get_loop_iterations(stmt, "best")
-                model["average"][str(line_number)] = get_loop_iterations(stmt, "average")
+                model["average"][str(line_number)] = get_loop_iterations(
+                    stmt, "average"
+                )
                 model["worst"][str(line_number)] = get_loop_iterations(stmt, "worst")
 
             else:
@@ -146,7 +150,6 @@ class ExecutionCounter:
                 model["worst"][str(line_number)] = "1"
 
         return model
-
 
     # --------------------------------------------------------------
     # Método interno: aplana estructuras begin/end del AST

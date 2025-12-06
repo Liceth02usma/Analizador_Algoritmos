@@ -49,10 +49,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Constant Expression] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Complejidad: {result['complexity']}")
 
@@ -72,10 +76,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Constant Complex] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Complejidad: {result['complexity']}")
 
         self.assertTrue(result["applicable"])
@@ -93,10 +101,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Linear Simple] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Complejidad: {result['complexity']}")
 
@@ -116,10 +128,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Quadratic Simple] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Complejidad: {result['complexity']}")
 
@@ -139,10 +155,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Cubic Simple] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Complejidad: {result['complexity']}")
 
@@ -219,10 +239,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Agent n log n] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Término dominante: {result.get('dominant_term', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -253,10 +277,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Agent Exponential] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Término dominante: {result.get('dominant_term', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -287,10 +315,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Agent Polynomial Complex] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Término dominante: {result.get('dominant_term', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -320,10 +352,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Agent Logarithmic] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Término dominante: {result.get('dominant_term', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -353,10 +389,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Agent Mixed Dominant Terms] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Tipo de expresión: {result.get('expression_type')}")
         print(f"✅ Término dominante: {result.get('dominant_term', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -380,7 +420,7 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"{'='*80}")
         print(f"\n❌ Aplicable: {result['applicable']}")
         print(f"\n💡 EXPLICACIÓN:")
-        print(result.get('explanation', 'No disponible'))
+        print(result.get("explanation", "No disponible"))
 
         self.assertFalse(result["applicable"])
         self.assertIn("recursiv", result["explanation"].lower())
@@ -398,7 +438,7 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"{'='*80}")
         print(f"\n❌ Aplicable: {result['applicable']}")
         print(f"\n💡 EXPLICACIÓN:")
-        print(result.get('explanation', 'No disponible'))
+        print(result.get("explanation", "No disponible"))
 
         self.assertFalse(result["applicable"])
         self.assertIn("recursiv", result["explanation"].lower())
@@ -415,10 +455,14 @@ class TestNoneStrategy(unittest.TestCase):
         print(f"[Test Polynomial Higher Degree] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Complejidad: {result['complexity']}")
 
         self.assertTrue(result["applicable"])

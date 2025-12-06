@@ -6,26 +6,33 @@ import os
 # Ajusta el path para importar tus módulos backend
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.models.recursive.clasification_equation import classify_recurrence, ClassificationOutput
+from app.models.recursive.clasification_equation import (
+    classify_recurrence,
+    ClassificationOutput,
+)
+
 # Asegúrate de importar tu Enum de estrategias correcto
 from app.models.recursive.recurrence_method import StrategyType
 
+
 class TestRecurrenceClassification(unittest.TestCase):
-    
+
     def setUp(self):
         """Configuración previa a cada test."""
         print(f"\n--- Ejecutando test: {self._testMethodName} ---")
-        
+
         # Bandera para usar el Agente Real o no usarlo
         # Pon True si quieres gastar tokens y probar el modelo real.
         # False usa solo las reglas heurísticas (suficiente para la mayoría de casos)
-        self.use_real_agent = False 
+        self.use_real_agent = False
 
     def get_classification(self, equation):
         """Helper para llamar a la función con o sin agente."""
         # Simplemente llamamos a classify_recurrence sin mock
         # Las reglas heurísticas manejan la mayoría de casos
-        return classify_recurrence(equation, use_agent=self.use_real_agent, verbose=True)
+        return classify_recurrence(
+            equation, use_agent=self.use_real_agent, verbose=True
+        )
 
     # ==========================================
     # 1. PRUEBAS DE CASOS TRIVIALES (NONE)
@@ -122,13 +129,13 @@ class TestRecurrenceClassification(unittest.TestCase):
 
     def test_towers_of_hanoi(self):
         """T(n) = 2T(n-1) + 1 -> EQUATION_CHARACTERISTICS"""
-        # Aunque tiene un solo término de resta, al tener coeficiente '2', 
+        # Aunque tiene un solo término de resta, al tener coeficiente '2',
         # a veces se modela mejor como característica o sustitución.
         # Según tus reglas: "Si hay UN SOLO término recursivo T(n-k) -> INTELLIGENT_SUBSTITUTION"
         # Pero Hanoi es T(n) = 2T(n-1), que técnicamente es T(n-1) + T(n-1).
         # Tu RuleBasedClassifier actual lo mandará a INTELLIGENT_SUBSTITUTION o EQUATION_CHARACTERISTICS
         # dependiendo de cómo regex lea "2T".
-        
+
         # Vamos a probar un caso explícito de múltiples términos diferentes para forzar la característica:
         eq = "T(n) = 3T(n-1) - 2T(n-2)"
         result = self.get_classification(eq)
@@ -142,7 +149,7 @@ class TestRecurrenceClassification(unittest.TestCase):
         """T(n) = T(n/3) + T(2n/3) + n -> MASTER_THEOREM (según clasificador actual)"""
         # El clasificador actual identifica división y devuelve MASTER_THEOREM
         eq = "T(n) = T(n/3) + T(2n/3) + n"
-        
+
         result = self.get_classification(eq)
         self.assertEqual(result.method, StrategyType.MASTER_THEOREM)
 
@@ -152,7 +159,7 @@ class TestRecurrenceClassification(unittest.TestCase):
         # Debería pasar al Agente.
         eq = "T(n) = 2T(sqrt(n)) + 1"
         result = self.get_classification(eq)
-        
+
         # Validamos que sea Tree Method (el método genérico para cosas raras)
         # o Cambio de Variable (si tuvieras esa estrategia, pero aquí usas Tree).
         self.assertEqual(result.method, StrategyType.TREE_METHOD)
@@ -167,22 +174,21 @@ class TestRecurrenceClassification(unittest.TestCase):
     # ==========================================
     # 6. PRUEBA DE BATCH (LOTE)
     # ==========================================
-    
+
     def test_batch_processing(self):
         """Prueba procesar una lista de ecuaciones."""
-        equations = [
-            "T(n) = 1", 
-            "T(n) = T(n/2) + 1", 
-            "T(n) = T(n-1) + T(n-2)"
-        ]
-        
+        equations = ["T(n) = 1", "T(n) = T(n/2) + 1", "T(n) = T(n-1) + T(n-2)"]
+
         # Procesamos las ecuaciones - classify_recurrence maneja listas automáticamente
-        results = classify_recurrence(equations, use_agent=self.use_real_agent, verbose=False)
-        
+        results = classify_recurrence(
+            equations, use_agent=self.use_real_agent, verbose=False
+        )
+
         self.assertEqual(len(results), 3)
         self.assertEqual(results[0].method, StrategyType.NONE)
         self.assertEqual(results[1].method, StrategyType.MASTER_THEOREM)
         self.assertEqual(results[2].method, StrategyType.EQUATION_CHARACTERISTICS)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

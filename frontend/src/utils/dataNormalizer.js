@@ -191,8 +191,41 @@ export function getDiagrams(data, normalizedData) {
   }
   
   if (type === 'recursive') {
-    // Para recursivo, los diagramas ya están en data.diagrams
-    return data.diagrams || {};
+    // Para recursivo, los diagramas están en data.diagrams
+    // Mapear cada diagrama a su caso correspondiente
+    const diagrams = {};
+    const allDiagrams = data.diagrams || {};
+    
+    // Mapeo de nombres de diagramas a tipos de caso
+    // Soporta ambos formatos: con y sin "_case"
+    const diagramMapping = {
+      'tree_method_best': 'best_case',
+      'tree_method_best_case': 'best_case',
+      'tree_method_worst': 'worst_case',
+      'tree_method_worst_case': 'worst_case',
+      'tree_method_average': 'average_case',
+      'tree_method_average_case': 'average_case'
+    };
+    
+    // Construir objeto de diagramas por caso
+    Object.entries(allDiagrams).forEach(([key, value]) => {
+      if (diagramMapping[key]) {
+        // Normalizar el key para que siempre sea sin "_case"
+        const normalizedKey = key.replace('_case', '');
+        diagrams[normalizedKey] = {
+          mermaidCode: value,
+          case_type: diagramMapping[key]
+        };
+      } else {
+        // Para diagramas generales sin caso específico
+        diagrams[key] = {
+          mermaidCode: value,
+          case_type: 'general'
+        };
+      }
+    });
+    
+    return diagrams;
   }
   
   return {};

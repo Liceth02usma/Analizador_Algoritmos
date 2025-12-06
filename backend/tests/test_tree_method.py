@@ -7,10 +7,11 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.models.recursive.tree_method import (
-    TreeMethodStrategy, 
-    TreeMethodAgentOutput, 
-    EquationAnalyzer
+    TreeMethodStrategy,
+    TreeMethodAgentOutput,
+    EquationAnalyzer,
 )
+
 
 class TestTreeMethodStrategy(unittest.TestCase):
 
@@ -27,7 +28,7 @@ class TestTreeMethodStrategy(unittest.TestCase):
             total_sum=total,
             sum_simplification=simple,
             complexity=complexity,
-            detailed_explanation="Mocked explanation"
+            detailed_explanation="Mocked explanation",
         )
 
     # ==========================================
@@ -42,19 +43,23 @@ class TestTreeMethodStrategy(unittest.TestCase):
         """
         equation = "T(n) = T(n-1) + 1"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Trivial Linear Constant] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Método: {result.get('method')}")
         print(f"✅ Profundidad del árbol: {result.get('tree_depth')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertTrue(result["applicable"])
         self.assertEqual(result["complexity"], "O(n)")
         # Verificar que el método contenga "trivial" (case insensitive)
@@ -69,7 +74,7 @@ class TestTreeMethodStrategy(unittest.TestCase):
         """
         equation = "T(n) = 2T(n/2) + n"
         params = EquationAnalyzer.parse_equation(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Parsing Divide & Conquer] {equation}")
         print(f"{'='*80}")
@@ -78,7 +83,7 @@ class TestTreeMethodStrategy(unittest.TestCase):
         print(f"  a = {params['a']}")
         print(f"  b = {params['b']}")
         print(f"  f(n) = {params['f_n']}")
-        
+
         self.assertEqual(params["type"], "divide_conquer")
         self.assertEqual(params["a"], 2)
         self.assertEqual(params["b"], 2)
@@ -89,7 +94,7 @@ class TestTreeMethodStrategy(unittest.TestCase):
     # Divide y Vencerás, Lineales complejas, Sumatorias.
     # ==========================================
 
-    @patch('app.models.recursive.tree_method.TreeMethodAgent')
+    @patch("app.models.recursive.tree_method.TreeMethodAgent")
     def test_agent_merge_sort(self, MockAgent):
         """
         Prueba T(n) = 2T(n/2) + n (Merge Sort)
@@ -103,29 +108,33 @@ class TestTreeMethodStrategy(unittest.TestCase):
             work=["n", "n", "n"],
             total="n * log₂(n)",
             simple="n log n",
-            complexity="O(n log n)"
+            complexity="O(n log n)",
         )
         self.strategy.agent = mock_instance
 
         equation = "T(n) = 2T(n/2) + n"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Agent Merge Sort] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Profundidad del árbol: {result.get('tree_depth')}")
         print(f"✅ Suma total: {result.get('total_sum', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(n log n)")
         self.assertEqual(result["tree_depth"], "log₂(n)")
 
-    @patch('app.models.recursive.tree_method.TreeMethodAgent')
+    @patch("app.models.recursive.tree_method.TreeMethodAgent")
     def test_agent_linear_quadratic(self, MockAgent):
         """
         Prueba T(n) = T(n-1) + n (Selection Sort recursivo)
@@ -139,28 +148,32 @@ class TestTreeMethodStrategy(unittest.TestCase):
             work=["n", "n-1", "n-2"],
             total="n(n+1)/2",
             simple="n²/2",
-            complexity="O(n²)"
+            complexity="O(n²)",
         )
         self.strategy.agent = mock_instance
 
         equation = "T(n) = T(n-1) + n"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Agent Linear Quadratic] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Profundidad del árbol: {result.get('tree_depth')}")
         print(f"✅ Suma total: {result.get('total_sum', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(n²)")
 
-    @patch('app.models.recursive.tree_method.TreeMethodAgent')
+    @patch("app.models.recursive.tree_method.TreeMethodAgent")
     def test_agent_summation_quicksort_avg(self, MockAgent):
         """
         Prueba T_avg(n) = (1/n) * sum[i=0 to n-1] T(i) + n
@@ -173,31 +186,35 @@ class TestTreeMethodStrategy(unittest.TestCase):
             work=["Análisis probabilístico..."],
             total="Sumatoria armónica...",
             simple="n log n",
-            complexity="O(n log n)"
+            complexity="O(n log n)",
         )
         self.strategy.agent = mock_instance
 
         # Nota: La ecuación exacta puede variar, probamos el parsing de sumatoria
         equation = "T_avg(n) = (1/n) * sum[i=0 to n-1] T(i) + n"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Agent Summation QuickSort] {equation[:50]}...")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Profundidad del árbol: {result.get('tree_depth')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(n log n)")
         # Verificar que el parser detectó que era tipo sumatoria antes de enviar al agente
-        # (Esto se valida indirectamente si el agente recibió el contexto correcto, 
+        # (Esto se valida indirectamente si el agente recibió el contexto correcto,
         # pero aquí confiamos en el resultado del mock).
 
-    @patch('app.models.recursive.tree_method.TreeMethodAgent')
+    @patch("app.models.recursive.tree_method.TreeMethodAgent")
     def test_agent_irregular_tree(self, MockAgent):
         """
         Prueba T(n) = T(n/3) + T(2n/3) + n
@@ -205,30 +222,34 @@ class TestTreeMethodStrategy(unittest.TestCase):
         """
         mock_instance = MockAgent.return_value
         mock_instance.solve_complex.return_value = self.mock_agent_response(
-            depth="log_{3/2}(n)", # La rama más profunda
+            depth="log_{3/2}(n)",  # La rama más profunda
             expansion=["T(n)", "T(n/3) + T(2n/3)", "..."],
-            work=["n", "n", "n"], # El trabajo suma n en cada nivel completo
-            total="n * log(n)", # Método de Akra-Bazzi simplificado
+            work=["n", "n", "n"],  # El trabajo suma n en cada nivel completo
+            total="n * log(n)",  # Método de Akra-Bazzi simplificado
             simple="n log n",
-            complexity="O(n log n)"
+            complexity="O(n log n)",
         )
         self.strategy.agent = mock_instance
 
         equation = "T(n) = T(n/3) + T(2n/3) + n"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Agent Irregular Tree] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Profundidad del árbol: {result.get('tree_depth')}")
         print(f"✅ Suma total: {result.get('total_sum', 'n/a')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(n log n)")
 
     # ==========================================
@@ -239,7 +260,7 @@ class TestTreeMethodStrategy(unittest.TestCase):
         """Prueba que EquationAnalyzer entienda la estructura de sumatoria compleja."""
         equation = "T_avg(n) = (1/(n+1)) * sum[i=0 to n] T(i), donde T(i)=T(i-1)+1"
         params = EquationAnalyzer.parse_equation(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Parsing Summation] {equation[:50]}...")
         print(f"{'='*80}")
@@ -251,14 +272,15 @@ class TestTreeMethodStrategy(unittest.TestCase):
         print(f"  Límite inferior: {sum_params['lower_bound']}")
         print(f"  Límite superior: {sum_params['upper_bound']}")
         print(f"  Recurrencia interna: {sum_params['inner_recurrence'][:30]}...")
-        
+
         self.assertEqual(params["type"], "summation")
         self.assertTrue(params["has_summation"])
-        
-        self.assertEqual(sum_params["multiplicative_factor"], "n+1") # o (n+1)
+
+        self.assertEqual(sum_params["multiplicative_factor"], "n+1")  # o (n+1)
         self.assertEqual(sum_params["lower_bound"], "0")
         self.assertEqual(sum_params["upper_bound"], "n")
         self.assertIn("t(i-1)", sum_params["inner_recurrence"].lower())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

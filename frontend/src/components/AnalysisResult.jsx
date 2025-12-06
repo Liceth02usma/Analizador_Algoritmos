@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import MermaidDiagram from "./MermaidDiagram";
+import TreeVisualizer from "./TreeVisualizer";
 import { Calculator, Activity, GitBranch, Table } from "lucide-react";
 
 export default function AnalysisResult({ data }) {
@@ -7,8 +8,23 @@ export default function AnalysisResult({ data }) {
 
   if (!data || !data.analysis || !data.analysis.cases) return null;
 
-  const { cases, general_explanation, math_summary } = data.analysis;
+  const { cases, general_explanation, math_summary, diagrams } = data.analysis;
   const currentCase = cases[activeTab];
+  
+  // Detectar si es recursivo basándose en la presencia de diagramas de árbol
+  const isRecursive = diagrams && (diagrams.tree_method_best || diagrams.tree_method_worst || diagrams.tree_method_average);
+  
+  // Mapeo de nombres de casos a claves de diagramas
+  const getCaseDiagramKey = (caseName) => {
+    const lowerName = caseName.toLowerCase();
+    if (lowerName.includes('mejor') || lowerName.includes('best')) return 'tree_method_best';
+    if (lowerName.includes('peor') || lowerName.includes('worst')) return 'tree_method_worst';
+    if (lowerName.includes('promedio') || lowerName.includes('average')) return 'tree_method_average';
+    return null;
+  };
+  
+  const currentDiagramKey = getCaseDiagramKey(currentCase.case_name);
+  const currentTreeDiagram = isRecursive && currentDiagramKey ? diagrams[currentDiagramKey] : null;
 
   return (
     <div className="flex flex-col h-full space-y-6">
@@ -104,13 +120,24 @@ export default function AnalysisResult({ data }) {
           </div>
         </div>
 
-        {/* Diagrama de Flujo */}
-        <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-          <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
-            <GitBranch size={18} /> Diagrama de Seguimiento
-          </h4>
-          <MermaidDiagram chart={currentCase.trace_diagram} />
-        </div>
+        {/* Diagrama de Flujo / Árbol de Recursión */}
+        {isRecursive && currentTreeDiagram ? (
+          // Algoritmo Recursivo: Mostrar árbol de recursión
+          <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+            <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
+              <GitBranch size={18} /> Árbol de Recursión
+            </h4>
+            <TreeVisualizer mermaidCode={currentTreeDiagram} isRecursive={true} />
+          </div>
+        ) : currentCase.trace_diagram ? (
+          // Algoritmo Iterativo: Mostrar diagrama de seguimiento
+          <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+            <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
+              <GitBranch size={18} /> Diagrama de Seguimiento
+            </h4>
+            <MermaidDiagram chart={currentCase.trace_diagram} />
+          </div>
+        ) : null}
 
       </div>
     </div>

@@ -259,29 +259,50 @@ export default function CaseSelector({ analysisSteps, diagrams }) {
           )}
         </div>
 
-        {/* Diagrama de traza para caso único */}
-        {singleStep.trace_diagram && (
-          <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-            <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
-              🌳 Diagrama de Seguimiento
-            </h4>
-            <TreeVisualizer mermaidCode={singleStep.trace_diagram} isRecursive={false} />
-          </div>
-        )}
-
-        {/* Diagramas adicionales (recursivo) */}
-        {diagrams && Object.keys(diagrams).length > 0 && (
-          <div className="space-y-4">
-            {Object.entries(diagrams).map(([key, mermaidCode]) => (
-              <div key={key} className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+        {/* Diagramas adicionales (recursivo) - Mostrar solo el diagrama del caso único */}
+        {diagrams && Object.keys(diagrams).length > 0 && (() => {
+          // Para caso único, buscar el diagrama que corresponda al caso actual
+          const caseType = singleCase;
+          let diagramToShow = null;
+          let diagramKey = null;
+          
+          // Buscar el diagrama específico para este caso
+          Object.entries(diagrams).forEach(([key, diagram]) => {
+            const diagramData = typeof diagram === 'string' ? { mermaidCode: diagram, case_type: 'general' } : diagram;
+            
+            if (caseType === 'best_case' && key === 'tree_method_best') {
+              diagramToShow = diagramData;
+              diagramKey = key;
+            } else if (caseType === 'worst_case' && key === 'tree_method_worst') {
+              diagramToShow = diagramData;
+              diagramKey = key;
+            } else if (caseType === 'average_case' && key === 'tree_method_average') {
+              diagramToShow = diagramData;
+              diagramKey = key;
+            } else if (caseType === 'single' && !diagramToShow) {
+              // Para caso único sin tipo específico, tomar cualquier diagrama disponible
+              diagramToShow = diagramData;
+              diagramKey = key;
+            }
+          });
+          
+          return diagramToShow ? (
+            <div className="space-y-4">
+              <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
                 <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
-                  🌳 {key.includes('tree') ? 'Árbol de Recursión' : 'Diagrama'}
+                  🌳 {diagramKey.includes('tree') ? 'Árbol de Recursión' : 'Diagrama'}
+                  {diagramKey.includes('best') && <span className="text-green-400 text-sm">(Mejor Caso)</span>}
+                  {diagramKey.includes('worst') && <span className="text-red-400 text-sm">(Peor Caso)</span>}
+                  {diagramKey.includes('average') && <span className="text-yellow-400 text-sm">(Caso Promedio)</span>}
                 </h4>
-                <TreeVisualizer mermaidCode={mermaidCode} isRecursive={true} />
+                <TreeVisualizer 
+                  mermaidCode={typeof diagramToShow === 'string' ? diagramToShow : diagramToShow.mermaidCode} 
+                  isRecursive={true} 
+                />
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ) : null;
+        })()}
       </div>
     );
   }
@@ -624,17 +645,42 @@ export default function CaseSelector({ analysisSteps, diagrams }) {
         )}
 
         {/* Árbol de recursión para el caso activo (recursivo) */}
-        {diagrams && availableCases[activeCase] && diagrams[`tree_method_${availableCases[activeCase]}`] && (
-          <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-            <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
-              🌳 Árbol de Recursión
-            </h4>
-            <TreeVisualizer 
-              mermaidCode={diagrams[`tree_method_${availableCases[activeCase]}`]} 
-              isRecursive={true}
-            />
-          </div>
-        )}
+        {diagrams && (() => {
+          const currentCaseType = availableCases[activeCase];
+          let diagramToShow = null;
+          let diagramKey = null;
+          
+          // Buscar el diagrama específico para el caso activo
+          Object.entries(diagrams).forEach(([key, diagram]) => {
+            const diagramData = typeof diagram === 'string' ? { mermaidCode: diagram, case_type: 'general' } : diagram;
+            
+            if (currentCaseType === 'best_case' && key === 'tree_method_best') {
+              diagramToShow = diagramData;
+              diagramKey = key;
+            } else if (currentCaseType === 'worst_case' && key === 'tree_method_worst') {
+              diagramToShow = diagramData;
+              diagramKey = key;
+            } else if (currentCaseType === 'average_case' && key === 'tree_method_average') {
+              diagramToShow = diagramData;
+              diagramKey = key;
+            }
+          });
+          
+          return diagramToShow ? (
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+              <h4 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
+                🌳 Árbol de Recursión
+                {diagramKey?.includes('best') && <span className="text-green-400 text-sm">(Mejor Caso)</span>}
+                {diagramKey?.includes('worst') && <span className="text-red-400 text-sm">(Peor Caso)</span>}
+                {diagramKey?.includes('average') && <span className="text-yellow-400 text-sm">(Caso Promedio)</span>}
+              </h4>
+              <TreeVisualizer 
+                mermaidCode={typeof diagramToShow === 'string' ? diagramToShow : diagramToShow.mermaidCode} 
+                isRecursive={true}
+              />
+            </div>
+          ) : null;
+        })()}
       </div>
     </div>
   );

@@ -14,24 +14,35 @@ from app.external_services.Agentes.Agent import AgentBase
 # 📘 SCHEMAS
 # ============================================================================
 
+
 class TraceRequest(BaseModel):
     pseudocode: str = Field(description="Pseudocódigo del algoritmo.")
     algorithm_name: str = Field(description="Nombre del algoritmo.")
     # Recibimos los casos detectados por el agente anterior para saber qué graficar
-    cases_summary: str = Field(description="Resumen de los casos (Mejor/Peor) y sus condiciones.")
+    cases_summary: str = Field(
+        description="Resumen de los casos (Mejor/Peor) y sus condiciones."
+    )
+
 
 class DiagramDetail(BaseModel):
     case_name: str = Field(description="Ej: 'Mejor Caso', 'Peor Caso'.")
-    description: str = Field(description="Breve descripción del flujo (ej: 'El bucle termina inmediatamente').")
-    mermaid_code: str = Field(description="Código fuente Mermaid.js (graph TD) del diagrama de flujo.")
+    description: str = Field(
+        description="Breve descripción del flujo (ej: 'El bucle termina inmediatamente')."
+    )
+    mermaid_code: str = Field(
+        description="Código fuente Mermaid.js (graph TD) del diagrama de flujo."
+    )
+
 
 class TraceResponse(BaseModel):
     algorithm_name: str
     diagrams: List[DiagramDetail] = Field(description="Lista de diagramas generados.")
 
+
 # ============================================================================
 # 🎨 AGENTE DE DIAGRAMACIÓN
 # ============================================================================
+
 
 class TraceDiagramAgent(AgentBase[TraceResponse]):
     """
@@ -124,42 +135,45 @@ Devuelve lista de diagramas. Cada `mermaid_code` debe ser sintácticamente corre
     def _validate_mermaid_syntax(self, mermaid_code: str) -> tuple[bool, str]:
         """
         Valida sintaxis básica de Mermaid para flowcharts.
-        
+
         Returns:
             tuple[bool, str]: (es_valido, mensaje_error)
         """
-        lines = mermaid_code.strip().split('\n')
-        
+        lines = mermaid_code.strip().split("\n")
+
         # 1. Verificar primera línea
-        if not lines or not lines[0].strip().startswith('graph '):
+        if not lines or not lines[0].strip().startswith("graph "):
             return False, "Debe empezar con 'graph TD' o 'graph LR'"
-        
+
         # 2. Verificar IDs sin espacios
-        node_id_pattern = re.compile(r'^[a-zA-Z0-9_]+')
+        node_id_pattern = re.compile(r"^[a-zA-Z0-9_]+")
         for i, line in enumerate(lines[1:], start=2):
             line = line.strip()
-            if not line or line.startswith('subgraph') or line.startswith('end'):
+            if not line or line.startswith("subgraph") or line.startswith("end"):
                 continue
-            
+
             # Extraer ID del nodo (antes de cualquier símbolo)
             match = node_id_pattern.match(line)
             if match:
                 node_id = match.group(0)
                 # Verificar que no tenga espacios
-                if ' ' in node_id:
-                    return False, f"Línea {i}: ID '{node_id}' contiene espacios. Use CamelCase o snake_case"
-        
+                if " " in node_id:
+                    return (
+                        False,
+                        f"Línea {i}: ID '{node_id}' contiene espacios. Use CamelCase o snake_case",
+                    )
+
         # 3. Verificar sintaxis de conexiones
-        connection_pattern = re.compile(r'-->')
+        connection_pattern = re.compile(r"-->")
         for i, line in enumerate(lines[1:], start=2):
-            if '-->' in line:
+            if "-->" in line:
                 # Verificar formato correcto
-                if '->' in line and '-->' not in line:
+                if "->" in line and "-->" not in line:
                     return False, f"Línea {i}: Use '-->' (doble guión) no '->' (simple)"
-        
+
         # 4. Verificar paréntesis balanceados
-        open_chars = ['(', '[', '{']
-        close_chars = [')', ']', '}']
+        open_chars = ["(", "[", "{"]
+        close_chars = [")", "]", "}"]
         for i, line in enumerate(lines[1:], start=2):
             stack = []
             for char in line:
@@ -172,7 +186,7 @@ Devuelve lista de diagramas. Cada `mermaid_code` debe ser sintácticamente corre
                     if stack[-1] != expected:
                         return False, f"Línea {i}: Paréntesis/corchetes mal emparejados"
                     stack.pop()
-        
+
         return True, "Sintaxis válida"
 
     def _fix_common_errors(self, mermaid_code: str) -> str:
@@ -180,37 +194,34 @@ Devuelve lista de diagramas. Cada `mermaid_code` debe ser sintácticamente corre
         Corrige errores comunes en código Mermaid.
         """
         # Reemplazar guiones simples por dobles en conexiones
-        mermaid_code = re.sub(r'(\s)->\s', r'\1--> ', mermaid_code)
-        
+        mermaid_code = re.sub(r"(\s)->\s", r"\1--> ", mermaid_code)
+
         # Eliminar espacios en IDs (básico)
-        lines = mermaid_code.split('\n')
+        lines = mermaid_code.split("\n")
         fixed_lines = []
-        
+
         for line in lines:
             # Si es una definición de nodo, quitar espacios del ID
-            if '-->' not in line and any(symbol in line for symbol in ['((', '[', '{']):
+            if "-->" not in line and any(symbol in line for symbol in ["((", "[", "{"]):
                 # Detectar ID antes del primer símbolo
-                for symbol in ['((', '[', '{']:
+                for symbol in ["((", "[", "{"]:
                     if symbol in line:
                         parts = line.split(symbol, 1)
-                        node_id = parts[0].strip().replace(' ', '_')
+                        node_id = parts[0].strip().replace(" ", "_")
                         line = node_id + symbol + parts[1]
                         break
             fixed_lines.append(line)
-        
-        return '\n'.join(fixed_lines)
+
+        return "\n".join(fixed_lines)
 
     def generate_diagrams(
-        self, 
-        pseudocode: str, 
-        algorithm_name: str,
-        cases_summary: str
+        self, pseudocode: str, algorithm_name: str, cases_summary: str
     ) -> TraceResponse:
-        
+
         context = TraceRequest(
             pseudocode=pseudocode,
             algorithm_name=algorithm_name,
-            cases_summary=cases_summary
+            cases_summary=cases_summary,
         )
 
         content = f"""
@@ -235,27 +246,33 @@ Crea el código Mermaid para visualizar el flujo en el Mejor y Peor caso (y Prom
         max_attempts = 3
         for attempt in range(max_attempts):
             result = self.invoke_simple(
-                content=content if attempt == 0 else f"{content}\n\n⚠️ INTENTO {attempt + 1}: El código anterior tenía errores. Corrígelos y genera código válido.",
+                content=(
+                    content
+                    if attempt == 0
+                    else f"{content}\n\n⚠️ INTENTO {attempt + 1}: El código anterior tenía errores. Corrígelos y genera código válido."
+                ),
                 context=context.model_dump(),
-                thread_id=f"trace_{algorithm_name}_attempt{attempt}"
+                thread_id=f"trace_{algorithm_name}_attempt{attempt}",
             )
 
             response = self.extract_response(result)
             if not response:
                 if attempt == max_attempts - 1:
-                    raise ValueError("Error generando diagramas después de múltiples intentos.")
+                    raise ValueError(
+                        "Error generando diagramas después de múltiples intentos."
+                    )
                 continue
-            
+
             # Validar y corregir cada diagrama
             all_valid = True
             for diagram in response.diagrams:
                 # Intentar corrección automática
                 original_code = diagram.mermaid_code
                 fixed_code = self._fix_common_errors(original_code)
-                
+
                 # Validar
                 is_valid, error_msg = self._validate_mermaid_syntax(fixed_code)
-                
+
                 if is_valid:
                     diagram.mermaid_code = fixed_code
                 else:
@@ -264,13 +281,17 @@ Crea el código Mermaid para visualizar el flujo en el Mejor y Peor caso (y Prom
                     # Agregar feedback al prompt para el siguiente intento
                     content += f"\n\n❌ ERROR en '{diagram.case_name}': {error_msg}\nCódigo problemático:\n{original_code[:200]}..."
                     break
-            
+
             if all_valid:
-                print(f"✅ Todos los diagramas validados correctamente (Intento {attempt + 1})")
+                print(
+                    f"✅ Todos los diagramas validados correctamente (Intento {attempt + 1})"
+                )
                 return response
-            
+
             if attempt == max_attempts - 1:
-                print(f"⚠️ Devolviendo diagramas con posibles errores después de {max_attempts} intentos")
+                print(
+                    f"⚠️ Devolviendo diagramas con posibles errores después de {max_attempts} intentos"
+                )
                 return response
-        
+
         raise ValueError("Error generando diagramas.")

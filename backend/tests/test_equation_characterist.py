@@ -7,10 +7,11 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.models.recursive.equation_characteristic import (
-    CharacteristicEquationStrategy, 
+    CharacteristicEquationStrategy,
     CharacteristicEquationAgentOutput,
-    CharacteristicAnalyzer
+    CharacteristicAnalyzer,
 )
+
 
 class TestCharacteristicEquationStrategy(unittest.TestCase):
 
@@ -29,7 +30,7 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
             particular_solution="N/A",
             final_solution=final_sol,
             complexity=complexity,
-            detailed_explanation="Mocked explanation"
+            detailed_explanation="Mocked explanation",
         )
 
     # ==========================================
@@ -41,20 +42,26 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
         """Prueba T(n) = 2T(n-1) -> O(2^n)"""
         equation = "T(n) = 2T(n-1)"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Order 1] {equation} -> {result['complexity']}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
-        print(f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}")
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
+        print(
+            f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}"
+        )
         print(f"✅ Raíces: {result.get('roots', 'N/A')}")
         print(f"✅ Solución general: {result.get('general_solution', 'N/A')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertTrue(result["applicable"])
         self.assertEqual(result["complexity"], "O(2^n)")
         self.assertIn("r - 2 = 0", result["characteristic_equation"])
@@ -65,20 +72,26 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
         # r^2 - 5r + 6 = 0 -> (r-2)(r-3)=0 -> r=2, r=3
         equation = "T(n) = 5T(n-1) - 6T(n-2)"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Order 2 Distinct] {equation} -> Raíces: {result['roots']}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
-        print(f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}")
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
+        print(
+            f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}"
+        )
         print(f"✅ Raíces: {result.get('roots', 'N/A')}")
         print(f"✅ Solución general: {result.get('general_solution', 'N/A')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(3.000^n)")
         # Verificamos que detecte ambas raíces
         roots = result["roots"]
@@ -90,41 +103,53 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
         # r^2 - 4r + 4 = 0 -> (r-2)^2=0 -> r=2
         equation = "T(n) = 4T(n-1) - 4T(n-2)"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Order 2 Repeated] {equation} -> Raíces: {result['roots']}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
-        print(f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}")
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
+        print(
+            f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}"
+        )
         print(f"✅ Raíces: {result.get('roots', 'N/A')}")
         print(f"✅ Solución general: {result.get('general_solution', 'N/A')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(2.000^n)")
-        self.assertIn("C₂·n", result["general_solution"]) # Debe tener el término n*r^n
+        self.assertIn("C₂·n", result["general_solution"])  # Debe tener el término n*r^n
 
     def test_analyzer_fibonacci(self):
         """Prueba T(n) = T(n-1) + T(n-2) -> Fibonacci"""
         equation = "T(n) = T(n-1) + T(n-2)"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Fibonacci] {equation} -> {result['complexity']}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
-        print(f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}")
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
+        print(
+            f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}"
+        )
         print(f"✅ Raíces: {result.get('roots', 'N/A')}")
         print(f"✅ Solución general: {result.get('general_solution', 'N/A')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         # Debe detectar phi
         self.assertEqual(result["complexity"], "O(φ^n)")
         self.assertIn("1.618", result["explanation"])
@@ -135,20 +160,26 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
 
     def test_summation_linear(self):
         """Prueba T_avg(n) = (1/(n+1)) * sum(T(i)) con T(i)=T(i-1)+1"""
-        equation = "T_avg(n) = (1/(n+1)) * sum[i=0 to n] T(i), donde T(i)=T(i-1)+1, T(0)=1"
+        equation = (
+            "T_avg(n) = (1/(n+1)) * sum[i=0 to n] T(i), donde T(i)=T(i-1)+1, T(0)=1"
+        )
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Summation] {equation[:50]}...")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Método: {result.get('method', 'N/A')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertTrue(result["applicable"])
         self.assertEqual(result["complexity"], "O(n)")
         self.assertEqual(result["method"], "Ecuación Característica (Sumatoria)")
@@ -158,7 +189,7 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
     # No homogéneas o de orden superior delegan al Agente IA.
     # ==========================================
 
-    @patch('app.models.recursive.equation_characteristic.CharacteristicEquationAgent')
+    @patch("app.models.recursive.equation_characteristic.CharacteristicEquationAgent")
     def test_agent_non_homogeneous(self, MockAgent):
         """Prueba T(n) = T(n-1) + 1 (No homogénea)"""
         # Configurar Mock
@@ -169,57 +200,67 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
             roots=["1"],
             gen_sol="C*1^n",
             final_sol="T(n) = n + C",
-            complexity="O(n)"
+            complexity="O(n)",
         )
         self.strategy.agent = mock_instance
 
         equation = "T(n) = T(n-1) + 1"
         # El analyzer detectará 'non_homogeneous'='1' y pasará al agente
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Agent Non-Homogeneous] {equation} -> {result['complexity']}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(n)")
         # Verificar que NO intentó usar la lógica estándar
-        self.assertNotIn("is_standard", result) 
+        self.assertNotIn("is_standard", result)
 
-    @patch('app.models.recursive.equation_characteristic.CharacteristicEquationAgent')
+    @patch("app.models.recursive.equation_characteristic.CharacteristicEquationAgent")
     def test_agent_order_3(self, MockAgent):
         """Prueba T(n) = T(n-1) + T(n-2) + T(n-3) (Orden 3)"""
         mock_instance = MockAgent.return_value
         mock_instance.solve_complex.return_value = self.mock_agent_response(
             form="Homogénea, orden 3",
             char_eq="r^3 - r^2 - r - 1 = 0",
-            roots=["1.839", "-0.4+0.6i", "-0.4-0.6i"], # Constante de Tribonacci
+            roots=["1.839", "-0.4+0.6i", "-0.4-0.6i"],  # Constante de Tribonacci
             gen_sol="...",
             final_sol="...",
-            complexity="O(1.839^n)"
+            complexity="O(1.839^n)",
         )
         self.strategy.agent = mock_instance
 
         equation = "T(n) = T(n-1) + T(n-2) + T(n-3)"
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Agent Order 3] {equation} -> {result['complexity']}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
-        print(f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}")
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
+        print(
+            f"\n✅ Ecuación característica: {result.get('characteristic_equation', 'N/A')}"
+        )
         print(f"✅ Raíces: {result.get('roots', 'N/A')}")
         print(f"✅ Complejidad: {result['complexity']}")
-        
+
         self.assertEqual(result["complexity"], "O(1.839^n)")
 
     # ==========================================
@@ -228,22 +269,26 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
 
     def test_invalid_format(self):
         """Prueba ecuación que no es lineal (División)"""
-        equation = "T(n) = T(n/2) + 1" # Esto es Master Theorem, no Characteristic
+        equation = "T(n) = T(n/2) + 1"  # Esto es Master Theorem, no Characteristic
         result = self.strategy.solve(equation)
-        
+
         print(f"\n{'='*80}")
         print(f"[Test Invalid] {equation}")
         print(f"{'='*80}")
         print(f"✅ Aplicable: {result.get('applicable', False)}")
-        
-        if result.get('steps'):
+
+        if result.get("steps"):
             print(f"\n📋 PASOS:")
-            for step in result['steps']:
+            for step in result["steps"]:
                 print(step)
-        
+
         print(f"\n💡 EXPLICACIÓN:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
-        
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
+
         # El parser debería retornar is_applicable=False
         if "applicable" in result:
             self.assertFalse(result["applicable"])
@@ -251,5 +296,6 @@ class TestCharacteristicEquationStrategy(unittest.TestCase):
             # Si tu código retorna error en estructura diferente
             self.assertIn("no cumple los requisitos", str(result))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

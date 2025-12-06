@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 
 import sys
+
 sys.path.append(os.getenv("PYTHONPATH", "backend"))
 
 
@@ -16,27 +17,50 @@ from langchain_core.tools import tool
 # 📘 SCHEMAS DE DATOS
 # ========================================================================
 
+
 class AlgorithmClassifierInput(BaseModel):
     """Entrada del agente de clasificación funcional y estructural."""
+
     pseudocode: str = Field(description="Pseudocódigo completo del algoritmo")
-    ast: Any = Field(description="Árbol sintáctico abstracto (AST) generado por el parser (puede ser un objeto Tree o un dict)")
-    algorithm_type: str = Field(description="Tipo general detectado: recursivo, iterativo o programación dinámica")
-    algorithm_name: Optional[str] = Field(default=None, description="Nombre conocido del algoritmo (opcional)")
-    additional_info: Optional[str] = Field(default=None, description="Contexto adicional del análisis")
+    ast: Any = Field(
+        description="Árbol sintáctico abstracto (AST) generado por el parser (puede ser un objeto Tree o un dict)"
+    )
+    algorithm_type: str = Field(
+        description="Tipo general detectado: recursivo, iterativo o programación dinámica"
+    )
+    algorithm_name: Optional[str] = Field(
+        default=None, description="Nombre conocido del algoritmo (opcional)"
+    )
+    additional_info: Optional[str] = Field(
+        default=None, description="Contexto adicional del análisis"
+    )
 
 
 class AlgorithmClassifierResponse(BaseModel):
     """Salida estructurada del agente de clasificación funcional."""
-    functional_class: str = Field(description="Clasificación funcional: ordenamiento, búsqueda, etc.")
-    structural_pattern: str = Field(description="Patrón estructural: divide y vencerás, DP, greedy, etc.")
+
+    functional_class: str = Field(
+        description="Clasificación funcional: ordenamiento, búsqueda, etc."
+    )
+    structural_pattern: str = Field(
+        description="Patrón estructural: divide y vencerás, DP, greedy, etc."
+    )
     confidence_level: float = Field(description="Nivel de confianza (0.0 a 1.0)")
-    justification: str = Field(description="Explicación técnica del razonamiento de clasificación")
-    key_features: List[str] = Field(description="Rasgos detectados en el pseudocódigo/AST que llevaron a la decisión")
-    possible_known_algorithms: List[str] = Field(description="Nombres posibles de algoritmos reconocidos (si aplica)")
+    justification: str = Field(
+        description="Explicación técnica del razonamiento de clasificación"
+    )
+    key_features: List[str] = Field(
+        description="Rasgos detectados en el pseudocódigo/AST que llevaron a la decisión"
+    )
+    possible_known_algorithms: List[str] = Field(
+        description="Nombres posibles de algoritmos reconocidos (si aplica)"
+    )
+
 
 # ========================================================================
 # 🧰 HERRAMIENTAS AUXILIARES
 # ========================================================================
+
 
 @tool
 def extract_keywords_from_ast(ast: Dict[str, Any]) -> Dict[str, int]:
@@ -46,11 +70,13 @@ def extract_keywords_from_ast(ast: Dict[str, Any]) -> Dict[str, int]:
     if not isinstance(ast, dict):
         try:
             from app.parsers.parser import TreeToDict
+
             transformer = TreeToDict()
             ast = transformer.transform(ast)
         except Exception:
             ast = {}
     import json
+
     ast_str = json.dumps(ast).lower()
     keywords = {
         "sort": ast_str.count("sort"),
@@ -77,11 +103,13 @@ def summarize_ast_structure(ast: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(ast, dict):
         try:
             from app.parsers.parser import TreeToDict
+
             transformer = TreeToDict()
             ast = transformer.transform(ast)
         except Exception:
             ast = {}
     from collections import Counter
+
     def traverse(node, counter):
         if isinstance(node, dict):
             t = node.get("type")
@@ -92,13 +120,16 @@ def summarize_ast_structure(ast: Dict[str, Any]) -> Dict[str, Any]:
         elif isinstance(node, list):
             for item in node:
                 traverse(item, counter)
+
     counter = Counter()
     traverse(ast, counter)
     return {"structure_summary": dict(counter)}
 
+
 # ========================================================================
 # 🤖 AGENTE PRINCIPAL
 # ========================================================================
+
 
 class AlgorithmClassifierAgent(AgentBase[AlgorithmClassifierResponse]):
     """Agente LLM que clasifica el tipo de algoritmo (funcional y estructural)."""
@@ -188,9 +219,12 @@ Clasifícalo funcional y estructuralmente según su comportamiento.
 
         response = self.extract_response(result)
         if response is None:
-            raise ValueError("No se pudo obtener una respuesta estructurada del agente de clasificación.")
+            raise ValueError(
+                "No se pudo obtener una respuesta estructurada del agente de clasificación."
+            )
 
         return response
+
 
 # ========================================================================
 # 🚀 PRUEBA LOCAL
@@ -215,20 +249,23 @@ if __name__ == "__main__":
         "name": "quicksort",
         "params": ["A", "low", "high"],
         "body": [
-            {"type": "if", "cond": {"lhs": "low", "op": "<", "rhs": "high"},
-             "then": [
-                 {"type": "assign", "var": "p", "value": "partition(A, low, high)"},
-                 {"type": "call", "name": "quicksort", "args": ["A", "low", "p-1"]},
-                 {"type": "call", "name": "quicksort", "args": ["A", "p+1", "high"]}
-             ]}
-        ]
+            {
+                "type": "if",
+                "cond": {"lhs": "low", "op": "<", "rhs": "high"},
+                "then": [
+                    {"type": "assign", "var": "p", "value": "partition(A, low, high)"},
+                    {"type": "call", "name": "quicksort", "args": ["A", "low", "p-1"]},
+                    {"type": "call", "name": "quicksort", "args": ["A", "p+1", "high"]},
+                ],
+            }
+        ],
     }
 
     result = agent.classify_algorithm(
         pseudocode=pseudocode,
         ast=ast_example,
         algorithm_type="recursivo",
-        algorithm_name="QuickSort"
+        algorithm_name="QuickSort",
     )
 
     print(f"🧩 Clasificación funcional: {result.functional_class}")

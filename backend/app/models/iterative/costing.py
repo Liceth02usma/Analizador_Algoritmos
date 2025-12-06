@@ -14,13 +14,13 @@ from .execution_counter import get_loop_iterations
 # ============================================================
 
 ELEMENTARY_COSTS = {
-    "assign": 1,             # x ← y, x ← x+1
-    "array_access": 2,       # A[i]
-    "field_access": 2,       # obj.field
-    "comparison": 1,         # <, >, <=, >=, =, ≠
-    "arith_op": 1,           # +, -, *, /
-    "logic_op": 1,           # and, or, not
-    "call": 2,               # CALL f(x)
+    "assign": 1,  # x ← y, x ← x+1
+    "array_access": 2,  # A[i]
+    "field_access": 2,  # obj.field
+    "comparison": 1,  # <, >, <=, >=, =, ≠
+    "arith_op": 1,  # +, -, *, /
+    "logic_op": 1,  # and, or, not
+    "call": 2,  # CALL f(x)
     "return": 1,
 }
 
@@ -29,12 +29,24 @@ ELEMENTARY_COSTS = {
 # FUNCIONES AUXILIARES
 # ============================================================
 
+
 def _is_arith(expr: Any) -> bool:
-    return isinstance(expr, dict) and expr.get("op") in ["+", "-", "*", "/", "mod", "div"]
+    return isinstance(expr, dict) and expr.get("op") in [
+        "+",
+        "-",
+        "*",
+        "/",
+        "mod",
+        "div",
+    ]
 
 
 def _is_comparison(node: Dict) -> bool:
-    return isinstance(node, dict) and "op" in node and node["op"] in ["<", ">", "<=", ">=", "=", "≠"]
+    return (
+        isinstance(node, dict)
+        and "op" in node
+        and node["op"] in ["<", ">", "<=", ">=", "=", "≠"]
+    )
 
 
 def _is_logic(node: Dict) -> bool:
@@ -67,7 +79,11 @@ def _cost_expr(expr: Any) -> int:
     # Aritmética
     if _is_arith(expr):
         # op + costo recursivo de operandos
-        return ELEMENTARY_COSTS["arith_op"] + _cost_expr(expr["lhs"]) + _cost_expr(expr["rhs"])
+        return (
+            ELEMENTARY_COSTS["arith_op"]
+            + _cost_expr(expr["lhs"])
+            + _cost_expr(expr["rhs"])
+        )
 
     return 0
 
@@ -75,6 +91,7 @@ def _cost_expr(expr: Any) -> int:
 # ============================================================
 # COSTO DE UNA SENTENCIA INDIVIDUAL
 # ============================================================
+
 
 def cost_of_statement(stmt: Dict[str, Any]) -> int:
     """
@@ -94,7 +111,9 @@ def cost_of_statement(stmt: Dict[str, Any]) -> int:
     # Llamada
     # -------------------------
     if t == "call":
-        return ELEMENTARY_COSTS["call"] + sum(_cost_expr(arg) for arg in stmt.get("args", []))
+        return ELEMENTARY_COSTS["call"] + sum(
+            _cost_expr(arg) for arg in stmt.get("args", [])
+        )
 
     # -------------------------
     # Return
@@ -134,6 +153,7 @@ def cost_of_statement(stmt: Dict[str, Any]) -> int:
 # COSTEO TOTAL DE UN CICLO
 # ============================================================
 
+
 def compute_loop_cost(loop_node: Dict[str, Any]) -> Dict[str, Any]:
     """
     Devuelve:
@@ -152,13 +172,14 @@ def compute_loop_cost(loop_node: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "iterations": iters,
         "body_cost": body_cost,
-        "total": f"{body_cost} * {iters}"
+        "total": f"{body_cost} * {iters}",
     }
 
 
 # ============================================================
 # COSTEO TOTAL GENERAL
 # ============================================================
+
 
 def compute_cost(ast: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -173,12 +194,14 @@ def compute_cost(ast: Dict[str, Any]) -> Dict[str, Any]:
 
         if t in ["for", "while", "repeat"]:
             info = compute_loop_cost(stmt)
-            results.append({
-                "type": t,
-                "iterations": info["iterations"],
-                "body_cost": info["body_cost"],
-                "total": info["total"]
-            })
+            results.append(
+                {
+                    "type": t,
+                    "iterations": info["iterations"],
+                    "body_cost": info["body_cost"],
+                    "total": info["total"],
+                }
+            )
             total_symbolic.append(f"({info['total']})")
             continue
 
@@ -189,7 +212,4 @@ def compute_cost(ast: Dict[str, Any]) -> Dict[str, Any]:
 
     final_expression = " + ".join(total_symbolic)
 
-    return {
-        "steps": results,
-        "total_cost_expression": final_expression
-    }
+    return {"steps": results, "total_cost_expression": final_expression}
