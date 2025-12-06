@@ -15,29 +15,41 @@ sys.path.append(os.getenv("PYTHONPATH", "backend"))
 # 📘 SCHEMAS ACTUALIZADOS (Strict Typing)
 # ============================================================================
 
+
 class IterativeAnalysisInput(BaseModel):
     pseudocode: str = Field(description="Pseudocódigo numerado.")
-    line_costs_map: str = Field(description="Mapa textual de costos pre-calculados para guiar al agente.")
+    line_costs_map: str = Field(
+        description="Mapa textual de costos pre-calculados para guiar al agente."
+    )
     ast: Any = Field(description="AST simplificado.")
     algorithm_name: str = Field(description="Nombre.")
 
+
 class LineCost(BaseModel):
     line: int = Field(description="Número de línea.")
-    
+
     # CAMBIO IMPORTANTE: Ahora es un entero exacto
-    cost_constant: int = Field(description="Número de operaciones elementales calculado (C).")
-    
-    execution_count: str = Field(description="Expresión algebraica de repeticiones (E). Ej: 'n', 'n+1'.")
-    
+    cost_constant: int = Field(
+        description="Número de operaciones elementales calculado (C)."
+    )
+
+    execution_count: str = Field(
+        description="Expresión algebraica de repeticiones (E). Ej: 'n', 'n+1'."
+    )
+
     # El agente debe formar la expresión C * E
     total_cost_expression: str = Field(description="Expresión total. Ej: '3 * (n+1)'.")
+
 
 class CaseDetail(BaseModel):
     case_name: str = Field(description="'General', 'Mejor', 'Peor', 'Promedio'.")
     condition: str = Field(description="Condición del caso.")
     line_analysis: List[LineCost] = Field(description="Tabla de análisis.")
-    solver_friendly_summation: str = Field(description="Sumatoria total. Ej: '3*(n+1) + SUM(...)'")
+    solver_friendly_summation: str = Field(
+        description="Sumatoria total. Ej: '3*(n+1) + SUM(...)'"
+    )
     efficiency_function: str = Field(description="T(n) cruda.")
+
 
 class IterativeAnalysisResponse(BaseModel):
     algorithm_name: str
@@ -45,12 +57,14 @@ class IterativeAnalysisResponse(BaseModel):
     cases: List[CaseDetail]
     general_explanation: str
 
+
 # ============================================================================
 # 🤖 AGENTE ITERATIVO (Lógica Híbrida: Python + LLM)
 # ============================================================================
 
+
 class IterativeAnalyzerAgent(AgentBase[IterativeAnalysisResponse]):
-    
+
     def _configure(self) -> None:
         self.tools = []
         self.context_schema = IterativeAnalysisInput
@@ -94,46 +108,43 @@ MANTÉN LA RESPUESTA CONCISA.
         1. Lo numera.
         2. Calcula el costo determinista de cada línea usando la función Python.
         """
-        lines = code.split('\n')
+        lines = code.split("\n")
         numbered_lines = []
         costs_context = []
-        
+
         real_idx = 1
         for line in lines:
-            # Ignoramos líneas vacías para la numeración lógica visual, 
+            # Ignoramos líneas vacías para la numeración lógica visual,
             # pero mantenemos consistencia con el código original.
-            if not line.strip(): 
+            if not line.strip():
                 continue
-                
+
             # Calculamos costo exacto con la utilidad
             cost = calculate_elementary_operations(line)
-            
+
             numbered_lines.append(f"{real_idx}. {line}")
-            
+
             if cost > 0:
                 costs_context.append(f"Línea {real_idx}: Costo {cost}")
             else:
                 costs_context.append(f"Línea {real_idx}: Costo 0 (Estructural)")
-                
+
             real_idx += 1
-            
+
         return "\n".join(numbered_lines), "\n".join(costs_context)
 
     def analyze_algorithm(
-        self,
-        pseudocode: str,
-        ast: Dict[str, Any],
-        algorithm_name: str = "Algoritmo"
+        self, pseudocode: str, ast: Dict[str, Any], algorithm_name: str = "Algoritmo"
     ) -> IterativeAnalysisResponse:
-        
+
         # 1. Ejecutar el cálculo determinista
         numbered_code, costs_map = self._prepare_data(pseudocode)
 
         context = IterativeAnalysisInput(
             pseudocode=numbered_code,
-            line_costs_map=costs_map, # Inyección de costos reales
-            ast=ast, 
-            algorithm_name=algorithm_name
+            line_costs_map=costs_map,  # Inyección de costos reales
+            ast=ast,
+            algorithm_name=algorithm_name,
         )
 
         content = f"""
@@ -150,16 +161,16 @@ Instrucciones:
 2. Multiplica E por el Costo (C) dado en la tabla.
 3. Genera la sumatoria total.
 """
-        
+
         result = self.invoke_simple(
-            content=content, 
+            content=content,
             context=context.model_dump(),
-            thread_id=f"analysis_{algorithm_name}"
+            thread_id=f"analysis_{algorithm_name}",
         )
 
         response = self.extract_response(result)
-        
-        if not response: 
+
+        if not response:
             raise ValueError("Error en agente: No se obtuvo respuesta estructurada.")
-            
+
         return response

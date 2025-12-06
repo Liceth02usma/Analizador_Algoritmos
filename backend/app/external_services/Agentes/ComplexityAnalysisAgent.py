@@ -8,32 +8,44 @@ from app.external_services.Agentes.Agent import AgentBase
 load_dotenv()
 sys.path.append(os.getenv("PYTHONPATH", "backend"))
 
+
 class ComplexityCaseInput(BaseModel):
     case_name: str
-    efficiency_function: str # El polinomio T(n)
+    efficiency_function: str  # El polinomio T(n)
+
 
 class ComplexityInput(BaseModel):
     algorithm_name: str
     cases: List[ComplexityCaseInput]
 
+
 class AsymptoticResult(BaseModel):
     case_name: str
-    
-    # Aquí cumplimos el requisito de 
-    notation_type: str = Field(description="Tipo de cota: 'O' (Techo/Peor), 'Ω' (Piso/Mejor), 'Θ' (Exacta).")
-    complexity_class: str = Field(description="Clase de complejidad (ej: n, n^2, log n).")
+
+    # Aquí cumplimos el requisito de
+    notation_type: str = Field(
+        description="Tipo de cota: 'O' (Techo/Peor), 'Ω' (Piso/Mejor), 'Θ' (Exacta)."
+    )
+    complexity_class: str = Field(
+        description="Clase de complejidad (ej: n, n^2, log n)."
+    )
     formatted_notation: str = Field(description="Ej: 'O(n^2)', 'Ω(1)'.")
-    justification: str = Field(description="Explicación basada en el término dominante.")
+    justification: str = Field(
+        description="Explicación basada en el término dominante."
+    )
+
 
 class ComplexityResponse(BaseModel):
     algorithm_name: str
     analysis: List[AsymptoticResult]
     final_conclusion: str
 
+
 class ComplexityAnalysisAgent(AgentBase[ComplexityResponse]):
     """
     Agente Teórico. Asigna la notación asintótica correcta según el caso.
     """
+
     def _configure(self) -> None:
         self.tools = []
         self.context_schema = ComplexityInput
@@ -61,9 +73,18 @@ Input: Case="Peor", T(n)="(c1)n^2 + n"
 Output: notation="O", class="n^2", formatted="O(n^2)"
 """
 
-    def determine_complexity(self, algorithm_name: str, cases_data: List[dict]) -> ComplexityResponse:
-        context = ComplexityInput(algorithm_name=algorithm_name, cases=[ComplexityCaseInput(**c) for c in cases_data])
-        
+    def determine_complexity(
+        self, algorithm_name: str, cases_data: List[dict]
+    ) -> ComplexityResponse:
+        context = ComplexityInput(
+            algorithm_name=algorithm_name,
+            cases=[ComplexityCaseInput(**c) for c in cases_data],
+        )
+
         content = f"Clasifica la complejidad asintótica para: {algorithm_name}\n{context.model_dump_json(indent=2)}"
-        result = self.invoke_simple(content=content, context=context.model_dump(), thread_id=f"complex_{algorithm_name}")
+        result = self.invoke_simple(
+            content=content,
+            context=context.model_dump(),
+            thread_id=f"complex_{algorithm_name}",
+        )
         return self.extract_response(result)

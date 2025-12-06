@@ -1,0 +1,448 @@
+{
+  "metadata": {
+    "algorithm_name": "Prueba de primaridad (división de prueba)",
+    "compared_at": "2025-12-05T09:21:53.523497",
+    "specialized_timestamp": "2025-12-05T09:17:39.277328"
+  },
+  "tokens_comparison": {
+    "specialized": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "complete": {
+      "input": 1573,
+      "output": 3074,
+      "total": 4647
+    },
+    "difference": {
+      "input": -1573,
+      "output": -3074,
+      "total": -4647
+    },
+    "percentage_difference": {
+      "total": -100.0
+    }
+  },
+  "complexity_comparison": {
+    "specialized": "N/A",
+    "complete": "N/A",
+    "match": false
+  },
+  "methods_comparison": {
+    "specialized": [
+      "Análisis especializado multi-agente"
+    ],
+    "complete": "Análisis completo sin especialización"
+  },
+  "detail_comparison": {
+    "specialized_steps": 0,
+    "complete_steps": 0,
+    "specialized_cases": 0,
+    "complete_cases": 1
+  },
+  "execution_time": {
+    "specialized": 0,
+    "complete": 27.278324365615845
+  },
+  "full_results": {
+    "specialized": {
+      "type": "Recursivo",
+      "code_explain": "El número `num1` es compuesto, y el valor inicial de `num2` (o el primer `num2` probado) es un divisor de `num1`. La función encuentra un divisor inmediatamente y retorna `F` (False).",
+      "complexity_line_to_line": "=== MEJOR CASO ===\nXXX1(num1, num2)\nbegin\n    if (num2 = 1) then  // c1\n    begin\n        return T\n    end\n    else  // c3\n    begin\n        temp 🡨 num1 mod num2  // c4\n        if (temp = 0) then  // c5\n        begin\n            return F  // c6\n        end\n        else\n        begin\n            return CALL XXX1(num1, num2 - 1)\n        end\n    end\nend\n\n=== PEOR CASO ===\nXXX1(num1, num2)\nbegin\n    if (num2 = 1) then  // c1\n    begin\n        return T  // c2\n    end\n    else  // c3\n    begin\n        temp 🡨 num1 mod num2  // c4\n        if (temp = 0) then  // c5\n        begin\n            return F\n        end\n        else  // c7\n        begin\n            return CALL XXX1(num1, num2 - 1)  // T(num2 - 1)\n        end\n    end\nend\n\n=== CASO PROMEDIO ===\nXXX1(num1, num2)\nbegin\n    if (num2 = 1) then  // c1\n    begin\n        return T\n    end\n    else  // c3\n    begin\n        temp 🡨 num1 mod num2  // c4\n        if (temp = 0) then  // c5\n        begin\n            return F  // c6\n        end\n        else  // c7\n        begin\n            return CALL XXX1(num1, num2 - 1)  // T(num2 - 1)\n        end\n    end\nend",
+      "explain_complexity": "Mejor caso: En el mejor caso, la ejecución sigue el camino: `if (num2 = 1)` (falso, coste `c1`), `else` (coste `c3`), `temp 🡨 num1 mod num2` (coste `c4`), `if (temp = 0)` (verdadero, coste `c5`), `return F` (coste `c6`). El coste total es `c1 + c3 + c4 + c5 + c6`, que es una constante.\n\nPeor caso: Sea `T(k)` la complejidad temporal para `XXX1(num1, k)`. Cuando `num1` es primo, `temp` nunca es 0. La relación de recurrencia es `T(k) = c1 + c3 + c4 + c5 + c7 + T(k-1)` para `k > 1`. El caso base es `T(1) = c1 + c2`. Resolviendo esta recurrencia lineal, obtenemos `T(k) = (c1 + c3 + c4 + c5 + c7) * (k-1) + (c1 + c2)`. Este coste es directamente proporcional a `k`.\n\nCaso promedio: Sea `T(k)` la complejidad temporal para `XXX1(num1, k)`. En promedio, la función realiza aproximadamente `k/2` llamadas recursivas antes de encontrar un divisor. Para cada una de las primeras `k/2 - 1` llamadas, el coste es `c1 + c3 + c4 + c5 + c7`. La `(k/2)`-ésima llamada (donde se encuentra el divisor) tiene un coste de `c1 + c3 + c4 + c5 + c6`. Por lo tanto, `T(k) = (c1 + c3 + c4 + c5 + c7) * (k/2 - 1) + (c1 + c3 + c4 + c5 + c6)`. Este coste también es directamente proporcional a `k`.",
+      "asymptotic_notation": {
+        "explanation": "El algoritmo Prueba de primaridad (división de prueba) tiene una complejidad temporal de O(n) en el peor caso.",
+        "best": "Ω(1)",
+        "worst": "O(n)",
+        "average": "Θ(n)"
+      },
+      "algorithm_name": "Prueba de primaridad (división de prueba)",
+      "algorithm_category": "Recursivo",
+      "equation": [
+        "T(n)=1, T(1)=1",
+        "T(n)=T(n-1)+1, T(1)=1",
+        "T(n) = T(n-1) + 1/2"
+      ],
+      "method_solution": [
+        "none",
+        "equation_characteristics",
+        "intelligent_substitution"
+      ],
+      "solution_equation": [
+        "1",
+        "n",
+        "O(n)"
+      ],
+      "explain_solution_steps": [
+        {
+          "case_type": "best_case",
+          "equation": "T(n)=1, T(1)=1",
+          "original_equation": "T(n)=1, T(1)=1",
+          "simplification": null,
+          "method": "none",
+          "method_enum": "none",
+          "complexity": "1",
+          "steps": [
+            "Expresión: T(n)=1, T(1)=1",
+            "Término dominante: Constante",
+            "Simplificación: 1"
+          ],
+          "explanation": "La expresión es constante, no depende de n.",
+          "details": {
+            "complexity": "1",
+            "steps": [
+              "Expresión: T(n)=1, T(1)=1",
+              "Término dominante: Constante",
+              "Simplificación: 1"
+            ],
+            "explanation": "La expresión es constante, no depende de n.",
+            "applicable": true,
+            "method": "Análisis Directo",
+            "expression_type": "Constante",
+            "dominant_term": "1"
+          },
+          "classification_confidence": 1.0,
+          "classification_reasoning": "La ecuación T(n)=1 es una función constante y no contiene ninguna llamada recursiva T(...). Por lo tanto, no requiere un método de resolución de recurrencias."
+        },
+        {
+          "case_type": "worst_case",
+          "equation": "T(n)=T(n-1)+1, T(1)=1",
+          "original_equation": "T(n)=T(n-1)+1, T(1)=1",
+          "simplification": null,
+          "method": "equation_characteristics",
+          "method_enum": "equation_characteristics",
+          "complexity": "n",
+          "steps": [
+            "**Solución Exacta (SymPy):** n",
+            "**Crecimiento asintótico:** n",
+            "",
+            "**Explicación Teórica:**",
+            "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`."
+          ],
+          "explanation": "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`.",
+          "details": {
+            "complexity": "n",
+            "steps": [
+              "**Solución Exacta (SymPy):** n",
+              "**Crecimiento asintótico:** n",
+              "",
+              "**Explicación Teórica:**",
+              "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`."
+            ],
+            "explanation": "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`.",
+            "applicable": true,
+            "method": "Ecuación Característica",
+            "final_solution": "n"
+          },
+          "classification_confidence": 0.9,
+          "classification_reasoning": "Recurrencia lineal de orden superior. Términos: T(n-1). Trabajo adicional: =+1,=1. La ecuación característica es ideal para resolver este tipo de recurrencia.."
+        },
+        {
+          "case_type": "average_case",
+          "equation": "T(n) = T(n-1) + 1/2",
+          "original_equation": "T(n)=(1/n)×Σ[i=1 to n]T(i), donde T(i)=T(i-1)+1, T(1)=1",
+          "simplification": {
+            "original": "T(n)=(1/n)×Σ[i=1 to n]T(i), donde T(i)=T(i-1)+1, T(1)=1",
+            "simplified": "T(n) = T(n-1) + 1/2",
+            "steps": [
+              "Paso 1: Resolvemos T_int. Dada T_int(i) = T_int(i-1) + 1 con T_int(1) = 1. Los primeros términos son T_int(1)=1, T_int(2)=2, T_int(3)=3. Por lo tanto, T_int(i) = i.",
+              "Paso 2: Evaluamos S(n) = sum(T_int(i)) desde i=1 hasta n. Sustituyendo T_int(i) = i, obtenemos S(n) = sum(i) desde i=1 hasta n. Usando la fórmula de la suma de los primeros n enteros, S(n) = n(n+1)/2.",
+              "Paso 3: Obtenemos la forma explícita de T(n). T(n) = (1/n) * S(n). Sustituyendo S(n), T(n) = (1/n) * (n(n+1)/2) = (n+1)/2.",
+              "Paso 4: Derivamos la recurrencia final g'(n) = T(n) - T(n-1). T(n) = (n+1)/2. T(n-1) = ((n-1)+1)/2 = n/2. Restamos: T(n) - T(n-1) = (n+1)/2 - n/2 = (n+1-n)/2 = 1/2."
+            ],
+            "explicit_form": "T(n) = (n+1)/2",
+            "summation_resolved": "n(n+1)/2",
+            "confidence": 1.0,
+            "pattern_type": "linear"
+          },
+          "method": "intelligent_substitution",
+          "method_enum": "intelligent_substitution",
+          "complexity": "O(n)",
+          "steps": [
+            "**Paso 1 - Expandir la recurrencia iterativamente:**",
+            "   T(n) = T(n-1) + 1/2",
+            "   T(n) = T(n-2) + 2*(1/2)",
+            "   T(n) = T(n-3) + 3*(1/2)",
+            "   T(n) = T(n-4) + 4*(1/2)",
+            "",
+            "**Paso 2 - Identificar el patrón general:**",
+            "   Después de k sustituciones:",
+            "   T(n) = T(n-k) + k/2",
+            "",
+            "**Paso 3 - Sustituir el caso base:**",
+            "   Para alcanzar el caso base T(1), necesitamos que n-k = 1, lo que implica k = n-1. Sustituyendo k en la expresión general: T(n) = T(n-(n-1)) + (n-1)/2 = T(1) + (n-1)/2.",
+            "",
+            "**Paso 4 - Forma cerrada:**",
+            "   T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2.",
+            "",
+            "**Paso 5 - Complejidad final:**",
+            "   O(n)"
+          ],
+          "explanation": "**Paso 1: Expandir la recurrencia iterativamente**\nLa ecuación de recurrencia dada es T(n) = T(n-1) + 1/2.\n1. T(n) = T(n-1) + 1/2\n2. Sustituimos T(n-1): T(n) = [T(n-2) + 1/2] + 1/2 = T(n-2) + 2*(1/2)\n3. Sustituimos T(n-2): T(n) = [T(n-3) + 1/2] + 2*(1/2) = T(n-3) + 3*(1/2)\n4. Sustituimos T(n-3): T(n) = [T(n-4) + 1/2] + 3*(1/2) = T(n-4) + 4*(1/2)\n\n**Paso 2: Identificar el patrón general**\nObservando las expansiones, podemos ver un patrón claro. Después de 'k' sustituciones, la recurrencia toma la forma:\nT(n) = T(n-k) + k*(1/2)\n\n**Paso 3: Determinar cuándo se alcanza el caso base**\nPara alcanzar un caso base común como T(1), necesitamos que el argumento de T sea 1. Por lo tanto, establecemos:\nn - k = 1\nDespejando k, obtenemos:\nk = n - 1\n\n**Paso 4: Sustituir el caso base y simplificar**\nAhora sustituimos k = n-1 en la expresión general del Paso 2:\nT(n) = T(n-(n-1)) + (n-1)*(1/2)\nT(n) = T(1) + (n-1)/2\nSi asumimos que T(1) es una constante (por ejemplo, c), la forma cerrada es:\nT(n) = c + (n-1)/2\nT(n) = c + n/2 - 1/2\n\n**Paso 5: Expresar forma cerrada y complejidad**\nLa forma cerrada exacta es: T(n) = T(1) + (n-1)/2. Si T(1) es una constante, entonces T(n) = n/2 + (T(1) - 1/2).\nEl término dominante en la forma cerrada es n/2. Por lo tanto, la complejidad asintótica es:\nO(n)",
+          "details": {
+            "complexity": "O(n)",
+            "steps": [
+              "**Paso 1 - Expandir la recurrencia iterativamente:**",
+              "   T(n) = T(n-1) + 1/2",
+              "   T(n) = T(n-2) + 2*(1/2)",
+              "   T(n) = T(n-3) + 3*(1/2)",
+              "   T(n) = T(n-4) + 4*(1/2)",
+              "",
+              "**Paso 2 - Identificar el patrón general:**",
+              "   Después de k sustituciones:",
+              "   T(n) = T(n-k) + k/2",
+              "",
+              "**Paso 3 - Sustituir el caso base:**",
+              "   Para alcanzar el caso base T(1), necesitamos que n-k = 1, lo que implica k = n-1. Sustituyendo k en la expresión general: T(n) = T(n-(n-1)) + (n-1)/2 = T(1) + (n-1)/2.",
+              "",
+              "**Paso 4 - Forma cerrada:**",
+              "   T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2.",
+              "",
+              "**Paso 5 - Complejidad final:**",
+              "   O(n)"
+            ],
+            "explanation": "**Paso 1: Expandir la recurrencia iterativamente**\nLa ecuación de recurrencia dada es T(n) = T(n-1) + 1/2.\n1. T(n) = T(n-1) + 1/2\n2. Sustituimos T(n-1): T(n) = [T(n-2) + 1/2] + 1/2 = T(n-2) + 2*(1/2)\n3. Sustituimos T(n-2): T(n) = [T(n-3) + 1/2] + 2*(1/2) = T(n-3) + 3*(1/2)\n4. Sustituimos T(n-3): T(n) = [T(n-4) + 1/2] + 3*(1/2) = T(n-4) + 4*(1/2)\n\n**Paso 2: Identificar el patrón general**\nObservando las expansiones, podemos ver un patrón claro. Después de 'k' sustituciones, la recurrencia toma la forma:\nT(n) = T(n-k) + k*(1/2)\n\n**Paso 3: Determinar cuándo se alcanza el caso base**\nPara alcanzar un caso base común como T(1), necesitamos que el argumento de T sea 1. Por lo tanto, establecemos:\nn - k = 1\nDespejando k, obtenemos:\nk = n - 1\n\n**Paso 4: Sustituir el caso base y simplificar**\nAhora sustituimos k = n-1 en la expresión general del Paso 2:\nT(n) = T(n-(n-1)) + (n-1)*(1/2)\nT(n) = T(1) + (n-1)/2\nSi asumimos que T(1) es una constante (por ejemplo, c), la forma cerrada es:\nT(n) = c + (n-1)/2\nT(n) = c + n/2 - 1/2\n\n**Paso 5: Expresar forma cerrada y complejidad**\nLa forma cerrada exacta es: T(n) = T(1) + (n-1)/2. Si T(1) es una constante, entonces T(n) = n/2 + (T(1) - 1/2).\nEl término dominante en la forma cerrada es n/2. Por lo tanto, la complejidad asintótica es:\nO(n)",
+            "applicable": true,
+            "method": "Sustitución Inteligente",
+            "closed_form": "T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2.",
+            "pattern": "T(n-k) + k/2",
+            "details": {
+              "recurrence_pattern": "T(n-k) + k/2",
+              "pattern_identification": "T(n) = T(n-k) + k/2",
+              "base_case_substitution": "Para alcanzar el caso base T(1), necesitamos que n-k = 1, lo que implica k = n-1. Sustituyendo k en la expresión general: T(n) = T(n-(n-1)) + (n-1)/2 = T(1) + (n-1)/2.",
+              "closed_form": "T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2."
+            }
+          },
+          "classification_confidence": 0.9,
+          "classification_reasoning": "Recurrencia lineal con UN solo término recursivo T(n-1). Trabajo adicional: =+1/2. La sustitución inteligente permite expandir iterativamente la recurrencia para identificar el patrón general."
+        }
+      ],
+      "diagrams": {
+        "tree_method_best": "graph TD\n    %% Estilos\n    classDef root fill:#f9f,stroke:#333,stroke-width:2px;\n    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;\n    classDef node fill:#fff,stroke:#333,stroke-width:1px;\n\n    subgraph cluster_0 [\"BEST: T(n)=1, T(1)=1\"]\n    direction TB\n    T0_L0_P0(\"T(n)\"):::root\n    end",
+        "tree_method_worst": "graph TD\n    %% Estilos\n    classDef root fill:#f9f,stroke:#333,stroke-width:2px;\n    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;\n    classDef node fill:#fff,stroke:#333,stroke-width:1px;\n\n    subgraph cluster_1 [\"WORST: T(n)=T(n-1)+1, T(1)=1\"]\n    direction TB\n    T1_L0_P0(\"T(n)\"):::root\n    T1_L1_P0(\"T(n-1)\"):::node\n    T1_L0_P0 --> T1_L1_P0\n    T1_L2_P0(\"T(n-2)\"):::node\n    T1_L1_P0 --> T1_L2_P0\n    T1_L3_P0(\"T(n-3)\"):::leaf\n    T1_L2_P0 --> T1_L3_P0\n    end",
+        "tree_method_average": "graph TD\n    %% Estilos\n    classDef root fill:#f9f,stroke:#333,stroke-width:2px;\n    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;\n    classDef node fill:#fff,stroke:#333,stroke-width:1px;\n\n    subgraph cluster_2 [\"AVERAGE: T(n) = T(n-1) + 1/2\"]\n    direction TB\n    T2_L0_P0(\"T(n)\"):::root\n    T2_L1_P0(\"T(n-1)\"):::node\n    T2_L0_P0 --> T2_L1_P0\n    T2_L2_P0(\"T(n-2)\"):::node\n    T2_L1_P0 --> T2_L2_P0\n    T2_L3_P0(\"T(n-3)\"):::leaf\n    T2_L2_P0 --> T2_L3_P0\n    end"
+      },
+      "extra": {
+        "has_multiple_cases": true,
+        "analysis_details": [
+          {
+            "case_type": "best_case",
+            "equation": "T(n)=1, T(1)=1",
+            "original_equation": "T(n)=1, T(1)=1",
+            "simplification": null,
+            "method": "none",
+            "method_enum": "none",
+            "complexity": "1",
+            "steps": [
+              "Expresión: T(n)=1, T(1)=1",
+              "Término dominante: Constante",
+              "Simplificación: 1"
+            ],
+            "explanation": "La expresión es constante, no depende de n.",
+            "details": {
+              "complexity": "1",
+              "steps": [
+                "Expresión: T(n)=1, T(1)=1",
+                "Término dominante: Constante",
+                "Simplificación: 1"
+              ],
+              "explanation": "La expresión es constante, no depende de n.",
+              "applicable": true,
+              "method": "Análisis Directo",
+              "expression_type": "Constante",
+              "dominant_term": "1"
+            },
+            "classification_confidence": 1.0,
+            "classification_reasoning": "La ecuación T(n)=1 es una función constante y no contiene ninguna llamada recursiva T(...). Por lo tanto, no requiere un método de resolución de recurrencias."
+          },
+          {
+            "case_type": "worst_case",
+            "equation": "T(n)=T(n-1)+1, T(1)=1",
+            "original_equation": "T(n)=T(n-1)+1, T(1)=1",
+            "simplification": null,
+            "method": "equation_characteristics",
+            "method_enum": "equation_characteristics",
+            "complexity": "n",
+            "steps": [
+              "**Solución Exacta (SymPy):** n",
+              "**Crecimiento asintótico:** n",
+              "",
+              "**Explicación Teórica:**",
+              "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`."
+            ],
+            "explanation": "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`.",
+            "details": {
+              "complexity": "n",
+              "steps": [
+                "**Solución Exacta (SymPy):** n",
+                "**Crecimiento asintótico:** n",
+                "",
+                "**Explicación Teórica:**",
+                "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`."
+              ],
+              "explanation": "1. **Identificación de la Recurrencia:**\n    La recurrencia dada es `T(n) = T(n-1) + 1`. Es una recurrencia lineal no homogénea de primer orden.\n\n2.  **Ecuación Homogénea Asociada:**\n    Primero, consideramos la parte homogénea de la recurrencia, que se obtiene al igualar el término no homogéneo a cero:\n    `T(n) - T(n-1) = 0`\n\n3.  **Ecuación Característica:**\n    Para encontrar la solución de la parte homogénea, asumimos una solución de la forma `T(n) = r^n`. Sustituyendo esto en la ecuación homogénea:\n    `r^n - r^(n-1) = 0`\n    Dividiendo por `r^(n-1)` (asumiendo `r ≠ 0`):\n    `r - 1 = 0`\n    Esta es la ecuación característica.\n\n4.  **Cálculo de las Raíces:**\n    Resolviendo la ecuación característica `r - 1 = 0`, obtenemos la raíz:\n    `r = 1`\n    Tenemos una raíz real simple.\n\n5.  **Solución Homogénea (T_h(n)):**\n    Dado que la raíz es `r = 1` y es simple, la solución homogénea tiene la forma:\n    `T_h(n) = C * (1)^n = C`\n    Donde `C` es una constante.\n\n6.  **Solución Particular (T_p(n)):**\n    El término no homogéneo es `f(n) = 1`.\n    Dado que `f(n)` es una constante y la raíz `r = 1` de la ecuación característica es igual a la base de la constante (que implícitamente es `1^n`), debemos buscar una solución particular de la forma `T_p(n) = A * n` (multiplicamos por `n` porque la forma estándar `A` chocaría con la solución homogénea).\n    Sustituimos `T_p(n) = An` en la recurrencia original `T(n) = T(n-1) + 1`:\n    `An = A(n-1) + 1`\n    `An = An - A + 1`\n    `0 = -A + 1`\n    `A = 1`\n    Por lo tanto, la solución particular es `T_p(n) = 1 * n = n`.\n\n7.  **Solución General (T(n)):**\n    La solución general es la suma de la solución homogénea y la solución particular:\n    `T(n) = T_h(n) + T_p(n)`\n    `T(n) = C + n`\n\n8.  **Aplicación de la Condición Inicial:**\n    Usamos la condición inicial `T(1) = 1` para encontrar el valor de la constante `C`.\n    Sustituimos `n = 1` en la solución general:\n    `T(1) = C + 1`\n    Sabemos que `T(1) = 1`, entonces:\n    `1 = C + 1`\n    `C = 0`\n\n9.  **Solución Final Exacta:**\n    Sustituyendo `C = 0` en la solución general, obtenemos la solución exacta de la recurrencia:\n    `T(n) = 0 + n`\n    `T(n) = n`\n\n10. **Complejidad:**\n    El término dominante de la solución es `n`.",
+              "applicable": true,
+              "method": "Ecuación Característica",
+              "final_solution": "n"
+            },
+            "classification_confidence": 0.9,
+            "classification_reasoning": "Recurrencia lineal de orden superior. Términos: T(n-1). Trabajo adicional: =+1,=1. La ecuación característica es ideal para resolver este tipo de recurrencia.."
+          },
+          {
+            "case_type": "average_case",
+            "equation": "T(n) = T(n-1) + 1/2",
+            "original_equation": "T(n)=(1/n)×Σ[i=1 to n]T(i), donde T(i)=T(i-1)+1, T(1)=1",
+            "simplification": {
+              "original": "T(n)=(1/n)×Σ[i=1 to n]T(i), donde T(i)=T(i-1)+1, T(1)=1",
+              "simplified": "T(n) = T(n-1) + 1/2",
+              "steps": [
+                "Paso 1: Resolvemos T_int. Dada T_int(i) = T_int(i-1) + 1 con T_int(1) = 1. Los primeros términos son T_int(1)=1, T_int(2)=2, T_int(3)=3. Por lo tanto, T_int(i) = i.",
+                "Paso 2: Evaluamos S(n) = sum(T_int(i)) desde i=1 hasta n. Sustituyendo T_int(i) = i, obtenemos S(n) = sum(i) desde i=1 hasta n. Usando la fórmula de la suma de los primeros n enteros, S(n) = n(n+1)/2.",
+                "Paso 3: Obtenemos la forma explícita de T(n). T(n) = (1/n) * S(n). Sustituyendo S(n), T(n) = (1/n) * (n(n+1)/2) = (n+1)/2.",
+                "Paso 4: Derivamos la recurrencia final g'(n) = T(n) - T(n-1). T(n) = (n+1)/2. T(n-1) = ((n-1)+1)/2 = n/2. Restamos: T(n) - T(n-1) = (n+1)/2 - n/2 = (n+1-n)/2 = 1/2."
+              ],
+              "explicit_form": "T(n) = (n+1)/2",
+              "summation_resolved": "n(n+1)/2",
+              "confidence": 1.0,
+              "pattern_type": "linear"
+            },
+            "method": "intelligent_substitution",
+            "method_enum": "intelligent_substitution",
+            "complexity": "O(n)",
+            "steps": [
+              "**Paso 1 - Expandir la recurrencia iterativamente:**",
+              "   T(n) = T(n-1) + 1/2",
+              "   T(n) = T(n-2) + 2*(1/2)",
+              "   T(n) = T(n-3) + 3*(1/2)",
+              "   T(n) = T(n-4) + 4*(1/2)",
+              "",
+              "**Paso 2 - Identificar el patrón general:**",
+              "   Después de k sustituciones:",
+              "   T(n) = T(n-k) + k/2",
+              "",
+              "**Paso 3 - Sustituir el caso base:**",
+              "   Para alcanzar el caso base T(1), necesitamos que n-k = 1, lo que implica k = n-1. Sustituyendo k en la expresión general: T(n) = T(n-(n-1)) + (n-1)/2 = T(1) + (n-1)/2.",
+              "",
+              "**Paso 4 - Forma cerrada:**",
+              "   T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2.",
+              "",
+              "**Paso 5 - Complejidad final:**",
+              "   O(n)"
+            ],
+            "explanation": "**Paso 1: Expandir la recurrencia iterativamente**\nLa ecuación de recurrencia dada es T(n) = T(n-1) + 1/2.\n1. T(n) = T(n-1) + 1/2\n2. Sustituimos T(n-1): T(n) = [T(n-2) + 1/2] + 1/2 = T(n-2) + 2*(1/2)\n3. Sustituimos T(n-2): T(n) = [T(n-3) + 1/2] + 2*(1/2) = T(n-3) + 3*(1/2)\n4. Sustituimos T(n-3): T(n) = [T(n-4) + 1/2] + 3*(1/2) = T(n-4) + 4*(1/2)\n\n**Paso 2: Identificar el patrón general**\nObservando las expansiones, podemos ver un patrón claro. Después de 'k' sustituciones, la recurrencia toma la forma:\nT(n) = T(n-k) + k*(1/2)\n\n**Paso 3: Determinar cuándo se alcanza el caso base**\nPara alcanzar un caso base común como T(1), necesitamos que el argumento de T sea 1. Por lo tanto, establecemos:\nn - k = 1\nDespejando k, obtenemos:\nk = n - 1\n\n**Paso 4: Sustituir el caso base y simplificar**\nAhora sustituimos k = n-1 en la expresión general del Paso 2:\nT(n) = T(n-(n-1)) + (n-1)*(1/2)\nT(n) = T(1) + (n-1)/2\nSi asumimos que T(1) es una constante (por ejemplo, c), la forma cerrada es:\nT(n) = c + (n-1)/2\nT(n) = c + n/2 - 1/2\n\n**Paso 5: Expresar forma cerrada y complejidad**\nLa forma cerrada exacta es: T(n) = T(1) + (n-1)/2. Si T(1) es una constante, entonces T(n) = n/2 + (T(1) - 1/2).\nEl término dominante en la forma cerrada es n/2. Por lo tanto, la complejidad asintótica es:\nO(n)",
+            "details": {
+              "complexity": "O(n)",
+              "steps": [
+                "**Paso 1 - Expandir la recurrencia iterativamente:**",
+                "   T(n) = T(n-1) + 1/2",
+                "   T(n) = T(n-2) + 2*(1/2)",
+                "   T(n) = T(n-3) + 3*(1/2)",
+                "   T(n) = T(n-4) + 4*(1/2)",
+                "",
+                "**Paso 2 - Identificar el patrón general:**",
+                "   Después de k sustituciones:",
+                "   T(n) = T(n-k) + k/2",
+                "",
+                "**Paso 3 - Sustituir el caso base:**",
+                "   Para alcanzar el caso base T(1), necesitamos que n-k = 1, lo que implica k = n-1. Sustituyendo k en la expresión general: T(n) = T(n-(n-1)) + (n-1)/2 = T(1) + (n-1)/2.",
+                "",
+                "**Paso 4 - Forma cerrada:**",
+                "   T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2.",
+                "",
+                "**Paso 5 - Complejidad final:**",
+                "   O(n)"
+              ],
+              "explanation": "**Paso 1: Expandir la recurrencia iterativamente**\nLa ecuación de recurrencia dada es T(n) = T(n-1) + 1/2.\n1. T(n) = T(n-1) + 1/2\n2. Sustituimos T(n-1): T(n) = [T(n-2) + 1/2] + 1/2 = T(n-2) + 2*(1/2)\n3. Sustituimos T(n-2): T(n) = [T(n-3) + 1/2] + 2*(1/2) = T(n-3) + 3*(1/2)\n4. Sustituimos T(n-3): T(n) = [T(n-4) + 1/2] + 3*(1/2) = T(n-4) + 4*(1/2)\n\n**Paso 2: Identificar el patrón general**\nObservando las expansiones, podemos ver un patrón claro. Después de 'k' sustituciones, la recurrencia toma la forma:\nT(n) = T(n-k) + k*(1/2)\n\n**Paso 3: Determinar cuándo se alcanza el caso base**\nPara alcanzar un caso base común como T(1), necesitamos que el argumento de T sea 1. Por lo tanto, establecemos:\nn - k = 1\nDespejando k, obtenemos:\nk = n - 1\n\n**Paso 4: Sustituir el caso base y simplificar**\nAhora sustituimos k = n-1 en la expresión general del Paso 2:\nT(n) = T(n-(n-1)) + (n-1)*(1/2)\nT(n) = T(1) + (n-1)/2\nSi asumimos que T(1) es una constante (por ejemplo, c), la forma cerrada es:\nT(n) = c + (n-1)/2\nT(n) = c + n/2 - 1/2\n\n**Paso 5: Expresar forma cerrada y complejidad**\nLa forma cerrada exacta es: T(n) = T(1) + (n-1)/2. Si T(1) es una constante, entonces T(n) = n/2 + (T(1) - 1/2).\nEl término dominante en la forma cerrada es n/2. Por lo tanto, la complejidad asintótica es:\nO(n)",
+              "applicable": true,
+              "method": "Sustitución Inteligente",
+              "closed_form": "T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2.",
+              "pattern": "T(n-k) + k/2",
+              "details": {
+                "recurrence_pattern": "T(n-k) + k/2",
+                "pattern_identification": "T(n) = T(n-k) + k/2",
+                "base_case_substitution": "Para alcanzar el caso base T(1), necesitamos que n-k = 1, lo que implica k = n-1. Sustituyendo k en la expresión general: T(n) = T(n-(n-1)) + (n-1)/2 = T(1) + (n-1)/2.",
+                "closed_form": "T(n) = T(1) + (n-1)/2. Si asumimos T(1) = c (una constante), entonces T(n) = c + n/2 - 1/2."
+              }
+            },
+            "classification_confidence": 0.9,
+            "classification_reasoning": "Recurrencia lineal con UN solo término recursivo T(n-1). Trabajo adicional: =+1/2. La sustitución inteligente permite expandir iterativamente la recurrencia para identificar el patrón general."
+          }
+        ],
+        "was_replicated": false
+      }
+    },
+    "complete": {
+      "type": "recursive",
+      "code_explain": "Este algoritmo determina si un número 'num1' es primo. Lo hace verificando si tiene algún divisor en el rango desde 'num2' hasta 2. Si se llama inicialmente con 'num2 = num1 - 1', comprueba la primalidad de 'num1'.",
+      "complexity_line_to_line": [
+        {
+          "line": 3,
+          "code": "if (num2 = 1) then",
+          "complexity": "c1 * 1",
+          "explanation": "Una única operación de comparación, tiempo constante."
+        },
+        {
+          "line": 5,
+          "code": "return T",
+          "complexity": "c2 * 1",
+          "explanation": "Una única operación de retorno, tiempo constante. Este es el caso base."
+        },
+        {
+          "line": 9,
+          "code": "temp 🡨 num1 mod num2",
+          "complexity": "c3 * 1",
+          "explanation": "Una única operación de módulo, tiempo constante."
+        },
+        {
+          "line": 10,
+          "code": "if (temp = 0) then",
+          "complexity": "c4 * 1",
+          "explanation": "Una única operación de comparación, tiempo constante."
+        },
+        {
+          "line": 12,
+          "code": "return F",
+          "complexity": "c5 * 1",
+          "explanation": "Una única operación de retorno, tiempo constante."
+        },
+        {
+          "line": 16,
+          "code": "return CALL XXX1(num1, num2 - 1)",
+          "complexity": "T(n-1)",
+          "explanation": "Llamada recursiva con el problema reducido en una unidad (n-1)."
+        }
+      ],
+      "explain_complexity": "**Algoritmo**: Test de Primalidad Recursivo\n**Categoría**: Recursión Simple\n**Tipo**: Recursivo\n\n**Ecuación**: T(n) = T(n-1) + c, para n > 1. Caso base: T(1) = d\n**Método de resolución**: Método de Sustitución (o Expansión)\n**Complejidad final**: O(n)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(1)\n- Peor caso (O): O(n)\n- Caso promedio (Θ): Θ(n)",
+      "asymptotic_notation": {
+        "best": "Ω(1)",
+        "worst": "O(n)",
+        "average": "Θ(n)",
+        "explanation": "Ω (Omega) representa la cota inferior o el mejor caso. O (Big-O) representa la cota superior o el peor caso. Θ (Theta) representa la cota ajustada, que se da cuando el mejor y el peor caso coinciden en orden de magnitud. En este algoritmo, el mejor caso es Ω(1) y el peor es O(n), por lo que no existe una cota Θ única para todos los casos; sin embargo, Θ(n) se usa para describir el caso promedio y el peor caso."
+      },
+      "algorithm_name": "Test de Primalidad Recursivo",
+      "algorithm_category": "Recursión Simple",
+      "equation": "T(n) = T(n-1) + c, para n > 1. Caso base: T(1) = d",
+      "method_solution": "Método de Sustitución (o Expansión)",
+      "solution_equation": "O(n)",
+      "explain_solution_steps": [
+        "1. Ecuación de Recurrencia: T(n) = T(n-1) + c (donde 'c' agrupa todas las operaciones de costo constante c1, c3, c4).",
+        "2. Expandir la recurrencia para T(n-1): T(n-1) = T(n-2) + c.",
+        "3. Sustituir en la ecuación original: T(n) = (T(n-2) + c) + c = T(n-2) + 2c.",
+        "4. Continuar la expansión: T(n) = T(n-3) + 3c.",
+        "5. Generalizar el patrón después de 'k' pasos: T(n) = T(n-k) + k*c.",
+        "6. El objetivo es llegar al caso base T(1). Esto ocurre cuando n-k = 1, lo que implica que k = n-1.",
+        "7. Sustituir k = n-1 en la fórmula generalizada: T(n) = T(n - (n-1)) + (n-1)*c.",
+        "8. Simplificar: T(n) = T(1) + (n-1)*c.",
+        "9. Reemplazar el caso base T(1) = d (costo constante): T(n) = d + nc - c.",
+        "10. Forma cerrada: T(n) = nc + (d-c). Esta es una función lineal de n.",
+        "11. En notación asintótica, los términos de orden inferior y las constantes se eliminan, resultando en O(n)."
+      ],
+      "diagrams": null,
+      "extra": {
+        "pseudocode": "XXX1(num1, num2)\nbegin\n    if (num2 = 1) then\n    begin\n        return T\n    end\n    else\n    begin\n        temp 🡨 num1 mod num2\n        if (temp = 0) then\n        begin\n            return F\n        end\n        else\n        begin\n            return CALL XXX1(num1, num2 - 1)\n        end\n    end\nend\n ",
+        "analysis_complete": true
+      }
+    }
+  }
+}

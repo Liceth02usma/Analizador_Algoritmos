@@ -266,4 +266,3 @@ def simplify_recurrence_equation(
         model_type=model_type, enable_verbose=enable_verbose
     )
     return agent.simplify_equation(equation, thread_id=thread_id)
-

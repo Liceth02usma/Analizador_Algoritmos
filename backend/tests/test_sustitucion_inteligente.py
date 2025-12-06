@@ -52,10 +52,14 @@ class TestIntelligentSubstitutionStrategy(unittest.TestCase):
         print(f"[Test Trivial Linear Constant] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Complejidad: {result['complexity']}")
 
         self.assertTrue(result["applicable"])
@@ -145,10 +149,14 @@ class TestIntelligentSubstitutionStrategy(unittest.TestCase):
         print(f"[Test Agent Sum n - Arithmetic Series] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Patrón: {result.get('recurrence_pattern', 'n/a')}")
         print(f"✅ Forma cerrada: {result.get('closed_form')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -180,10 +188,14 @@ class TestIntelligentSubstitutionStrategy(unittest.TestCase):
         print(f"[Test Agent Logarithmic - Binary Search] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Patrón: {result.get('recurrence_pattern', 'n/a')}")
         print(f"✅ Forma cerrada: {result.get('closed_form')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -231,10 +243,14 @@ class TestIntelligentSubstitutionStrategy(unittest.TestCase):
         print(f"\n📋 Aplicable: {result['applicable']}")
         if result["applicable"]:
             print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-            for step in result.get('steps', []):
+            for step in result.get("steps", []):
                 print(step)
             print(f"\n💡 EXPLICACIÓN DETALLADA:")
-            print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+            print(
+                result.get(
+                    "detailed_explanation", result.get("explanation", "No disponible")
+                )
+            )
             print(f"\n✅ Patrón: {result.get('recurrence_pattern', 'n/a')}")
             print(f"✅ Forma cerrada: {result.get('closed_form')}")
             print(f"✅ Complejidad: {result['complexity']}")
@@ -273,10 +289,14 @@ class TestIntelligentSubstitutionStrategy(unittest.TestCase):
         print(f"[Test Agent Exponential Work] {equation}")
         print(f"{'='*80}")
         print(f"\n📋 PASOS DE LA SOLUCIÓN:")
-        for step in result.get('steps', []):
+        for step in result.get("steps", []):
             print(step)
         print(f"\n💡 EXPLICACIÓN DETALLADA:")
-        print(result.get('detailed_explanation', result.get('explanation', 'No disponible')))
+        print(
+            result.get(
+                "detailed_explanation", result.get("explanation", "No disponible")
+            )
+        )
         print(f"\n✅ Patrón: {result.get('recurrence_pattern', 'n/a')}")
         print(f"✅ Forma cerrada: {result.get('closed_form')}")
         print(f"✅ Complejidad: {result['complexity']}")
@@ -297,7 +317,7 @@ class TestIntelligentSubstitutionStrategy(unittest.TestCase):
         print(f"{'='*80}")
         print(f"\n❌ Aplicable: {result['applicable']}")
         print(f"\n💡 EXPLICACIÓN:")
-        print(result.get('explanation', 'No disponible'))
+        print(result.get("explanation", "No disponible"))
 
         self.assertFalse(result["applicable"])
         self.assertIn("no es aplicable", result["explanation"])

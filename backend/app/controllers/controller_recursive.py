@@ -88,7 +88,7 @@ class ControlRecursive(ControlAlgorithm):
         # 2. Parsear si es necesario
         if not parsed_tree:
             self.algorithm.preprocess_code()
-        
+
         # 4. Extraer relación de recurrencia
         # 5. Detectar casos base y llamadas recursivas
         self.detect_base_cases()

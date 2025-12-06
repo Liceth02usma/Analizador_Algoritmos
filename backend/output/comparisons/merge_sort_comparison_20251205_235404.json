@@ -1,0 +1,486 @@
+{
+  "metadata": {
+    "algorithm_name": "Merge Sort",
+    "compared_at": "2025-12-05T23:54:04.567910",
+    "specialized_timestamp": "2025-12-05T23:51:44.476580"
+  },
+  "tokens_comparison": {
+    "specialized": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "complete": {
+      "input": 1557,
+      "output": 2116,
+      "total": 3673
+    },
+    "difference": {
+      "input": -1557,
+      "output": -2116,
+      "total": -3673
+    },
+    "percentage_difference": {
+      "total": -100.0
+    }
+  },
+  "complexity_comparison": {
+    "specialized": "O(log n)",
+    "complete": "N/A",
+    "match": false
+  },
+  "methods_comparison": {
+    "specialized": [
+      "Análisis especializado multi-agente"
+    ],
+    "complete": "Análisis completo sin especialización"
+  },
+  "detail_comparison": {
+    "specialized_steps": 0,
+    "complete_steps": 0,
+    "specialized_cases": 0,
+    "complete_cases": 1
+  },
+  "execution_time": {
+    "specialized": 0,
+    "complete": 16.883724689483643,
+    "difference": -16.883724689483643,
+    "percentage_difference": -100.0
+  },
+  "complete_agent_analysis": {
+    "algorithm_name": "Merge Sort",
+    "algorithm_purpose": "No especificado",
+    "algorithm_category": "Divide y Conquista",
+    "algorithm_type": "iterative",
+    "equation": "Ecuación de Recurrencia: T(n) = 2T(n/2) + cn, con Caso Base: T(1) = c",
+    "final_complexity": "N/A",
+    "asymptotic_best": "N/A",
+    "asymptotic_worst": "N/A",
+    "asymptotic_average": "N/A",
+    "solution_method": "Análisis completo sin especialización",
+    "solution_steps": [],
+    "steps_count": 0,
+    "line_by_line_analysis": [],
+    "execution_time": 16.883724689483643,
+    "tokens_used": 3673
+  },
+  "full_results": {
+    "specialized": {
+      "type": "Recursivo",
+      "code_explain": "El algoritmo Merge Sort divide recursivamente el arreglo en dos mitades hasta que cada sub-arreglo contiene un solo elemento (que se considera ordenado). Luego, combina (merge) estos sub-arreglos ordenados para producir un arreglo completamente ordenado. La función `merge` es la encargada de combinar dos sub-arreglos ordenados en uno solo.",
+      "complexity_line_to_line": "=== MEJOR CASO ===\nmerge_sort(arr, left, right)\nbegin\n    if (left < right) then  // c1\n    begin\n        mid 🡨 (left + right) / 2  // c2\n        CALL merge_sort(arr, left, mid)  // T(n/2)\n        CALL merge_sort(arr, mid + 1, right)  // T(n/2)\n        CALL merge(arr, left, mid, right)  // c3 * n\n    end\nend\n\n=== PEOR CASO ===\nmerge_sort(arr, left, right)\nbegin\n    if (left < right) then  // c1\n    begin\n        mid 🡨 (left + right) / 2  // c2\n        CALL merge_sort(arr, left, mid)  // T(n/2)\n        CALL merge_sort(arr, mid + 1, right)  // T(n/2)\n        CALL merge(arr, left, mid, right)  // c3 * n\n    end\nend\n\n=== CASO PROMEDIO ===\nmerge_sort(arr, left, right)\nbegin\n    if (left < right) then  // c1\n    begin\n        mid 🡨 (left + right) / 2  // c2\n        CALL merge_sort(arr, left, mid)  // T(n/2)\n        CALL merge_sort(arr, mid + 1, right)  // T(n/2)\n        CALL merge(arr, left, mid, right)  // c3 * n\n    end\nend",
+      "explain_complexity": "Mejor caso: Sea `T(n)` la complejidad temporal para ordenar un sub-arreglo de tamaño `n = right - left + 1`. \n\n1.  La condición `if (left < right)` toma un tiempo constante `c1`.\n2.  El cálculo de `mid` y la asignación toman un tiempo constante `c2`.\n3.  Las dos llamadas recursivas a `merge_sort` operan sobre sub-arreglos de tamaño `n/2`, contribuyendo `T(n/2)` cada una.\n4.  La llamada a la función `merge` toma un tiempo proporcional al tamaño del sub-arreglo actual, `n`, ya que debe recorrer todos los elementos para combinarlos. Esto se representa como `c3 * n`.\n\nLa relación de recurrencia para Merge Sort es:\n`T(n) = c1 + c2 + T(n/2) + T(n/2) + c3 * n` para `n > 1`\n`T(n) = 2T(n/2) + (c1 + c2 + c3 * n)`\n\nPara el caso base, cuando `n = 1` (es decir, `left >= right`), la función solo realiza la comparación `if (left < right)`, lo que toma un tiempo constante `T(1) = c_base`.\n\nSimplificando la recurrencia, sea `C = c1 + c2`:\n`T(n) = 2T(n/2) + c3 * n + C`\n\nExpandiendo la recurrencia:\n- Nivel 0: `T(n)`\n- Nivel 1: `2T(n/2) + c3*n + C`\n- Nivel 2: `2(2T(n/4) + c3*n/2 + C) + c3*n + C = 4T(n/4) + 2c3*n + 3C`\n- Nivel k: `2^k T(n/2^k) + k * c3 * n + (2^k - 1) * C`\n\nLa recursión termina cuando `n/2^k = 1`, lo que implica `k = log_2(n)`.\nSustituyendo `k` en la ecuación:\n`T(n) = 2^(log_2(n)) T(1) + log_2(n) * c3 * n + (2^(log_2(n)) - 1) * C`\n`T(n) = n * T(1) + c3 * n * log_2(n) + (n - 1) * C`\n\nDado que `T(1)`, `c3`, y `C` son constantes, el término dominante en la expresión es `c3 * n * log_2(n)`. Por lo tanto, la complejidad total es `O(n log n)`.\n\nPeor caso: Sea `T(n)` la complejidad temporal para ordenar un sub-arreglo de tamaño `n = right - left + 1`. \n\n1.  La condición `if (left < right)` toma un tiempo constante `c1`.\n2.  El cálculo de `mid` y la asignación toman un tiempo constante `c2`.\n3.  Las dos llamadas recursivas a `merge_sort` operan sobre sub-arreglos de tamaño `n/2`, contribuyendo `T(n/2)` cada una.\n4.  La llamada a la función `merge` toma un tiempo proporcional al tamaño del sub-arreglo actual, `n`, ya que debe recorrer todos los elementos para combinarlos. Esto se representa como `c3 * n`.\n\nLa relación de recurrencia para Merge Sort es:\n`T(n) = c1 + c2 + T(n/2) + T(n/2) + c3 * n` para `n > 1`\n`T(n) = 2T(n/2) + (c1 + c2 + c3 * n)`\n\nPara el caso base, cuando `n = 1` (es decir, `left >= right`), la función solo realiza la comparación `if (left < right)`, lo que toma un tiempo constante `T(1) = c_base`.\n\nSimplificando la recurrencia, sea `C = c1 + c2`:\n`T(n) = 2T(n/2) + c3 * n + C`\n\nExpandiendo la recurrencia:\n- Nivel 0: `T(n)`\n- Nivel 1: `2T(n/2) + c3*n + C`\n- Nivel 2: `2(2T(n/4) + c3*n/2 + C) + c3*n + C = 4T(n/4) + 2c3*n + 3C`\n- Nivel k: `2^k T(n/2^k) + k * c3 * n + (2^k - 1) * C`\n\nLa recursión termina cuando `n/2^k = 1`, lo que implica `k = log_2(n)`.\nSustituyendo `k` en la ecuación:\n`T(n) = 2^(log_2(n)) T(1) + log_2(n) * c3 * n + (2^(log_2(n)) - 1) * C`\n`T(n) = n * T(1) + c3 * n * log_2(n) + (n - 1) * C`\n\nDado que `T(1)`, `c3`, y `C` son constantes, el término dominante en la expresión es `c3 * n * log_2(n)`. Por lo tanto, la complejidad total es `O(n log n)`.\n\nCaso promedio: Sea `T(n)` la complejidad temporal para ordenar un sub-arreglo de tamaño `n = right - left + 1`. \n\n1.  La condición `if (left < right)` toma un tiempo constante `c1`.\n2.  El cálculo de `mid` y la asignación toman un tiempo constante `c2`.\n3.  Las dos llamadas recursivas a `merge_sort` operan sobre sub-arreglos de tamaño `n/2`, contribuyendo `T(n/2)` cada una.\n4.  La llamada a la función `merge` toma un tiempo proporcional al tamaño del sub-arreglo actual, `n`, ya que debe recorrer todos los elementos para combinarlos. Esto se representa como `c3 * n`.\n\nLa relación de recurrencia para Merge Sort es:\n`T(n) = c1 + c2 + T(n/2) + T(n/2) + c3 * n` para `n > 1`\n`T(n) = 2T(n/2) + (c1 + c2 + c3 * n)`\n\nPara el caso base, cuando `n = 1` (es decir, `left >= right`), la función solo realiza la comparación `if (left < right)`, lo que toma un tiempo constante `T(1) = c_base`.\n\nSimplificando la recurrencia, sea `C = c1 + c2`:\n`T(n) = 2T(n/2) + c3 * n + C`\n\nExpandiendo la recurrencia:\n- Nivel 0: `T(n)`\n- Nivel 1: `2T(n/2) + c3*n + C`\n- Nivel 2: `2(2T(n/4) + c3*n/2 + C) + c3*n + C = 4T(n/4) + 2c3*n + 3C`\n- Nivel k: `2^k T(n/2^k) + k * c3 * n + (2^k - 1) * C`\n\nLa recursión termina cuando `n/2^k = 1`, lo que implica `k = log_2(n)`.\nSustituyendo `k` en la ecuación:\n`T(n) = 2^(log_2(n)) T(1) + log_2(n) * c3 * n + (2^(log_2(n)) - 1) * C`\n`T(n) = n * T(1) + c3 * n * log_2(n) + (n - 1) * C`\n\nDado que `T(1)`, `c3`, y `C` son constantes, el término dominante en la expresión es `c3 * n * log_2(n)`. Por lo tanto, la complejidad total es `O(n log n)`.",
+      "asymptotic_notation": {
+        "explanation": "El algoritmo Merge Sort tiene una complejidad temporal de O(log n) en el peor caso.",
+        "best": "Ω(log n)",
+        "worst": "O(log n)",
+        "average": "Θ(log n)"
+      },
+      "algorithm_name": "Merge Sort",
+      "algorithm_category": "Recursivo",
+      "equation": [
+        "T(n)=2T(n/2)+n, T(1)=1",
+        "T(n)=2T(n/2)+n, T(1)=1",
+        "T(n)=2T(n/2)+n, T(1)=1"
+      ],
+      "method_solution": [
+        "master_theorem",
+        "master_theorem",
+        "master_theorem"
+      ],
+      "solution_equation": [
+        "n log n",
+        "n log n",
+        "n log n"
+      ],
+      "explain_solution_steps": [
+        {
+          "case_type": "best_case",
+          "equation": "T(n)=2T(n/2)+n, T(1)=1",
+          "original_equation": "T(n)=2T(n/2)+n, T(1)=1",
+          "simplification": null,
+          "method": "master_theorem",
+          "method_enum": "master_theorem",
+          "complexity": "n log n",
+          "steps": [
+            "**Paso 1 - Parámetros:**",
+            " a = 2, b = 2",
+            " f(n) = n",
+            "",
+            "**Paso 2 - Exponente Crítico:**",
+            " log_2(2) ≈ n^1",
+            "",
+            "**Paso 3 - Análisis de Límite (SymPy):**",
+            " f(n) crece a la misma velocidad que n^E",
+            "",
+            "**Paso 4 - Conclusión:**",
+            " Aplica **Caso 2**",
+            " Término dominante: n log n"
+          ],
+          "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+          "details": {
+            "complexity": "n log n",
+            "steps": [
+              "**Paso 1 - Parámetros:**",
+              " a = 2, b = 2",
+              " f(n) = n",
+              "",
+              "**Paso 2 - Exponente Crítico:**",
+              " log_2(2) ≈ n^1",
+              "",
+              "**Paso 3 - Análisis de Límite (SymPy):**",
+              " f(n) crece a la misma velocidad que n^E",
+              "",
+              "**Paso 4 - Conclusión:**",
+              " Aplica **Caso 2**",
+              " Término dominante: n log n"
+            ],
+            "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+            "applicable": true,
+            "method": "Teorema Maestro",
+            "case": "Caso 2",
+            "a": 2,
+            "b": 2,
+            "log_b_a": "n^1"
+          },
+          "classification_confidence": 0.95,
+          "classification_reasoning": "Ecuación en forma T(n) = aT(n/2) + f(n). Divide el problema en 1 subproblema(s) de tamaño n/2. Trabajo adicional: =+n,=1. El Teorema Maestro es el método óptimo."
+        },
+        {
+          "case_type": "worst_case",
+          "equation": "T(n)=2T(n/2)+n, T(1)=1",
+          "original_equation": "T(n)=2T(n/2)+n, T(1)=1",
+          "simplification": null,
+          "method": "master_theorem",
+          "method_enum": "master_theorem",
+          "complexity": "n log n",
+          "steps": [
+            "**Paso 1 - Parámetros:**",
+            " a = 2, b = 2",
+            " f(n) = n",
+            "",
+            "**Paso 2 - Exponente Crítico:**",
+            " log_2(2) ≈ n^1",
+            "",
+            "**Paso 3 - Análisis de Límite (SymPy):**",
+            " f(n) crece a la misma velocidad que n^E",
+            "",
+            "**Paso 4 - Conclusión:**",
+            " Aplica **Caso 2**",
+            " Término dominante: n log n"
+          ],
+          "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+          "details": {
+            "complexity": "n log n",
+            "steps": [
+              "**Paso 1 - Parámetros:**",
+              " a = 2, b = 2",
+              " f(n) = n",
+              "",
+              "**Paso 2 - Exponente Crítico:**",
+              " log_2(2) ≈ n^1",
+              "",
+              "**Paso 3 - Análisis de Límite (SymPy):**",
+              " f(n) crece a la misma velocidad que n^E",
+              "",
+              "**Paso 4 - Conclusión:**",
+              " Aplica **Caso 2**",
+              " Término dominante: n log n"
+            ],
+            "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+            "applicable": true,
+            "method": "Teorema Maestro",
+            "case": "Caso 2",
+            "a": 2,
+            "b": 2,
+            "log_b_a": "n^1"
+          },
+          "classification_confidence": 0.95,
+          "classification_reasoning": "Ecuación en forma T(n) = aT(n/2) + f(n). Divide el problema en 1 subproblema(s) de tamaño n/2. Trabajo adicional: =+n,=1. El Teorema Maestro es el método óptimo."
+        },
+        {
+          "case_type": "average_case",
+          "equation": "T(n)=2T(n/2)+n, T(1)=1",
+          "original_equation": "T(n)=2T(n/2)+n, T(1)=1",
+          "simplification": null,
+          "method": "master_theorem",
+          "method_enum": "master_theorem",
+          "complexity": "n log n",
+          "steps": [
+            "**Paso 1 - Parámetros:**",
+            " a = 2, b = 2",
+            " f(n) = n",
+            "",
+            "**Paso 2 - Exponente Crítico:**",
+            " log_2(2) ≈ n^1",
+            "",
+            "**Paso 3 - Análisis de Límite (SymPy):**",
+            " f(n) crece a la misma velocidad que n^E",
+            "",
+            "**Paso 4 - Conclusión:**",
+            " Aplica **Caso 2**",
+            " Término dominante: n log n"
+          ],
+          "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+          "details": {
+            "complexity": "n log n",
+            "steps": [
+              "**Paso 1 - Parámetros:**",
+              " a = 2, b = 2",
+              " f(n) = n",
+              "",
+              "**Paso 2 - Exponente Crítico:**",
+              " log_2(2) ≈ n^1",
+              "",
+              "**Paso 3 - Análisis de Límite (SymPy):**",
+              " f(n) crece a la misma velocidad que n^E",
+              "",
+              "**Paso 4 - Conclusión:**",
+              " Aplica **Caso 2**",
+              " Término dominante: n log n"
+            ],
+            "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+            "applicable": true,
+            "method": "Teorema Maestro",
+            "case": "Caso 2",
+            "a": 2,
+            "b": 2,
+            "log_b_a": "n^1"
+          },
+          "classification_confidence": 0.95,
+          "classification_reasoning": "Ecuación en forma T(n) = aT(n/2) + f(n). Divide el problema en 1 subproblema(s) de tamaño n/2. Trabajo adicional: =+n,=1. El Teorema Maestro es el método óptimo."
+        }
+      ],
+      "diagrams": {
+        "tree_method_best_case": "graph TD\n    %% Estilos\n    classDef root fill:#f9f,stroke:#333,stroke-width:2px;\n    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;\n    classDef node fill:#fff,stroke:#333,stroke-width:1px;\n\n    subgraph cluster_0 [\"SINGLE: T(n)=2T(n/2)+n\"]\n    direction TB\n    T0_L0_P0(\"T(n)\"):::root\n    T0_L1_P0(\"T(n/2)\"):::node\n    T0_L1_P1(\"T(n/2)\"):::node\n    T0_L0_P0 --> T0_L1_P0\n    T0_L0_P0 --> T0_L1_P1\n    T0_L2_P0(\"T(n/4)\"):::node\n    T0_L2_P1(\"T(n/4)\"):::node\n    T0_L2_P2(\"T(n/4)\"):::node\n    T0_L2_P3(\"T(n/4)\"):::node\n    T0_L1_P0 --> T0_L2_P0\n    T0_L1_P0 --> T0_L2_P1\n    T0_L1_P1 --> T0_L2_P2\n    T0_L1_P1 --> T0_L2_P3\n    T0_L3_P0(\"T(n/8)\"):::leaf\n    T0_L3_P1(\"T(n/8)\"):::leaf\n    T0_L3_P2(\"T(n/8)\"):::leaf\n    T0_L3_P3(\"T(n/8)\"):::leaf\n    T0_L3_P4(\"T(n/8)\"):::leaf\n    T0_L3_P5(\"T(n/8)\"):::leaf\n    T0_L3_P6(\"T(n/8)\"):::leaf\n    T0_L3_P7(\"T(n/8)\"):::leaf\n    T0_L2_P0 --> T0_L3_P0\n    T0_L2_P0 --> T0_L3_P1\n    T0_L2_P1 --> T0_L3_P2\n    T0_L2_P1 --> T0_L3_P3\n    T0_L2_P2 --> T0_L3_P4\n    T0_L2_P2 --> T0_L3_P5\n    T0_L2_P3 --> T0_L3_P6\n    T0_L2_P3 --> T0_L3_P7\n    end",
+        "tree_method_worst_case": "graph TD\n    %% Estilos\n    classDef root fill:#f9f,stroke:#333,stroke-width:2px;\n    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;\n    classDef node fill:#fff,stroke:#333,stroke-width:1px;\n\n    subgraph cluster_0 [\"SINGLE: T(n)=2T(n/2)+n\"]\n    direction TB\n    T0_L0_P0(\"T(n)\"):::root\n    T0_L1_P0(\"T(n/2)\"):::node\n    T0_L1_P1(\"T(n/2)\"):::node\n    T0_L0_P0 --> T0_L1_P0\n    T0_L0_P0 --> T0_L1_P1\n    T0_L2_P0(\"T(n/4)\"):::node\n    T0_L2_P1(\"T(n/4)\"):::node\n    T0_L2_P2(\"T(n/4)\"):::node\n    T0_L2_P3(\"T(n/4)\"):::node\n    T0_L1_P0 --> T0_L2_P0\n    T0_L1_P0 --> T0_L2_P1\n    T0_L1_P1 --> T0_L2_P2\n    T0_L1_P1 --> T0_L2_P3\n    T0_L3_P0(\"T(n/8)\"):::leaf\n    T0_L3_P1(\"T(n/8)\"):::leaf\n    T0_L3_P2(\"T(n/8)\"):::leaf\n    T0_L3_P3(\"T(n/8)\"):::leaf\n    T0_L3_P4(\"T(n/8)\"):::leaf\n    T0_L3_P5(\"T(n/8)\"):::leaf\n    T0_L3_P6(\"T(n/8)\"):::leaf\n    T0_L3_P7(\"T(n/8)\"):::leaf\n    T0_L2_P0 --> T0_L3_P0\n    T0_L2_P0 --> T0_L3_P1\n    T0_L2_P1 --> T0_L3_P2\n    T0_L2_P1 --> T0_L3_P3\n    T0_L2_P2 --> T0_L3_P4\n    T0_L2_P2 --> T0_L3_P5\n    T0_L2_P3 --> T0_L3_P6\n    T0_L2_P3 --> T0_L3_P7\n    end",
+        "tree_method_average_case": "graph TD\n    %% Estilos\n    classDef root fill:#f9f,stroke:#333,stroke-width:2px;\n    classDef leaf fill:#dfd,stroke:#333,stroke-width:1px;\n    classDef node fill:#fff,stroke:#333,stroke-width:1px;\n\n    subgraph cluster_0 [\"SINGLE: T(n)=2T(n/2)+n\"]\n    direction TB\n    T0_L0_P0(\"T(n)\"):::root\n    T0_L1_P0(\"T(n/2)\"):::node\n    T0_L1_P1(\"T(n/2)\"):::node\n    T0_L0_P0 --> T0_L1_P0\n    T0_L0_P0 --> T0_L1_P1\n    T0_L2_P0(\"T(n/4)\"):::node\n    T0_L2_P1(\"T(n/4)\"):::node\n    T0_L2_P2(\"T(n/4)\"):::node\n    T0_L2_P3(\"T(n/4)\"):::node\n    T0_L1_P0 --> T0_L2_P0\n    T0_L1_P0 --> T0_L2_P1\n    T0_L1_P1 --> T0_L2_P2\n    T0_L1_P1 --> T0_L2_P3\n    T0_L3_P0(\"T(n/8)\"):::leaf\n    T0_L3_P1(\"T(n/8)\"):::leaf\n    T0_L3_P2(\"T(n/8)\"):::leaf\n    T0_L3_P3(\"T(n/8)\"):::leaf\n    T0_L3_P4(\"T(n/8)\"):::leaf\n    T0_L3_P5(\"T(n/8)\"):::leaf\n    T0_L3_P6(\"T(n/8)\"):::leaf\n    T0_L3_P7(\"T(n/8)\"):::leaf\n    T0_L2_P0 --> T0_L3_P0\n    T0_L2_P0 --> T0_L3_P1\n    T0_L2_P1 --> T0_L3_P2\n    T0_L2_P1 --> T0_L3_P3\n    T0_L2_P2 --> T0_L3_P4\n    T0_L2_P2 --> T0_L3_P5\n    T0_L2_P3 --> T0_L3_P6\n    T0_L2_P3 --> T0_L3_P7\n    end"
+      },
+      "extra": {
+        "has_multiple_cases": false,
+        "analysis_details": [
+          {
+            "case_type": "best_case",
+            "equation": "T(n)=2T(n/2)+n, T(1)=1",
+            "original_equation": "T(n)=2T(n/2)+n, T(1)=1",
+            "simplification": null,
+            "method": "master_theorem",
+            "method_enum": "master_theorem",
+            "complexity": "n log n",
+            "steps": [
+              "**Paso 1 - Parámetros:**",
+              " a = 2, b = 2",
+              " f(n) = n",
+              "",
+              "**Paso 2 - Exponente Crítico:**",
+              " log_2(2) ≈ n^1",
+              "",
+              "**Paso 3 - Análisis de Límite (SymPy):**",
+              " f(n) crece a la misma velocidad que n^E",
+              "",
+              "**Paso 4 - Conclusión:**",
+              " Aplica **Caso 2**",
+              " Término dominante: n log n"
+            ],
+            "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+            "details": {
+              "complexity": "n log n",
+              "steps": [
+                "**Paso 1 - Parámetros:**",
+                " a = 2, b = 2",
+                " f(n) = n",
+                "",
+                "**Paso 2 - Exponente Crítico:**",
+                " log_2(2) ≈ n^1",
+                "",
+                "**Paso 3 - Análisis de Límite (SymPy):**",
+                " f(n) crece a la misma velocidad que n^E",
+                "",
+                "**Paso 4 - Conclusión:**",
+                " Aplica **Caso 2**",
+                " Término dominante: n log n"
+              ],
+              "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+              "applicable": true,
+              "method": "Teorema Maestro",
+              "case": "Caso 2",
+              "a": 2,
+              "b": 2,
+              "log_b_a": "n^1"
+            },
+            "classification_confidence": 0.95,
+            "classification_reasoning": "Ecuación en forma T(n) = aT(n/2) + f(n). Divide el problema en 1 subproblema(s) de tamaño n/2. Trabajo adicional: =+n,=1. El Teorema Maestro es el método óptimo."
+          },
+          {
+            "case_type": "worst_case",
+            "equation": "T(n)=2T(n/2)+n, T(1)=1",
+            "original_equation": "T(n)=2T(n/2)+n, T(1)=1",
+            "simplification": null,
+            "method": "master_theorem",
+            "method_enum": "master_theorem",
+            "complexity": "n log n",
+            "steps": [
+              "**Paso 1 - Parámetros:**",
+              " a = 2, b = 2",
+              " f(n) = n",
+              "",
+              "**Paso 2 - Exponente Crítico:**",
+              " log_2(2) ≈ n^1",
+              "",
+              "**Paso 3 - Análisis de Límite (SymPy):**",
+              " f(n) crece a la misma velocidad que n^E",
+              "",
+              "**Paso 4 - Conclusión:**",
+              " Aplica **Caso 2**",
+              " Término dominante: n log n"
+            ],
+            "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+            "details": {
+              "complexity": "n log n",
+              "steps": [
+                "**Paso 1 - Parámetros:**",
+                " a = 2, b = 2",
+                " f(n) = n",
+                "",
+                "**Paso 2 - Exponente Crítico:**",
+                " log_2(2) ≈ n^1",
+                "",
+                "**Paso 3 - Análisis de Límite (SymPy):**",
+                " f(n) crece a la misma velocidad que n^E",
+                "",
+                "**Paso 4 - Conclusión:**",
+                " Aplica **Caso 2**",
+                " Término dominante: n log n"
+              ],
+              "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+              "applicable": true,
+              "method": "Teorema Maestro",
+              "case": "Caso 2",
+              "a": 2,
+              "b": 2,
+              "log_b_a": "n^1"
+            },
+            "classification_confidence": 0.95,
+            "classification_reasoning": "Ecuación en forma T(n) = aT(n/2) + f(n). Divide el problema en 1 subproblema(s) de tamaño n/2. Trabajo adicional: =+n,=1. El Teorema Maestro es el método óptimo."
+          },
+          {
+            "case_type": "average_case",
+            "equation": "T(n)=2T(n/2)+n, T(1)=1",
+            "original_equation": "T(n)=2T(n/2)+n, T(1)=1",
+            "simplification": null,
+            "method": "master_theorem",
+            "method_enum": "master_theorem",
+            "complexity": "n log n",
+            "steps": [
+              "**Paso 1 - Parámetros:**",
+              " a = 2, b = 2",
+              " f(n) = n",
+              "",
+              "**Paso 2 - Exponente Crítico:**",
+              " log_2(2) ≈ n^1",
+              "",
+              "**Paso 3 - Análisis de Límite (SymPy):**",
+              " f(n) crece a la misma velocidad que n^E",
+              "",
+              "**Paso 4 - Conclusión:**",
+              " Aplica **Caso 2**",
+              " Término dominante: n log n"
+            ],
+            "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+            "details": {
+              "complexity": "n log n",
+              "steps": [
+                "**Paso 1 - Parámetros:**",
+                " a = 2, b = 2",
+                " f(n) = n",
+                "",
+                "**Paso 2 - Exponente Crítico:**",
+                " log_2(2) ≈ n^1",
+                "",
+                "**Paso 3 - Análisis de Límite (SymPy):**",
+                " f(n) crece a la misma velocidad que n^E",
+                "",
+                "**Paso 4 - Conclusión:**",
+                " Aplica **Caso 2**",
+                " Término dominante: n log n"
+              ],
+              "explanation": "1.  **Identificación de Parámetros:**\n    *   Tenemos a = 2 (dos subproblemas).\n    *   Tenemos b = 2 (cada subproblema es de tamaño n/2).\n    *   Tenemos f(n) = n (el trabajo adicional fuera de las llamadas recursivas).\n\n2.  **Cálculo del Exponente Crítico (E):**\n    *   Calculamos E = log_b a = log_2 2.\n    *   Esto nos da E = 1.\n    *   Por lo tanto, el término de comparación es n^E = n^1 = n.\n\n3.  **Cálculo e Interpretación del Límite:**\n    *   Ahora comparamos f(n) con n^E calculando el límite:\n        L = lim (n -> ∞) [f(n) / n^E]\n        L = lim (n -> ∞) [n / n^1]\n        L = lim (n -> ∞) [1]\n        L = 1\n    *   Dado que el límite es una constante positiva (1), esto significa que f(n) y n^E crecen a la misma velocidad asintóticamente.\n\n4.  **Conclusión del Caso y Complejidad:**\n    *   Esta situación corresponde al **Caso 2** del Teorema Maestro.\n    *   Cuando f(n) y n^E son asintóticamente iguales, la complejidad se determina multiplicando n^E por un factor logarítmico.\n    *   La complejidad final es **n log n**.",
+              "applicable": true,
+              "method": "Teorema Maestro",
+              "case": "Caso 2",
+              "a": 2,
+              "b": 2,
+              "log_b_a": "n^1"
+            },
+            "classification_confidence": 0.95,
+            "classification_reasoning": "Ecuación en forma T(n) = aT(n/2) + f(n). Divide el problema en 1 subproblema(s) de tamaño n/2. Trabajo adicional: =+n,=1. El Teorema Maestro es el método óptimo."
+          }
+        ],
+        "was_replicated": true
+      }
+    },
+    "complete": {
+      "type": "recursive",
+      "code_explain": "Merge Sort es un algoritmo de ordenamiento eficiente y de propósito general. Funciona dividiendo repetidamente la lista no ordenada en sublistas hasta que cada sublista contiene un solo elemento, y luego fusiona esas sublistas de manera que la nueva lista combinada esté ordenada.",
+      "complexity_line_to_line": [
+        {
+          "line": 3,
+          "code": "if (left < right) then",
+          "complexity": "c1 * 1",
+          "explanation": "Una comparación, toma tiempo constante."
+        },
+        {
+          "line": 5,
+          "code": "mid 🡨 (left + right) / 2",
+          "complexity": "c2 * 1",
+          "explanation": "Cálculo aritmético y asignación, toma tiempo constante."
+        },
+        {
+          "line": 6,
+          "code": "CALL merge_sort(arr, left, mid)",
+          "complexity": "T(n/2)",
+          "explanation": "Llamada recursiva para la primera mitad del arreglo. El tamaño del problema es n/2."
+        },
+        {
+          "line": 7,
+          "code": "CALL merge_sort(arr, mid + 1, right)",
+          "complexity": "T(n/2)",
+          "explanation": "Llamada recursiva para la segunda mitad del arreglo. El tamaño del problema es n/2."
+        },
+        {
+          "line": 8,
+          "code": "CALL merge(arr, left, mid, right)",
+          "complexity": "c3 * n",
+          "explanation": "La función 'merge' combina dos sub-arreglos ordenados en uno solo. Debe recorrer todos los 'n' elementos para hacerlo, por lo que su costo es lineal."
+        }
+      ],
+      "explain_complexity": "**Algoritmo**: Merge Sort\n**Categoría**: Divide y Conquista\n**Tipo**: Recursivo\n\n**Ecuación**: Ecuación de Recurrencia: T(n) = 2T(n/2) + cn, con Caso Base: T(1) = c\n**Método de resolución**: Teorema Maestro\n**Complejidad final**: O(n log n)\n\n**Notaciones asintóticas**:\n- Mejor caso (Ω): Ω(n log n)\n- Peor caso (O): O(n log n)\n- Caso promedio (Θ): Θ(n log n)",
+      "asymptotic_notation": {
+        "best": "Ω(n log n)",
+        "worst": "O(n log n)",
+        "average": "Θ(n log n)",
+        "explanation": "Ω (Omega) representa la cota inferior del tiempo de ejecución de un algoritmo, describiendo el mejor escenario posible. O (Big-O) representa la cota superior, describiendo el peor escenario posible. Θ (Theta) representa la cota ajustada, lo que significa que el tiempo de ejecución del algoritmo crece a la misma tasa tanto en el mejor como en el peor de los casos. Para Merge Sort, el número de divisiones y fusiones es el mismo independientemente del orden inicial de los datos, por lo que las tres cotas coinciden."
+      },
+      "algorithm_name": "Merge Sort",
+      "algorithm_category": "Divide y Conquista",
+      "equation": "Ecuación de Recurrencia: T(n) = 2T(n/2) + cn, con Caso Base: T(1) = c",
+      "method_solution": "Teorema Maestro",
+      "solution_equation": "O(n log n)",
+      "explain_solution_steps": [
+        "La ecuación de recurrencia para Merge Sort es: T(n) = 2T(n/2) + cn",
+        "Esta ecuación se ajusta a la forma del Teorema Maestro: T(n) = aT(n/b) + f(n)",
+        "Identificamos los parámetros: a = 2 (el número de subproblemas), b = 2 (el factor por el cual se reduce el tamaño del problema), f(n) = cn (el costo de la división y combinación).",
+        "Calculamos el valor de n^(log_b a) = n^(log_2 2) = n^1 = n.",
+        "Comparamos f(n) con n^(log_b a). En este caso, f(n) = cn, que es Θ(n).",
+        "Como f(n) = Θ(n^(log_b a)), estamos en el Caso 2 del Teorema Maestro.",
+        "El teorema establece que si f(n) = Θ(n^(log_b a)), entonces la solución es T(n) = Θ(n^(log_b a) * log n).",
+        "Sustituyendo nuestros valores, obtenemos: T(n) = Θ(n * log n)."
+      ],
+      "diagrams": null,
+      "extra": {
+        "pseudocode": "merge_sort(arr, left, right)\nbegin\n    if (left < right) then\n    begin\n        mid 🡨 (left + right) / 2\n        CALL merge_sort(arr, left, mid)\n        CALL merge_sort(arr, mid + 1, right)\n        CALL merge(arr, left, mid, right)\n    end\nend",
+        "analysis_complete": true
+      }
+    }
+  }
+}

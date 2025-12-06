@@ -1,10 +1,10 @@
 {
   "input_metadata": {
     "source_type": "strict_code",
-    "final_pseudocode": "factorial(n)\nbegin\n    f 🡨 1\n    for i 🡨 1 to n do\n    begin\n        f 🡨 f * i\n    end\n    return f\nend"
+    "final_pseudocode": "merge_sort(arr, left, right)\nbegin\n    if (left < right) then\n    begin\n        mid 🡨 (left + right) / 2\n        CALL merge_sort(arr, left, mid)\n        CALL merge_sort(arr, mid + 1, right)\n        CALL merge(arr, left, mid, right)\n    end\nend  "
   },
   "classification": {
-    "type": "iterativo",
-    "name": "Cálculo de Factorial"
+    "type": "recursivo",
+    "name": "Merge Sort"
   },
   "analysis": 

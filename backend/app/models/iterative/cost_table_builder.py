@@ -8,6 +8,7 @@ CostTableBuilder corregido
 from typing import Any, Dict, List
 from .costing import cost_of_statement
 
+
 class CostTableBuilder:
 
     def __init__(self, ast: Any, iteration_model: Dict[str, Dict[str, str]]):
@@ -62,16 +63,18 @@ class CostTableBuilder:
             avg_iter = self.iteration_model["average"].get(str(line_number), "1")
             worst_iter = self.iteration_model["worst"].get(str(line_number), "1")
 
-            rows.append({
-                "line": str(line_number),
-                "statement": stmt_type,
-                "cost": str(base_cost),
-                "executions_best": best_iter,
-                "executions_average": avg_iter,
-                "executions_worst": worst_iter,
-                "total_best": f"{base_cost} * {best_iter}",
-                "total_average": f"{base_cost} * {avg_iter}",
-                "total_worst": f"{base_cost} * {worst_iter}"
-            })
+            rows.append(
+                {
+                    "line": str(line_number),
+                    "statement": stmt_type,
+                    "cost": str(base_cost),
+                    "executions_best": best_iter,
+                    "executions_average": avg_iter,
+                    "executions_worst": worst_iter,
+                    "total_best": f"{base_cost} * {best_iter}",
+                    "total_average": f"{base_cost} * {avg_iter}",
+                    "total_worst": f"{base_cost} * {worst_iter}",
+                }
+            )
 
         return rows

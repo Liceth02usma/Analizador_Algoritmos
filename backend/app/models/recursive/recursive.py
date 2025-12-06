@@ -69,7 +69,7 @@ class Recursive(Algorithm):
         self.recursive_calls = len(self.recursive_call_nodes)
         print(self.recursive_calls, "Llamadas recursivas encontradas")
 
-    def get_analysis_recurrence(self) -> RecurrenceOutput:
+    def get_analysis_recurrence(self) -> Solution:
         """
         Utiliza el agente RecurrenceAnalysis para obtener la ecuación de recurrencia.
 
@@ -77,34 +77,26 @@ class Recursive(Algorithm):
             RecurrenceOutput: Objeto con la ecuación de recurrencia y caso de análisis.
                             En caso de error, retorna ecuación indicando el fallo.
         """
-        # =====================================================================
-        # 0. DETECTAR SI EL ALGORITMO TIENE MÚLTIPLES CASOS O ES CASO GENERAL
-        # =====================================================================
+
         case_detection_agent = CaseDetectionAgent(
-            model_type="Gemini_Rapido",
-            provider="gemini"
+            model_type="Gemini_Rapido", provider="gemini"
         )
         print("Detectando tipo de caso del algoritmo recursivo...")
         self.type_case = case_detection_agent.detect_cases(
             pseudocode=self.pseudocode,
             ast_structure=self.structure,
             algorithm_name=self.name,
-            thread_id=f"case_detection_{self.name}"
+            thread_id=f"case_detection_{self.name}",
         )
         print(self.type_case, "Tipo de caso detectado (True = múltiples casos)")
-        # =====================================================================
-        # 1. OBTENER ECUACIONES DE RECURRENCIA
-        # =====================================================================
+
         recurrence_result = self._get_equation_recurrence()
 
-        # =====================================================================
-        # 2. DETERMINAR ECUACIONES A ANALIZAR
-        # =====================================================================
         equations_to_analyze = []
         equation_display = []
 
         if recurrence_result.has_multiple_cases and self.type_case:
-            # Casos múltiples: mejor, peor y promedio
+
             equations_to_analyze = [
                 ("best_case", recurrence_result.best_case.recurrence_equation),
                 ("worst_case", recurrence_result.worst_case.recurrence_equation),
@@ -116,20 +108,17 @@ class Recursive(Algorithm):
                 recurrence_result.average_case.recurrence_equation,
             ]
         else:
-            # Caso individual/general
+
             equations_to_analyze = [("single", recurrence_result.recurrence_equation)]
             equation_display = recurrence_result.recurrence_equation
 
-        # =====================================================================
-        # 3. SIMPLIFICAR CASO PROMEDIO (si existe)
-        # =====================================================================
         average_case_simplification = None
 
         if recurrence_result.has_multiple_cases and self.type_case:
-            # Buscar el caso promedio en la lista
+
             for i, (case_type, eq) in enumerate(equations_to_analyze):
                 if case_type == "average_case":
-                    # Verificar si necesita simplificación
+
                     needs_simplification = any(
                         indicator in eq.lower()
                         for indicator in [
@@ -153,7 +142,7 @@ class Recursive(Algorithm):
                             )
 
                             if simplification_result.confidence > 0.5:
-                                # Guardar información de simplificación
+
                                 average_case_simplification = {
                                     "original": eq,
                                     "simplified": simplification_result.simplified_equation,
@@ -164,67 +153,55 @@ class Recursive(Algorithm):
                                     "pattern_type": simplification_result.pattern_type,
                                 }
 
-                                # Reemplazar en la lista de ecuaciones a clasificar
                                 equations_to_analyze[i] = (
                                     "average_case",
                                     simplification_result.simplified_equation,
                                 )
 
-                                # También actualizar en equation_display
                                 equation_display[i] = (
                                     simplification_result.simplified_equation
                                 )
 
                         except Exception:
                             pass
-                    break  # Solo procesamos el average_case
+                    break
 
-        # =====================================================================
-        # 4. CLASIFICAR Y RESOLVER ECUACIONES
-        # =====================================================================
         analysis_results = []
         resolved_equations = {}
 
         for case_type, eq in equations_to_analyze:
-            # Clasificar la ecuación
+
             classification = self._classify_recurrence(eq)
 
-            # Obtener solución unificada
             if isinstance(classification, list):
                 classifications = classification
             else:
                 classifications = [classification]
 
             for cls in classifications:
-                # Usar la ecuación ORIGINAL (eq) en lugar de la normalizada
-                recurrence_resolve = RecurrenceMethods(
-                    recurrence=eq  # ← Usar eq original del clasificador
-                )
+
+                recurrence_resolve = RecurrenceMethods(recurrence=eq)
                 recurrence_resolve.set_strategy(cls.method)
 
-                # solve() retorna RecurrenceSolution unificado
                 unified_solution = recurrence_resolve.solve()
 
-                # Guardar ecuación resuelta (forma cerrada) para generar árbol después
                 if unified_solution.complexity:
                     resolved_equations[case_type] = unified_solution.complexity
                 else:
                     resolved_equations[case_type] = cls.equation_normalized
 
-                # Agregar información de simplificación si es el caso promedio
                 simplification_info = None
                 if case_type == "average_case" and average_case_simplification:
                     simplification_info = average_case_simplification
 
-                # Recopilar toda la información relevante
                 analysis_results.append(
                     {
                         "case_type": case_type,
-                        "equation": eq,  # ← Ecuación original
+                        "equation": eq,
                         "original_equation": (
                             average_case_simplification["original"]
                             if simplification_info
-                            else eq  # ← Ecuación original
+                            else eq
                         ),
                         "simplification": simplification_info,
                         "method": cls.method.value,
@@ -239,11 +216,8 @@ class Recursive(Algorithm):
                     }
                 )
 
-        # =====================================================================
-        # 5. GENERAR ÁRBOLES DE RECURSIÓN
-        # =====================================================================
         if recurrence_result.has_multiple_cases and self.type_case:
-            # Usar ecuaciones ORIGINALES (con average simplificado si aplica)
+
             avg_eq = (
                 equation_display[2]
                 if isinstance(equation_display, list)
@@ -256,24 +230,19 @@ class Recursive(Algorithm):
                 average_case=avg_eq,
             )
         else:
-            # Caso único - usar la ecuación original
+
             tree_sketches = self._create_tree(
                 single_equation=recurrence_result.recurrence_equation
             )
 
-        # generate_tree_visualization ahora retorna Dict[str, str]
         tree_diagrams = generate_tree_visualization(tree_sketches)
 
-        # =====================================================================
-        # 6. REPLICAR CASO ÚNICO EN MEJOR, PEOR Y PROMEDIO (si aplica)
-        # =====================================================================
         has_multiple = recurrence_result.has_multiple_cases and self.type_case
 
         if not has_multiple and len(analysis_results) == 1:
-            # Replicar el caso único en mejor, peor y promedio
+
             single_result = analysis_results[0].copy()
 
-            # Crear 3 copias con diferentes case_type
             best_result = single_result.copy()
             best_result["case_type"] = "best_case"
 
@@ -283,10 +252,8 @@ class Recursive(Algorithm):
             avg_result = single_result.copy()
             avg_result["case_type"] = "average_case"
 
-            # Reemplazar analysis_results con los 3 casos
             analysis_results = [best_result, worst_result, avg_result]
 
-            # Convertir equation_display a lista de 3 elementos iguales
             if isinstance(equation_display, str):
                 equation_display = [
                     equation_display,
@@ -294,29 +261,27 @@ class Recursive(Algorithm):
                     equation_display,
                 ]
 
-            # Replicar árboles de recursión para los 3 casos
             if tree_diagrams:
-                # Si hay un árbol general/single, replicarlo para los 3 casos
-                general_tree = tree_diagrams.get("tree_method_single") or tree_diagrams.get("single")
+
+                general_tree = tree_diagrams.get(
+                    "tree_method_single"
+                ) or tree_diagrams.get("single")
                 if general_tree:
                     tree_diagrams["tree_method_best_case"] = general_tree
                     tree_diagrams["tree_method_worst_case"] = general_tree
                     tree_diagrams["tree_method_average_case"] = general_tree
-                    # Eliminar el árbol general si existe
+
                     tree_diagrams.pop("tree_method_single", None)
                     tree_diagrams.pop("single", None)
 
-        # Construir diagrams que incluya árboles de recursión + árboles del método
-        # tree_diagrams ya es un Dict[str, str] con claves 'tree_method_{case_type}'
         diagrams = tree_diagrams.copy() if isinstance(tree_diagrams, dict) else {}
 
-        # Agregar árboles del método (si se usó TreeMethod)
         for result in analysis_results:
             if result["method_enum"] == StrategyType.TREE_METHOD:
                 tree_details = result["details"]
 
                 if tree_details:
-                    # Preparar el payload según la estructura esperada por generate_tree_method_diagram
+
                     tree_payload = {
                         "applicable": True,
                         "method": result["equation"],
@@ -326,15 +291,10 @@ class Recursive(Algorithm):
                         "complexity": result.get("complexity", "O(?)"),
                     }
 
-                    # Llamada a la función correcta del helper
                     mermaid_diagram = generate_tree_method_diagram(tree_payload)
 
-                    # Guardar el diagrama con la clave apropiada
                     diagrams[f"tree_method_{result['case_type']}"] = mermaid_diagram
 
-        # =====================================================================
-        # ANÁLISIS DE COMPLEJIDAD LÍNEA POR LÍNEA
-        # =====================================================================
         complexity_agent = ComplexityLineByLineAgent(
             model_type="Gemini_Rapido", enable_verbose=True
         )
@@ -345,7 +305,7 @@ class Recursive(Algorithm):
 
         try:
             if self.type_case and recurrence_result.has_multiple_cases:
-                # Casos múltiples: análisis separado para mejor/peor/promedio
+
                 complexity_analysis = complexity_agent.analyze_multiple_cases(
                     pseudocode=self.pseudocode, algorithm_name=self.name
                 )
@@ -362,16 +322,15 @@ class Recursive(Algorithm):
                     f"Caso promedio: {complexity_analysis.average_case.complexity_explanation}"
                 )
             else:
-                # Caso único/general - analizar una vez
+
                 complexity_analysis = complexity_agent.analyze_single_case(
                     pseudocode=self.pseudocode, algorithm_name=self.name
                 )
 
                 code_explain = complexity_analysis.analysis.code_explanation
-                
-                # Si se replicó el caso general, replicar también el análisis línea por línea
+
                 if not has_multiple and len(analysis_results) == 3:
-                    # Replicar el análisis para los 3 casos
+
                     annotated = complexity_analysis.analysis.pseudocode_annotated
                     complexity_line_to_line = (
                         f"=== MEJOR CASO ===\n{annotated}\n\n"
@@ -387,20 +346,18 @@ class Recursive(Algorithm):
                     complexity_line_to_line = (
                         complexity_analysis.analysis.pseudocode_annotated
                     )
-                    explain_complexity = complexity_analysis.analysis.complexity_explanation
+                    explain_complexity = (
+                        complexity_analysis.analysis.complexity_explanation
+                    )
 
         except Exception:
             code_explain = f"Algoritmo: {self.name}"
             explain_complexity = "No se pudo generar análisis automático"
 
-        # =====================================================================
-        # 7. DETERMINAR NOTACIÓN ASINTÓTICA CON COMPLEXITYANALYSISSERVICE
-        # =====================================================================
-        # Preparar datos para el servicio de complejidad
         cases_for_complexity = []
         for result in analysis_results:
             case_name = result["case_type"]
-            # Mapear nombres internos a nombres legibles
+
             if case_name == "best_case":
                 display_name = "Mejor Caso"
             elif case_name == "worst_case":
@@ -410,27 +367,19 @@ class Recursive(Algorithm):
             else:
                 display_name = "General"
 
-            # Usar la complejidad resuelta (forma cerrada)
             efficiency_function = result.get("complexity", "n")
 
             cases_for_complexity.append(
                 {"case_name": display_name, "efficiency_function": efficiency_function}
             )
 
-        # Invocar el servicio de análisis de complejidad
         complexity_service = ComplexityAnalysisService()
         asymptotic_response = complexity_service.determine_complexity(
             algorithm_name=self.name, cases_data=cases_for_complexity
         )
 
-        # =====================================================================
-        # 8. ORGANIZAR SOLUTION PARA ENVIAR AL FRONTEND
-        # =====================================================================
-
-        # Construir asymptotic_notation desde la respuesta del servicio
         asymptotic_notation = {"explanation": asymptotic_response.final_conclusion}
 
-        # Mapear resultados a mejor/peor/promedio
         for asym_result in asymptotic_response.analysis:
             if (
                 "mejor" in asym_result.case_name.lower()
@@ -448,12 +397,11 @@ class Recursive(Algorithm):
             ):
                 asymptotic_notation["average"] = asym_result.formatted_notation
             else:
-                # Caso general - replicar en todos
+
                 asymptotic_notation["best"] = asym_result.formatted_notation
                 asymptotic_notation["worst"] = asym_result.formatted_notation
                 asymptotic_notation["average"] = asym_result.formatted_notation
 
-        # Asegurar que todos los casos existen (fallback)
         default_complexity = asymptotic_notation.get("worst", "O(n)")
         asymptotic_notation.setdefault("best", default_complexity)
         asymptotic_notation.setdefault("worst", default_complexity)
@@ -499,15 +447,12 @@ class Recursive(Algorithm):
 
     def _solution_equation_recurrence(self, equation_recurrence, method):
 
-        # se le pasa el metodo a recurrence_analysis
         self.recurrence_equation = equation_recurrence
         recurrence_resolve = RecurrenceMethods(recurrence=self.recurrence_equation)
         recurrence_resolve.set_strategy(StrategyType[method.name])
         solution = recurrence_resolve.solve()
 
         return solution
-
-        # print(self.create_tree(), "ESTE ES EL ARBOL DESDE RECURRENCE")
 
     def _create_tree(
         self,
@@ -529,23 +474,21 @@ class Recursive(Algorithm):
         Returns:
             dict: RecurrenceTreeResponse con los bosquejos de árboles generados
         """
-        # Instanciar el agente
+
         tree_agent = RecurrenceTreeAgent(
             model_type="Gemini_Rapido",
             enable_verbose=True,
         )
 
-        # Llamar al método del agente con los parámetros apropiados
         result = tree_agent.generate_tree_sketches(
             best_case=best_case,
             worst_case=worst_case,
             average_case=average_case,
             single_equation=single_equation,
-            max_depth=4,  # Profundidad del bosquejo
+            max_depth=4,
             thread_id=f"tree_{self.name}",
         )
 
-        # Retornar el resultado (RecurrenceTreeResponse)
         return result
 
     def identify_pattern(self) -> AlgorithmPatterns:

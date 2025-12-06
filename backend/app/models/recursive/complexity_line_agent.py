@@ -15,8 +15,10 @@ from ...external_services.Agentes.Agent import AgentBase
 # SCHEMAS DE RESPUESTA
 # ============================================================================
 
+
 class ComplexityAnalysis(BaseModel):
     """Análisis de complejidad para un solo caso."""
+
     case_type: Optional[str] = Field(
         default=None,
         description="Tipo de caso: 'best', 'worst', 'average' o None para caso único",
@@ -34,9 +36,11 @@ class ComplexityAnalysis(BaseModel):
         ..., description="Cota asintótica final (solo aquí, no en las líneas)"
     )
 
+
 class SingleCaseOutput(BaseModel):
     has_multiple_cases: bool = Field(default=False)
     analysis: ComplexityAnalysis = Field(...)
+
 
 class MultipleCasesOutput(BaseModel):
     has_multiple_cases: bool = Field(default=True)
@@ -48,6 +52,7 @@ class MultipleCasesOutput(BaseModel):
 # ============================================================================
 # AGENTE DE COMPLEJIDAD LÍNEA POR LÍNEA
 # ============================================================================
+
 
 class ComplexityLineByLineAgent(AgentBase):
     """
@@ -93,19 +98,19 @@ class ComplexityLineByLineAgent(AgentBase):
         # 2. Extraer bloque JSON de markdown ```json ... ```
         json_pattern = r"```(?:json)?\s*\n(.*?)\n```"
         matches = re.findall(json_pattern, text, re.DOTALL)
-        
+
         candidates = matches if matches else [text]
 
         for candidate in candidates:
             # Limpieza básica
             cleaned = candidate.strip()
-            
+
             # Intento A: JSON standard
             try:
                 return json.loads(cleaned)
             except json.JSONDecodeError:
                 pass
-            
+
             # Intento B: Python Literal Eval (Salva errores de comillas simples vs dobles)
             # Los LLMs a veces generan diccionarios de Python en vez de JSON estricto
             try:
@@ -198,9 +203,11 @@ class ComplexityLineByLineAgent(AgentBase):
 ```
 """
 
-    def analyze_single_case(self, pseudocode: str, algorithm_name: str = "Algoritmo") -> SingleCaseOutput:
+    def analyze_single_case(
+        self, pseudocode: str, algorithm_name: str = "Algoritmo"
+    ) -> SingleCaseOutput:
         agent = self._get_or_create_agent(for_multiple_cases=False)
-        
+
         if self.enable_verbose:
             print(f"\n[ComplexityLineAgent] 📊 Analizando caso único: {algorithm_name}")
 
@@ -255,24 +262,32 @@ class ComplexityLineByLineAgent(AgentBase):
                     raw_content = result["messages"][-1].content
                     if self.enable_verbose:
                         print(f"⚠️ Intentando recuperar JSON crudo...")
-                    
+
                     json_data = self._clean_and_repair_json(raw_content)
                     if json_data:
                         # Asegurar que cumple el schema
-                        if "analysis" not in json_data and "pseudocode_annotated" in json_data:
-                             # A veces el LLM devuelve el objeto analysis directamente
-                             json_data = {"has_multiple_cases": False, "analysis": json_data}
-                        
+                        if (
+                            "analysis" not in json_data
+                            and "pseudocode_annotated" in json_data
+                        ):
+                            # A veces el LLM devuelve el objeto analysis directamente
+                            json_data = {
+                                "has_multiple_cases": False,
+                                "analysis": json_data,
+                            }
+
                         return SingleCaseOutput(**json_data)
 
-                raise ValueError("No se pudo extraer JSON válido tras intentos de reparación.")
+                raise ValueError(
+                    "No se pudo extraer JSON válido tras intentos de reparación."
+                )
 
             return output
 
         except Exception as e:
             if self.enable_verbose:
                 print(f"❌ Error crítico en ComplexityLineAgent: {e}")
-            
+
             # Fallback seguro para no romper el frontend
             return SingleCaseOutput(
                 has_multiple_cases=False,
@@ -281,15 +296,19 @@ class ComplexityLineByLineAgent(AgentBase):
                     pseudocode_annotated=f"// Error al analizar el código.\\n// Intenta simplificar el input.\\n{pseudocode}",
                     code_explanation="Hubo un error técnico procesando la respuesta del modelo.",
                     complexity_explanation=f"Detalle del error: {str(e)}",
-                    total_complexity="Error"
-                )
+                    total_complexity="Error",
+                ),
             )
 
-    def analyze_multiple_cases(self, pseudocode: str, algorithm_name: str = "Algoritmo") -> MultipleCasesOutput:
+    def analyze_multiple_cases(
+        self, pseudocode: str, algorithm_name: str = "Algoritmo"
+    ) -> MultipleCasesOutput:
         agent = self._get_or_create_agent(for_multiple_cases=True)
 
         if self.enable_verbose:
-            print(f"\n[ComplexityLineAgent] 📊 Analizando múltiples casos: {algorithm_name}")
+            print(
+                f"\n[ComplexityLineAgent] 📊 Analizando múltiples casos: {algorithm_name}"
+            )
 
         content = f"""Analiza 3 casos (Best, Worst, Average) usando Step Counting para este algoritmo recursivo.
 
@@ -360,66 +379,88 @@ class ComplexityLineByLineAgent(AgentBase):
                 if "messages" in result and result["messages"]:
                     raw_content = result["messages"][-1].content
                     if self.enable_verbose:
-                         print(f"⚠️ Intentando recuperar JSON crudo (Multiple)...")
-                         print(f"📄 Contenido crudo (primeros 500 chars): {raw_content[:500]}")
+                        print(f"⚠️ Intentando recuperar JSON crudo (Multiple)...")
+                        print(
+                            f"📄 Contenido crudo (primeros 500 chars): {raw_content[:500]}"
+                        )
 
                     json_data = self._clean_and_repair_json(raw_content)
                     if json_data:
                         if self.enable_verbose:
-                            print(f"🔍 Estructura JSON recuperada: {list(json_data.keys())}")
-                        
+                            print(
+                                f"🔍 Estructura JSON recuperada: {list(json_data.keys())}"
+                            )
+
                         # Verificar si la estructura tiene los campos requeridos
                         if "best_case" not in json_data and "analysis" in json_data:
                             # El modelo devolvió una estructura anidada - extraer los casos
                             analysis_data = json_data.get("analysis", {})
                             if isinstance(analysis_data, dict):
                                 # Intentar extraer los 3 casos del análisis
-                                best = analysis_data.get("best_case") or analysis_data.get("best")
-                                worst = analysis_data.get("worst_case") or analysis_data.get("worst")
-                                average = analysis_data.get("average_case") or analysis_data.get("average")
-                                
+                                best = analysis_data.get(
+                                    "best_case"
+                                ) or analysis_data.get("best")
+                                worst = analysis_data.get(
+                                    "worst_case"
+                                ) or analysis_data.get("worst")
+                                average = analysis_data.get(
+                                    "average_case"
+                                ) or analysis_data.get("average")
+
                                 if best and worst and average:
                                     json_data = {
                                         "has_multiple_cases": True,
                                         "best_case": best,
                                         "worst_case": worst,
-                                        "average_case": average
+                                        "average_case": average,
                                     }
                                     if self.enable_verbose:
-                                        print(f"✅ Reestructurado JSON desde 'analysis'")
+                                        print(
+                                            f"✅ Reestructurado JSON desde 'analysis'"
+                                        )
                                 else:
                                     if self.enable_verbose:
-                                        print(f"⚠️ Faltan casos en analysis: best={bool(best)}, worst={bool(worst)}, avg={bool(average)}")
-                        
+                                        print(
+                                            f"⚠️ Faltan casos en analysis: best={bool(best)}, worst={bool(worst)}, avg={bool(average)}"
+                                        )
+
                         # Último intento: si solo hay un caso, replicarlo en los 3
                         if "best_case" not in json_data:
                             if self.enable_verbose:
-                                print(f"⚠️ No se encontró best_case, worst_case, average_case")
+                                print(
+                                    f"⚠️ No se encontró best_case, worst_case, average_case"
+                                )
                                 print(f"   Intentando replicar caso único...")
-                            
+
                             # Buscar un caso único para replicar
                             single_case = None
                             for key in ["case", "analysis", "result"]:
-                                if key in json_data and isinstance(json_data[key], dict):
+                                if key in json_data and isinstance(
+                                    json_data[key], dict
+                                ):
                                     if "pseudocode_annotated" in json_data[key]:
                                         single_case = json_data[key]
                                         break
-                            
+
                             if not single_case and "pseudocode_annotated" in json_data:
                                 single_case = json_data
-                            
+
                             if single_case:
                                 if self.enable_verbose:
                                     print(f"✅ Replicando caso único en los 3 casos")
-                                
+
                                 # Asegurar que tenga case_type
-                                for case_type, case_name in [("best", "best"), ("worst", "worst"), ("average", "average")]:
+                                for case_type, case_name in [
+                                    ("best", "best"),
+                                    ("worst", "worst"),
+                                    ("average", "average"),
+                                ]:
                                     case_copy = single_case.copy()
                                     case_copy["case_type"] = case_type
                                     json_data[f"{case_type}_case"] = case_copy
-                                
+
                                 json_data["has_multiple_cases"] = True
-                        
+
                         return MultipleCasesOutput(**json_data)
 
                 raise ValueError("JSON inválido o mal formado.")
@@ -430,13 +471,13 @@ class ComplexityLineByLineAgent(AgentBase):
             if self.enable_verbose:
                 print(f"❌ Error crítico en ComplexityLineAgent (Multiple): {e}")
                 print(f"   Tipo de error: {type(e).__name__}")
-            
+
             dummy = ComplexityAnalysis(
                 case_type="error",
                 pseudocode_annotated=f"// Error al analizar.\\n{pseudocode}",
                 code_explanation="Error de procesamiento.",
                 complexity_explanation=str(e),
-                total_complexity="?"
+                total_complexity="?",
             )
             return MultipleCasesOutput(
                 has_multiple_cases=True,
@@ -450,6 +491,7 @@ class ComplexityLineByLineAgent(AgentBase):
 # FUNCIONES DE CONVENIENCIA
 # ============================================================================
 
+
 def analyze_complexity_by_line(
     pseudocode: str,
     algorithm_name: str = "Algoritmo",
@@ -458,18 +500,18 @@ def analyze_complexity_by_line(
 ) -> Dict[str, Any]:
     """
     Función wrapper para análisis de complejidad línea por línea.
-    
+
     Args:
         pseudocode: Código del algoritmo a analizar
         algorithm_name: Nombre del algoritmo
         multiple_cases: Si True, analiza best/worst/average. Si False, caso único
         verbose: Habilita logs detallados
-        
+
     Returns:
         Diccionario con el análisis de complejidad
     """
     agent = ComplexityLineByLineAgent(enable_verbose=verbose)
-    
+
     if multiple_cases:
         output = agent.analyze_multiple_cases(pseudocode, algorithm_name)
         return output.model_dump()

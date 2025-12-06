@@ -1,5 +1,7 @@
 class FlowDiagram:
     pass
+
+
 """
     if "iterativo" in algo_type_value:
         print("⚙️ Invocando IterativeAnalyzerAgent...")

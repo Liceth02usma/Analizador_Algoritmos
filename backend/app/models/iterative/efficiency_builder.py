@@ -28,10 +28,7 @@ class EfficiencyBuilder:
 
         for case in ["best_case", "average_case", "worst_case"]:
             T, summation = self._build_case(case)
-            results[case] = {
-                "T": T,
-                "summation": summation
-            }
+            results[case] = {"T": T, "summation": summation}
 
         return results
 
@@ -50,7 +47,6 @@ class EfficiencyBuilder:
             line_num = line["line"]
             cost_value = line["cost"]
             cost_str = str(cost_value)
-
 
             iter_str = iteration_info.get(str(line_num), "1")
 

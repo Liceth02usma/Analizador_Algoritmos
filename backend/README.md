@@ -1,6 +1,6 @@
 
 
-# 🚀 Backend - Analizador de Algoritmos
+# Backend - Analizador de Algoritmos
 
 Sistema de análisis de complejidad de algoritmos con soporte para código en pseudocódigo. Detecta automáticamente si un algoritmo es iterativo o recursivo y calcula su complejidad temporal y espacial.
 
@@ -60,57 +60,6 @@ El servidor estará disponible en:
 - **Swagger UI**: http://127.0.0.1:8000/docs
 - **ReDoc**: http://127.0.0.1:8000/redoc
 
-### Ejemplo básico (Python)
-
-#### Algoritmo Iterativo
-```python
-from app.controllers.controller_iterative import ControlIterative
-
-controller = ControlIterative()
-
-pseudocodigo = """
-for i 🡨 0 to n do
-begin
-    suma 🡨 suma + array[i]
-end
-"""
-
-results = controller.analyze_from_parsed_tree(
-    "SumaArray",
-    pseudocodigo
-)
-
-print(f"Complejidad: {results['complexity']['time']['worst_case']}")
-# Output: O(n)
-```
-
-#### Algoritmo Recursivo
-```python
-from app.controllers.controller_recursive import ControlRecursive
-
-controller = ControlRecursive()
-
-pseudocodigo = """
-FUNCTION factorial(n)
-begin
-    if (n <= 1) then return 1
-    else return n * CALL factorial(n - 1)
-end
-"""
-
-results = controller.analyze_from_parsed_tree(
-    "Factorial",
-    pseudocodigo
-)
-
-print(f"Complejidad: {results['complexity']['time']['worst_case']}")
-# Output: O(n)
-
-print(f"Relación: {results['analysis']['recurrence_relation']}")
-# Output: T(n) = T(n-1) + O(1)
-```
-
----
 
 
 ## 🛣️ API Endpoints
@@ -129,7 +78,6 @@ Analiza un algoritmo y devuelve su complejidad.
 {
   "name": "BubbleSort",
   "code": "for i 🡨 0 to n do...",
-  "language": "pseudocode"
 }
 ```
 
@@ -185,15 +133,13 @@ Para actualizar las dependencias:
 
 # tasks
 
-
-
-# Mejorar el front end para que represente ambos analisis    (Preliminarmente)
-
-
-# Implementar lo de sql lite
-
-# Mejorar el agente de complexity line to line
+# Solucionar el analisis de ambos modelos y hacer que se guarde por cache
 
 
 
-# Quitar el apartado de arbol de recursion para iterativos
+
+# Hacer que se muestre tanto el arbol como el flujo 
+# Mejorar el agente para identificar si tiene caso promedio, mejor peor etc
+# Crear un agente para detectar recurrencia indirecta
+# Solucionar el LLM del output para que tome como herramienta Lark para validar
+
